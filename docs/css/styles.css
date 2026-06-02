@@ -88,10 +88,10 @@ nav.tabs a.active, nav.tabs a:hover { color: var(--text-primary); background: va
 
 /* Context bar */
 .context-bar {
-  display: flex; gap: 14px; align-items: center; margin-top: 10px;
-  font-size: 12px; color: var(--text-muted); flex-wrap: wrap;
+  display: flex; gap: 18px; align-items: center; margin-top: 12px;
+  font-size: 14px; color: var(--text-muted); flex-wrap: wrap; font-weight: 500;
 }
-.context-bar .chip { display: inline-flex; align-items: center; gap: 5px; }
+.context-bar .chip { display: inline-flex; align-items: center; gap: 6px; }
 .context-bar .streak { color: var(--accent-gold); font-weight: 600; }
 
 /* ---------- Chat area ---------- */

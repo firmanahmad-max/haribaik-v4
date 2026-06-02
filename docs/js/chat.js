@@ -69,7 +69,7 @@ export function renderAI(r, onQuickReply, toast) {
       </div>
 
       <div class="card aksi-card">
-        <div class="label">💡 Saran aksi hari ini</div>
+        <div class="label">🌱 Langkah kecil hari ini</div>
         <div class="body">${escapeHtml(r.aksi)}</div>
       </div>
 

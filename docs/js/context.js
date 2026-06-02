@@ -17,26 +17,33 @@ export function hariName(d = new Date()) {
   return ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][d.getDay()];
 }
 
+// Nama bulan Hijriyah (Bahasa Indonesia) — dipetakan manual dari NOMOR bulan agar
+// tidak bergantung pada lokalisasi browser. Sebagian Android salah melokalkan nama
+// bulan kalender islam memakai tabel nama bulan Masehi (mis. bulan ke-12 -> "Desember").
+const HIJRI_MONTHS = [
+  'Muharam', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jumadilawal', 'Jumadilakhir',
+  'Rajab', 'Syakban', 'Ramadan', 'Syawal', 'Zulkaidah', 'Zulhijah',
+];
+
 // Tanggal Hijriyah via Intl (kalender islamic-umalqura, standar Indonesia) — tanpa library.
-// Ambil bagian tanggal secara eksplisit lalu tambahkan " H" manual, agar era tidak bocor
-// menjadi "SM"/"M" dan nama bulan Masehi tidak muncul di sebagian browser.
+// Ambil hari/bulan(angka)/tahun, lalu susun string sendiri + " H".
 export function hijriDate(d = new Date()) {
   try {
-    const fmt = new Intl.DateTimeFormat('id-ID', {
+    const fmt = new Intl.DateTimeFormat('en-US', {
       calendar: 'islamic-umalqura',
       day: 'numeric',
-      month: 'long',
+      month: 'numeric',
       year: 'numeric',
     });
     // Guard: jika engine tidak menerapkan kalender islam, jangan tampilkan (hindari fallback Masehi).
     if (!fmt.resolvedOptions().calendar.includes('islamic')) return '';
     const parts = fmt.formatToParts(d);
     const get = (t) => parts.find((p) => p.type === t)?.value ?? '';
-    const day = get('day');
-    const month = get('month');
-    const year = get('year');
-    if (!day || !month || !year) return '';
-    return `${day} ${month} ${year} H`;
+    const day = parseInt(get('day'), 10);
+    const monthNum = parseInt(get('month'), 10);
+    const year = get('year').replace(/\D/g, ''); // buang era bila ikut terbawa
+    if (!day || !monthNum || !year || !HIJRI_MONTHS[monthNum - 1]) return '';
+    return `${day} ${HIJRI_MONTHS[monthNum - 1]} ${year} H`;
   } catch {
     return '';
   }
