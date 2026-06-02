@@ -21,9 +21,12 @@ async function callSumopod({ system, window, message, mockFamily }) {
     return mockResponse({ message, family: mockFamily });
   }
 
+  // Sumopod mengabaikan field `system` (memakai persona default-nya), jadi instruksi
+  // ditaruh di dalam pesan user terakhir — pendekatan yang terbukti dari V3.
+  const userContent = `${system}\n\n=== PESAN USER ===\n${message}`;
   const messages = [
     ...window.map((m) => ({ role: m.role, content: m.content })),
-    { role: 'user', content: message },
+    { role: 'user', content: userContent },
     { role: 'assistant', content: '{' },
   ];
 
@@ -34,7 +37,7 @@ async function callSumopod({ system, window, message, mockFamily }) {
       'x-api-key': process.env.SUMOPOD_API_KEY,
       'anthropic-version': '2023-06-01',
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: MAX_TOKENS, system, messages }),
+    body: JSON.stringify({ model: MODEL, max_tokens: MAX_TOKENS, messages }),
   });
 
   if (!res.ok) {
