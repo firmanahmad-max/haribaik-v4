@@ -17,6 +17,23 @@ function escapeHtml(s) {
   );
 }
 
+// Label kartu aksi dirotasi bergantian agar tidak membosankan.
+const AKSI_LABELS = [
+  '🌱 Langkah kecil hari ini',
+  '🌱 Coba lakukan ini',
+  '🌱 Satu langkah untukmu',
+  '🌱 Pelan-pelan, coba ini',
+  '🌱 Yang bisa kamu coba hari ini',
+  '🌱 Mulai dari sini',
+];
+// Mulai dari indeks acak supaya urutannya tidak selalu sama tiap sesi.
+let aksiLabelIdx = Math.floor(Math.random() * AKSI_LABELS.length);
+function nextAksiLabel() {
+  const label = AKSI_LABELS[aksiLabelIdx % AKSI_LABELS.length];
+  aksiLabelIdx++;
+  return label;
+}
+
 export function renderUser(text) {
   const wrap = document.createElement('div');
   wrap.className = 'msg user';
@@ -69,7 +86,7 @@ export function renderAI(r, onQuickReply, toast) {
       </div>
 
       <div class="card aksi-card">
-        <div class="label">🌱 Langkah kecil hari ini</div>
+        <div class="label">${nextAksiLabel()}</div>
         <div class="body">${escapeHtml(r.aksi)}</div>
       </div>
 
