@@ -1,0 +1,21 @@
+{
+  "name": "HariBaik — Mulai harimu dengan kebaikan",
+  "short_name": "HariBaik",
+  "description": "PWA motivasi harian Islami dengan AI companion: empati, ayat/hadits, saran aksi, dan doa.",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c1a13",
+  "theme_color": "#0c1a13",
+  "lang": "id",
+  "categories": ["lifestyle", "education"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

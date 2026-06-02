@@ -1,0 +1,222 @@
+/* HariBaik V4 — styles.css
+   Estetika: dark forest green + gold + teal action. Tema via CSS variables. */
+
+:root {
+  /* Dark (default, sesuai brand) */
+  --bg-primary: #0c1a13;
+  --bg-secondary: #101f16;
+  --bg-elevated: #16291d;
+  --bg-glass: rgba(22, 41, 29, 0.6);
+  --border: rgba(196, 175, 120, 0.18);
+  --text-primary: #eef3ee;
+  --text-muted: #9bb0a2;
+  --accent-gold: #c4af78;
+  --accent-teal: #2d9b6e;
+  --accent-purple: #9b8cff;
+  --bubble-user: #1d6f50;
+  --bubble-ai: #16291d;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --radius: 18px;
+}
+
+[data-theme='light'] {
+  --bg-primary: #f3f1e7;
+  --bg-secondary: #eae6d6;
+  --bg-elevated: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.7);
+  --border: rgba(120, 100, 50, 0.22);
+  --text-primary: #1c2a20;
+  --text-muted: #5d6b60;
+  --accent-gold: #9c7e3a;
+  --accent-teal: #1f7e57;
+  --accent-purple: #6b58d6;
+  --bubble-user: #2d9b6e;
+  --bubble-ai: #ffffff;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 50% -10%, var(--bg-secondary), var(--bg-primary));
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.arabic { font-family: 'Amiri', serif; direction: rtl; line-height: 1.9; }
+
+/* ---------- Layout ---------- */
+.app { display: flex; flex-direction: column; height: 100vh; max-width: 720px; margin: 0 auto; width: 100%; }
+
+header.app-header {
+  padding: 14px 18px 10px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+.header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand .logo {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-teal));
+  display: grid; place-items: center; font-weight: 700; color: #0c1a13;
+}
+.brand h1 { font-size: 18px; letter-spacing: 0.3px; }
+.brand .tagline { font-size: 11px; color: var(--text-muted); }
+
+nav.tabs { display: flex; gap: 4px; }
+nav.tabs a {
+  color: var(--text-muted); text-decoration: none; font-size: 13px;
+  padding: 6px 10px; border-radius: 10px;
+}
+nav.tabs a.active, nav.tabs a:hover { color: var(--text-primary); background: var(--bg-elevated); }
+
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary);
+  width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 16px;
+  display: grid; place-items: center; transition: transform 0.15s ease;
+}
+.icon-btn:hover { transform: translateY(-1px); }
+
+/* Context bar */
+.context-bar {
+  display: flex; gap: 14px; align-items: center; margin-top: 10px;
+  font-size: 12px; color: var(--text-muted); flex-wrap: wrap;
+}
+.context-bar .chip { display: inline-flex; align-items: center; gap: 5px; }
+.context-bar .streak { color: var(--accent-gold); font-weight: 600; }
+
+/* ---------- Chat area ---------- */
+.chat { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+
+.msg { display: flex; gap: 10px; max-width: 92%; }
+.msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: grid; place-items: center; font-weight: 700; font-size: 13px;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-teal)); color: #0c1a13;
+}
+.bubble {
+  padding: 11px 14px; border-radius: var(--radius); line-height: 1.5; font-size: 14.5px;
+  box-shadow: var(--shadow);
+}
+.msg.user .bubble { background: var(--bubble-user); color: #fff; border-bottom-right-radius: 6px; }
+.msg.ai .bubble { background: var(--bubble-ai); border: 1px solid var(--border); border-bottom-left-radius: 6px; }
+
+.msg.ai .stack { display: flex; flex-direction: column; gap: 10px; max-width: 100%; }
+
+/* Cards */
+.card { border-radius: 14px; padding: 13px 15px; box-shadow: var(--shadow); position: relative; }
+.card .label { font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+
+.ayat-card {
+  background: linear-gradient(160deg, var(--bg-elevated), var(--bg-secondary));
+  border: 1px solid var(--border);
+}
+.ayat-card .arabic { font-size: 24px; color: var(--accent-gold); text-align: right; margin: 6px 0 10px; }
+.ayat-card .translation { font-size: 14px; color: var(--text-primary); }
+.ayat-card .source { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+.badge {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px; padding: 3px 9px; border-radius: 999px;
+  text-transform: uppercase;
+}
+.badge.quran { background: rgba(45, 155, 110, 0.18); color: var(--accent-teal); border: 1px solid var(--accent-teal); }
+.badge.hadits { background: rgba(196, 175, 120, 0.16); color: var(--accent-gold); border: 1px solid var(--accent-gold); }
+
+.aksi-card { background: var(--bg-elevated); border-left: 3px solid var(--accent-teal); }
+.aksi-card .body { font-size: 14px; }
+
+.doa-card { background: var(--bg-elevated); border-left: 3px solid var(--accent-purple); }
+.doa-card .arabic { font-size: 18px; color: var(--text-primary); text-align: right; margin: 4px 0 8px; }
+.doa-card .translation { font-size: 13px; color: var(--text-muted); }
+
+.card-actions { display: flex; gap: 8px; margin-top: 10px; }
+.mini-btn {
+  background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+  padding: 5px 10px; border-radius: 9px; font-size: 12px; cursor: pointer; display: inline-flex; gap: 5px; align-items: center;
+}
+.mini-btn:hover { color: var(--text-primary); border-color: var(--accent-gold); }
+.mini-btn.active { color: var(--accent-gold); border-color: var(--accent-gold); }
+
+/* Quick replies */
+.quick-replies { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.chip-btn {
+  background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary);
+  padding: 7px 13px; border-radius: 999px; font-size: 13px; cursor: pointer;
+}
+.chip-btn:hover { border-color: var(--accent-teal); }
+
+/* Typing indicator */
+.typing { display: inline-flex; gap: 4px; padding: 4px 2px; }
+.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); animation: blink 1.2s infinite; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+
+/* ---------- Mood selector ---------- */
+.mood-selector { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 4px; }
+.mood-pill {
+  background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary);
+  padding: 7px 13px; border-radius: 999px; font-size: 13px; cursor: pointer; transition: all 0.15s ease;
+}
+.mood-pill:hover, .mood-pill.selected { background: var(--accent-teal); color: #fff; border-color: var(--accent-teal); }
+
+/* ---------- Footer input ---------- */
+footer.composer {
+  padding: 10px 14px 14px; border-top: 1px solid var(--border);
+  background: var(--bg-glass); backdrop-filter: blur(14px);
+}
+.input-row { display: flex; align-items: flex-end; gap: 8px; }
+.input-row textarea {
+  flex: 1; resize: none; max-height: 120px; min-height: 44px;
+  background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary);
+  border-radius: 14px; padding: 12px 14px; font: inherit; font-size: 14.5px; outline: none;
+}
+.input-row textarea:focus { border-color: var(--accent-teal); }
+.send-btn, .voice-btn {
+  width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; flex-shrink: 0;
+  display: grid; place-items: center; font-size: 18px;
+}
+.send-btn { background: var(--accent-teal); color: #fff; }
+.voice-btn { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); }
+.voice-btn.recording { background: #c0392b; color: #fff; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(192,57,43,0.5); } 70% { box-shadow: 0 0 0 12px rgba(192,57,43,0); } 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0); } }
+.powered { text-align: center; font-size: 10.5px; color: var(--text-muted); margin-top: 8px; }
+
+/* ---------- Favorites page ---------- */
+.fav-page { max-width: 720px; margin: 0 auto; width: 100%; padding: 18px; flex: 1; }
+.fav-filters { display: flex; gap: 8px; margin: 14px 0; }
+.fav-grid { display: flex; flex-direction: column; gap: 12px; }
+.empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary);
+  padding: 10px 16px; border-radius: 12px; font-size: 13px; box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease; z-index: 50;
+}
+.toast.show { opacity: 1; }
+
+/* Share card (rendered off-screen, captured by html2canvas) */
+.share-card {
+  position: fixed; left: -9999px; top: 0; width: 540px; padding: 48px 44px;
+  background: linear-gradient(160deg, #0c1a13, #16291d);
+  color: #eef3ee; border-radius: 24px; box-sizing: border-box;
+}
+.share-card .ornament { font-size: 30px; color: var(--accent-gold); text-align: center; opacity: 0.5; }
+.share-card .s-arabic { font-family: 'Amiri', serif; direction: rtl; font-size: 40px; color: #c4af78; text-align: center; margin: 24px 0; line-height: 1.8; }
+.share-card .s-trans { font-size: 18px; text-align: center; line-height: 1.6; }
+.share-card .s-source { text-align: center; color: #9bb0a2; margin-top: 18px; font-size: 14px; }
+.share-card .s-watermark { text-align: center; color: #c4af78; margin-top: 30px; font-size: 13px; letter-spacing: 1px; font-weight: 700; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

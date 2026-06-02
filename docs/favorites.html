@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Favorit — HariBaik</title>
+  <meta name="theme-color" content="#0c1a13" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="header-row">
+        <div class="brand">
+          <div class="logo">H</div>
+          <div>
+            <h1>Favorit</h1>
+            <div class="tagline">Kutipan yang kamu simpan</div>
+          </div>
+        </div>
+        <nav class="tabs">
+          <a href="index.html">Chat</a>
+          <a href="favorites.html" class="active">Favorit</a>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="fav-page">
+      <div class="fav-filters">
+        <button class="chip-btn selected" data-filter="all">Semua</button>
+        <button class="chip-btn" data-filter="quran">Al-Quran</button>
+        <button class="chip-btn" data-filter="hadits">Hadits</button>
+      </div>
+      <div class="fav-grid" id="favGrid"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <div id="shareCardMount"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script type="module" src="js/favorites.js"></script>
+</body>
+</html>
