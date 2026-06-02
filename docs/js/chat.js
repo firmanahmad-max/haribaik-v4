@@ -17,22 +17,23 @@ function escapeHtml(s) {
   );
 }
 
-// Label kartu aksi dirotasi bergantian agar tidak membosankan.
-const AKSI_LABELS = [
-  '🌱 Langkah kecil hari ini',
-  '🌱 Coba lakukan ini',
-  '🌱 Satu langkah untukmu',
-  '🌱 Pelan-pelan, coba ini',
-  '🌱 Yang bisa kamu coba hari ini',
-  '🌱 Mulai dari sini',
-];
-// Mulai dari indeks acak supaya urutannya tidak selalu sama tiap sesi.
-let aksiLabelIdx = Math.floor(Math.random() * AKSI_LABELS.length);
-function nextAksiLabel() {
-  const label = AKSI_LABELS[aksiLabelIdx % AKSI_LABELS.length];
-  aksiLabelIdx++;
-  return label;
+// Label kartu dirotasi bergantian agar tidak membosankan.
+// Tiap rotator mulai dari indeks acak supaya urutannya tidak selalu sama tiap sesi.
+function makeRotator(labels) {
+  let idx = Math.floor(Math.random() * labels.length);
+  return () => labels[idx++ % labels.length];
 }
+
+const nextKutipanLabel = makeRotator([
+  'Kutipan', 'Untuk direnungkan', 'Penguat hati', 'Pesan untukmu', 'Renungan', 'Cahaya hari ini',
+]);
+const nextAksiLabel = makeRotator([
+  '🌱 Langkah kecil hari ini', '🌱 Coba lakukan ini', '🌱 Satu langkah untukmu',
+  '🌱 Pelan-pelan, coba ini', '🌱 Yang bisa kamu coba hari ini', '🌱 Mulai dari sini',
+]);
+const nextDoaLabel = makeRotator([
+  '🤲 Doa', '🤲 Doa untukmu', '🤲 Doa hari ini', '🤲 Panjatkan ini', '🤲 Lirih doa', '🤲 Doa kecil',
+]);
 
 export function renderUser(text) {
   const wrap = document.createElement('div');
@@ -75,7 +76,7 @@ export function renderAI(r, onQuickReply, toast) {
       <div class="bubble">${escapeHtml(r.empati)}</div>
 
       <div class="card ayat-card">
-        <div class="label"><span>Kutipan</span><span class="badge ${badgeClass}">${badgeLabel}</span></div>
+        <div class="label"><span>${nextKutipanLabel()}</span><span class="badge ${badgeClass}">${badgeLabel}</span></div>
         <div class="arabic">${escapeHtml(r.arabic)}</div>
         <div class="translation">"${escapeHtml(r.translation)}"</div>
         <div class="source">— ${escapeHtml(r.source)}</div>
@@ -91,7 +92,7 @@ export function renderAI(r, onQuickReply, toast) {
       </div>
 
       <div class="card doa-card">
-        <div class="label">🤲 Doa</div>
+        <div class="label">${nextDoaLabel()}</div>
         <div class="arabic">${escapeHtml(r.doa_arabic)}</div>
         <div class="translation">${escapeHtml(r.doa_translation)}</div>
       </div>
