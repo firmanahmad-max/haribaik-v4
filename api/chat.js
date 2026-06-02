@@ -43,9 +43,31 @@ async function callSumopod({ system, window, message, mockFamily }) {
   }
 
   const result = await res.json();
-  const text = result?.content?.[0]?.text ?? '';
-  // Karena turn assistant di-prefill dengan "{", tambahkan kembali di depan.
-  return extractFirstJsonObject('{' + text);
+  const text = (result?.content?.[0]?.text ?? '').trim();
+  return parseAiText(text);
+}
+
+/**
+ * Parsing tahan-banting terhadap beragam format keluaran Sumopod:
+ *  - model mengikuti prefill "{" → teks adalah lanjutan tanpa "{" di depan
+ *  - model mengembalikan JSON utuh (mengabaikan prefill), bisa terbungkus ```json
+ *  - keduanya gagal → lempar error berisi cuplikan mentah untuk diagnosis
+ */
+function parseAiText(text) {
+  // 1) Coba langsung (menangani JSON utuh / berpagar ```).
+  try {
+    return extractFirstJsonObject(text);
+  } catch {
+    /* lanjut */
+  }
+  // 2) Anggap teks adalah lanjutan dari prefill "{".
+  try {
+    return extractFirstJsonObject('{' + text);
+  } catch {
+    /* lanjut */
+  }
+  const snippet = text.slice(0, 200).replace(/\s+/g, ' ');
+  throw new Error(`Format respons AI tak dikenali. Cuplikan: ${snippet}`);
 }
 
 /**
