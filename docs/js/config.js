@@ -6,7 +6,7 @@ const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
 
 export const BACKEND_URL = isLocal
   ? 'http://localhost:3000'
-  : 'https://goodday-app-v3-production.up.railway.app'; // TODO: ganti ke backend HariBaik V4
+  : 'https://haribaik-v4-production.up.railway.app';
 
 export const MOODS = ['Senang', 'Sedih', 'Cemas', 'Kesal', 'Bersyukur', 'Lelah'];
 
