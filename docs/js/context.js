@@ -17,14 +17,26 @@ export function hariName(d = new Date()) {
   return ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][d.getDay()];
 }
 
-// Tanggal Hijriyah via Intl (kalender islam) — tanpa library eksternal.
+// Tanggal Hijriyah via Intl (kalender islamic-umalqura, standar Indonesia) — tanpa library.
+// Ambil bagian tanggal secara eksplisit lalu tambahkan " H" manual, agar era tidak bocor
+// menjadi "SM"/"M" dan nama bulan Masehi tidak muncul di sebagian browser.
 export function hijriDate(d = new Date()) {
   try {
-    return new Intl.DateTimeFormat('id-ID-u-ca-islamic', {
+    const fmt = new Intl.DateTimeFormat('id-ID', {
+      calendar: 'islamic-umalqura',
       day: 'numeric',
       month: 'long',
       year: 'numeric',
-    }).format(d);
+    });
+    // Guard: jika engine tidak menerapkan kalender islam, jangan tampilkan (hindari fallback Masehi).
+    if (!fmt.resolvedOptions().calendar.includes('islamic')) return '';
+    const parts = fmt.formatToParts(d);
+    const get = (t) => parts.find((p) => p.type === t)?.value ?? '';
+    const day = get('day');
+    const month = get('month');
+    const year = get('year');
+    if (!day || !month || !year) return '';
+    return `${day} ${month} ${year} H`;
   } catch {
     return '';
   }
