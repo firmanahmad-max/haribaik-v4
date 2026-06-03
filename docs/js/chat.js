@@ -4,7 +4,7 @@ import { Favorites, Reports } from './db.js';
 import { shareCard } from './share.js';
 import { speak, stopSpeak, ttsSupported, arabicVoiceAvailable } from './tts.js';
 import { badgeFor } from './config.js';
-import { t } from './i18n.js';
+import { t, getLang } from './i18n.js';
 
 const QUICK_REPLY_KEYS = ['qr_more', 'qr_doa', 'qr_how', 'qr_thanks'];
 
@@ -30,23 +30,29 @@ function fmtTime(ts = Date.now()) {
   }
 }
 
-// Label kartu dirotasi bergantian agar tidak membosankan.
-// Tiap rotator mulai dari indeks acak supaya urutannya tidak selalu sama tiap sesi.
-function makeRotator(labels) {
+// Label kartu dirotasi bergantian agar tidak membosankan (dwibahasa).
+const ROT = {
+  kutipan: {
+    id: ['Kutipan', 'Untuk direnungkan', 'Penguat hati', 'Pesan untukmu', 'Renungan', 'Cahaya hari ini'],
+    en: ['Quote', 'To reflect on', 'Strength for the heart', 'A message for you', 'A reflection', 'Today’s light'],
+  },
+  aksi: {
+    id: ['🌱 Langkah kecil hari ini', '🌱 Coba lakukan ini', '🌱 Satu langkah untukmu', '🌱 Pelan-pelan, coba ini', '🌱 Yang bisa kamu coba hari ini', '🌱 Mulai dari sini'],
+    en: ['🌱 A small step today', '🌱 Try this', '🌱 One step for you', '🌱 Slowly, try this', '🌱 Something to try today', '🌱 Start here'],
+  },
+  doa: {
+    id: ['🤲 Doa', '🤲 Doa untukmu', '🤲 Doa hari ini', '🤲 Panjatkan ini', '🤲 Lirih doa', '🤲 Doa kecil'],
+    en: ['🤲 Prayer', '🤲 A prayer for you', '🤲 Today’s prayer', '🤲 Offer this', '🤲 A quiet prayer', '🤲 A little prayer'],
+  },
+};
+function makeRotator(name) {
+  const labels = ROT[name][getLang()] || ROT[name].id;
   let idx = Math.floor(Math.random() * labels.length);
   return () => labels[idx++ % labels.length];
 }
-
-const nextKutipanLabel = makeRotator([
-  'Kutipan', 'Untuk direnungkan', 'Penguat hati', 'Pesan untukmu', 'Renungan', 'Cahaya hari ini',
-]);
-const nextAksiLabel = makeRotator([
-  '🌱 Langkah kecil hari ini', '🌱 Coba lakukan ini', '🌱 Satu langkah untukmu',
-  '🌱 Pelan-pelan, coba ini', '🌱 Yang bisa kamu coba hari ini', '🌱 Mulai dari sini',
-]);
-const nextDoaLabel = makeRotator([
-  '🤲 Doa', '🤲 Doa untukmu', '🤲 Doa hari ini', '🤲 Panjatkan ini', '🤲 Lirih doa', '🤲 Doa kecil',
-]);
+const nextKutipanLabel = makeRotator('kutipan');
+const nextAksiLabel = makeRotator('aksi');
+const nextDoaLabel = makeRotator('doa');
 
 // Avatar pengguna — disesuaikan dengan jenis kelamin lewat setUserAvatar().
 let userAvatar = '🧑';
@@ -193,7 +199,7 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
         parts,
         (speaking) => {
           ttsBtn.classList.toggle('active', speaking);
-          ttsBtn.innerHTML = speaking ? '⏹ Stop' : '🔊 Dengar';
+          ttsBtn.innerHTML = speaking ? '⏹ Stop' : `🔊 ${t('btn_listen')}`;
         }
       );
       if (!ok) toast?.('Suara tidak didukung di perangkat ini');
@@ -206,7 +212,7 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
     if (reportBtn.disabled) return;
     await Reports.add({ source: r.source, source_type: (r.source_type || '').toLowerCase(), translation: r.translation });
     reportBtn.classList.add('active');
-    reportBtn.innerHTML = '✓ Dilaporkan';
+    reportBtn.innerHTML = `✓ ${t('reported')}`;
     reportBtn.disabled = true;
     toast?.(t('report_thanks'));
   });

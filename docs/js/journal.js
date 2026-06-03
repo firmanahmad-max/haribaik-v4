@@ -7,7 +7,7 @@ import { initTheme } from './theme.js';
 import { shareCard } from './share.js';
 import { speak, stopSpeak, ttsSupported } from './tts.js';
 import { trapFocus } from './a11y.js';
-import { t, getLang, applyI18n } from './i18n.js';
+import { t, getLang, applyI18n, locale, weekdaysShort } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const colorOf = (m) => MOOD_META[m]?.color || '#8a9a92';
@@ -54,12 +54,12 @@ function buildMoodSelector() {
 }
 
 async function saveEntry() {
-  if (!state.selectedMood) return toast('Pilih mood dulu ya');
+  if (!state.selectedMood) return toast(t('pick_mood'));
   await Journal.add({ mood: state.selectedMood, note: $('jNote').value.trim().slice(0, 300) });
   $('jNote').value = '';
   state.selectedMood = null;
   document.querySelectorAll('#jMoodSelector .mood-pill').forEach((p) => p.classList.remove('selected'));
-  toast('Tersimpan ke jurnal 🌿');
+  toast(t('saved_journal'));
   await refresh();
 }
 
@@ -98,7 +98,7 @@ function dominantOf(moods) {
 function renderStats() {
   const all = state.entries;
   if (!all.length) {
-    $('jStatsTop').innerHTML = '<div class="jempty">Belum ada catatan. Pilih mood di atas untuk memulai 🌱</div>';
+    $('jStatsTop').innerHTML = `<div class="jempty">${t('j_empty_start')}</div>`;
     $('jDist').innerHTML = '';
     $('jTrend').innerHTML = '';
     $('jMonthTrend').innerHTML = '';
@@ -116,21 +116,21 @@ function renderStats() {
   const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
 
   $('jStatsTop').innerHTML = `
-    <div class="jstat"><b>${total}</b><span>catatan</span></div>
-    <div class="jstat"><b>${daysInPeriod}</b><span>hari</span></div>
-    <div class="jstat"><b>🔥 ${streak}</b><span>streak · rekor ${best}</span></div>
-    <div class="jstat"><b>${dominant ? emojiOf(dominant) : '–'}</b><span>${dominant || 'belum ada'}</span></div>`;
+    <div class="jstat"><b>${total}</b><span>${t('st_notes')}</span></div>
+    <div class="jstat"><b>${daysInPeriod}</b><span>${t('st_days')}</span></div>
+    <div class="jstat"><b>🔥 ${streak}</b><span>${t('st_streak')} · ${t('st_record')} ${best}</span></div>
+    <div class="jstat"><b>${dominant ? emojiOf(dominant) : '–'}</b><span>${dominant ? t('mood_' + dominant, dominant) : t('st_none')}</span></div>`;
 
   // Sebaran mood
   if (!total) {
-    $('jDist').innerHTML = '<div class="jempty">Belum ada catatan pada periode ini.</div>';
+    $('jDist').innerHTML = `<div class="jempty">${t('j_empty_period')}</div>`;
   } else {
     const max = Math.max(1, ...Object.values(counts));
     $('jDist').innerHTML = MOODS.map((m) => {
       const n = counts[m] || 0;
       const pct = Math.round((n / max) * 100);
       return `<div class="jdist-row">
-        <span class="jdist-label">${emojiOf(m)} ${m}</span>
+        <span class="jdist-label">${emojiOf(m)} ${t('mood_' + m, m)}</span>
         <div class="jdist-bar"><i style="width:${pct}%;background:${colorOf(m)}"></i></div>
         <span class="jdist-n">${n}</span>
       </div>`;
@@ -140,9 +140,10 @@ function renderStats() {
   renderCompare(all);
 
   // Legenda
-  $('jLegend').innerHTML = MOODS.map((m) => `<span class="jleg"><i style="background:${colorOf(m)}"></i>${m}</span>`).join('');
+  $('jLegend').innerHTML = MOODS.map((m) => `<span class="jleg"><i style="background:${colorOf(m)}"></i>${t('mood_' + m, m)}</span>`).join('');
 
   // 7 hari terakhir
+  const wd = weekdaysShort();
   const byDay = {};
   all.forEach((e) => { (byDay[e.day] ||= []).push(e.mood); });
   const cells = [];
@@ -150,7 +151,7 @@ function renderStats() {
     const d = new Date(); d.setDate(d.getDate() - i);
     const k = dayKey(d.getTime());
     const dom = dominantOf(byDay[k] || []);
-    const label = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][d.getDay()];
+    const label = wd[d.getDay()];
     cells.push(`<div class="jtrend-cell" title="${k}${dom ? ': ' + dom : ''}">
       <i style="background:${dom ? colorOf(dom) : 'transparent'};border:${dom ? 'none' : '1px dashed var(--border)'}"></i>
       <span>${label}</span></div>`);
@@ -173,17 +174,15 @@ function renderCompare(all) {
 
   let mood;
   if (a0 == null) {
-    mood = 'Pekan pertamamu mencatat — teruskan ya! 🌱';
+    mood = t('cmp_first');
   } else {
     const d = a1 - a0;
-    mood = Math.abs(d) < 0.3
-      ? 'Suasana hatimu relatif serupa dengan pekan lalu.'
-      : d > 0
-        ? 'Suasana hatimu cenderung lebih cerah dari pekan lalu. 🌤️'
-        : 'Pekan ini terasa lebih berat dari sebelumnya. Tak apa, kamu sedang berusaha. 🤍';
+    mood = Math.abs(d) < 0.3 ? t('cmp_similar') : d > 0 ? t('cmp_brighter') : t('cmp_heavier');
   }
   const dCount = thisWeek.length - (lastWeek.length || 0);
-  const countTxt = a0 == null ? `${thisWeek.length} catatan pekan ini` : `${thisWeek.length} catatan pekan ini (${dCount >= 0 ? '+' : ''}${dCount} vs pekan lalu)`;
+  const countTxt = a0 == null
+    ? t('cmp_count').replace('{n}', thisWeek.length)
+    : t('cmp_count_delta').replace('{n}', thisWeek.length).replace('{d}', `${dCount >= 0 ? '+' : ''}${dCount}`);
   el.innerHTML = `<span class="jcompare-icon">📈</span><span>${mood} <b>${countTxt}</b></span>`;
 }
 
@@ -204,7 +203,7 @@ function renderMonthTrend(byDay) {
   }
   const real = pts.filter(Boolean);
   if (real.length < 2) {
-    $('jMonthTrend').innerHTML = '<div class="jempty">Belum cukup data bulan ini untuk tren.</div>';
+    $('jMonthTrend').innerHTML = `<div class="jempty">${t('j_trend_nodata')}</div>`;
     return;
   }
   // garis menyambung titik yang ada (lewati hari kosong)
@@ -227,8 +226,8 @@ function renderCalendar() {
   const month = state.calMonth;
   const y = month.getFullYear();
   const m = month.getMonth();
-  $('jMonthLabel').textContent = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(month);
-  $('jCalHead').innerHTML = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map((d) => `<div class="jcal-cell jcal-dow">${d}</div>`).join('');
+  $('jMonthLabel').textContent = new Intl.DateTimeFormat(locale(), { month: 'long', year: 'numeric' }).format(month);
+  $('jCalHead').innerHTML = weekdaysShort().map((d) => `<div class="jcal-cell jcal-dow">${d}</div>`).join('');
 
   const byDay = {};
   state.entries.forEach((e) => { (byDay[e.day] ||= []).push(e.mood); });
@@ -236,7 +235,7 @@ function renderCalendar() {
   const firstDow = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const todayKey = dayKey(Date.now());
-  const monthName = new Intl.DateTimeFormat('id-ID', { month: 'long' }).format(month);
+  const monthName = new Intl.DateTimeFormat(locale(), { month: 'long' }).format(month);
   let html = '';
   for (let i = 0; i < firstDow; i++) html += '<div class="jcal-cell empty"></div>';
   for (let d = 1; d <= daysInMonth; d++) {
@@ -262,13 +261,13 @@ function openDayDetail(k) {
   const entries = state.entries.filter((e) => e.day === k).sort((a, b) => a.ts - b.ts);
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
-  const dateLabel = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(k + 'T00:00:00'));
+  const dateLabel = new Intl.DateTimeFormat(locale(), { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(k + 'T00:00:00'));
   overlay.innerHTML = `
-    <div class="sheet" role="dialog" aria-modal="true" aria-label="Catatan ${dateLabel}">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="${dateLabel}">
       <div class="sheet-handle"></div>
       <h2 class="sheet-title">${dateLabel}</h2>
       <div id="jDayList"></div>
-      <div class="sheet-actions"><span class="spacer"></span><button class="chip-btn" id="jDayClose">Tutup</button></div>
+      <div class="sheet-actions"><span class="spacer"></span><button class="chip-btn" id="jDayClose">${t('close')}</button></div>
     </div>`;
   document.body.appendChild(overlay);
   requestAnimationFrame(() => overlay.classList.add('show'));
@@ -280,13 +279,13 @@ function openDayDetail(k) {
 
   const list = overlay.querySelector('#jDayList');
   const draw = (items) => {
-    if (!items.length) { list.innerHTML = '<div class="jempty">Tidak ada catatan di hari ini.</div>'; return; }
+    if (!items.length) { list.innerHTML = `<div class="jempty">${t('day_empty')}</div>`; return; }
     list.innerHTML = items.map((e) => `
       <div class="jday-entry">
-        <span class="jday-mood">${emojiOf(e.mood)} ${e.mood}</span>
-        <span class="jday-time">${fmtTime(e.ts)}${e.source === 'chat' ? ' · dari chat' : ''}</span>
+        <span class="jday-mood">${emojiOf(e.mood)} ${t('mood_' + e.mood, e.mood)}</span>
+        <span class="jday-time">${fmtTime(e.ts)}${e.source === 'chat' ? ' · ' + t('from_chat') : ''}</span>
         ${e.note ? `<p class="jday-note">${escapeHtml(e.note)}</p>` : ''}
-        <button class="mini-btn danger jday-del" data-id="${e.id}">🗑️ Hapus</button>
+        <button class="mini-btn danger jday-del" data-id="${e.id}">${t('del')}</button>
       </div>`).join('');
     list.querySelectorAll('.jday-del').forEach((btn) => {
       btn.addEventListener('click', async () => {
@@ -294,7 +293,7 @@ function openDayDetail(k) {
         await refresh();
         const left = state.entries.filter((x) => x.day === k).sort((a, b) => a.ts - b.ts);
         draw(left);
-        toast('Entri dihapus');
+        toast(t('entry_deleted'));
       });
     });
   };
@@ -315,7 +314,7 @@ async function renderInsightHistory() {
   if (hist.length < 2) { el.innerHTML = ''; return; }
   const items = hist.slice(-12).reverse();
   el.innerHTML =
-    '<h3 class="jsub">Riwayat refleksi</h3><div class="jhist-list">' +
+    `<h3 class="jsub">${t('j_history')}</h3><div class="jhist-list">` +
     items.map((h, i) => `<button class="jhist-item" data-i="${i}">${escapeHtml(h.data.judul)}<small>${escapeHtml(h.day)}</small></button>`).join('') +
     '</div>';
   el.querySelectorAll('.jhist-item').forEach((btn) => {
@@ -337,31 +336,32 @@ function renderInsight(data, day) {
       <p>${escapeHtml(data.insight)}</p>
       <p class="jinsight-saran">🌱 ${escapeHtml(data.saran)}</p>
       <div class="card doa-card">
-        <div class="label">🤲 Doa</div>
+        <div class="label">${t('doa_label')}</div>
         <div class="arabic">${escapeHtml(data.doa_arabic)}</div>
         <div class="translation">${escapeHtml(data.doa_translation)}</div>
       </div>
       <div class="card-actions">
-        <button class="mini-btn" id="iRefresh">🔄 Perbarui</button>
-        <button class="mini-btn" id="iTts">🔊 Dengar</button>
-        <button class="mini-btn" id="iShare">📤 Bagikan</button>
-        <button class="mini-btn" id="iCopy">📋 Salin</button>
-        <button class="mini-btn" id="iSave">🔖 Simpan doa</button>
+        <button class="mini-btn" id="iRefresh">${t('i_refresh')}</button>
+        <button class="mini-btn" id="iTts">🔊 ${t('btn_listen')}</button>
+        <button class="mini-btn" id="iShare">📤 ${t('btn_share')}</button>
+        <button class="mini-btn" id="iCopy">📋 ${t('btn_copy')}</button>
+        <button class="mini-btn" id="iSave">${t('i_save_doa')}</button>
       </div>
-      ${day ? `<small class="jinsight-day">Dibuat: ${escapeHtml(day)}</small>` : ''}
+      ${day ? `<small class="jinsight-day">${t('created')}: ${escapeHtml(day)}</small>` : ''}
     </div>`;
 
   $('iRefresh').addEventListener('click', () => generateInsight(true));
 
+  const lng = getLang() === 'en' ? 'en-US' : 'id-ID';
   const ttsBtn = $('iTts');
   if (!ttsSupported()) ttsBtn.style.display = 'none';
   else ttsBtn.addEventListener('click', () => {
-    if (ttsBtn.classList.contains('active')) { stopSpeak(); ttsBtn.classList.remove('active'); ttsBtn.innerHTML = '🔊 Dengar'; return; }
+    if (ttsBtn.classList.contains('active')) { stopSpeak(); ttsBtn.classList.remove('active'); ttsBtn.innerHTML = `🔊 ${t('btn_listen')}`; return; }
     speak([
-      { text: data.insight, lang: 'id-ID' },
-      { text: data.saran, lang: 'id-ID' },
-      { text: data.doa_translation, lang: 'id-ID' },
-    ], (sp) => { ttsBtn.classList.toggle('active', sp); ttsBtn.innerHTML = sp ? '⏹ Stop' : '🔊 Dengar'; });
+      { text: data.insight, lang: lng },
+      { text: data.saran, lang: lng },
+      { text: data.doa_translation, lang: lng },
+    ], (sp) => { ttsBtn.classList.toggle('active', sp); ttsBtn.innerHTML = sp ? '⏹ Stop' : `🔊 ${t('btn_listen')}`; });
   });
 
   // Bagikan: pakai doa (ringkas) agar muat di kartu — insight panjang dipakai untuk Salin/Dengar.
@@ -369,7 +369,7 @@ function renderInsight(data, day) {
 
   $('iCopy').addEventListener('click', async () => {
     const txt = `${data.judul}\n\n${data.insight}\n\n🌱 ${data.saran}\n\n${data.doa_arabic}\n${data.doa_translation}\n\nvia HariBaik`;
-    try { await navigator.clipboard.writeText(txt); toast('Insight disalin'); } catch { toast('Gagal menyalin'); }
+    try { await navigator.clipboard.writeText(txt); toast(t('insight_copied')); } catch { toast(t('copy_fail')); }
   });
 
   const saveBtn = $('iSave');
@@ -377,8 +377,8 @@ function renderInsight(data, day) {
     if (saveBtn.disabled) return;
     await Favorites.add({ arabic: data.doa_arabic, translation: data.doa_translation, source: data.judul, source_type: 'doa' });
     saveBtn.disabled = true;
-    saveBtn.innerHTML = '✓ Tersimpan';
-    toast('Doa disimpan ke favorit');
+    saveBtn.innerHTML = `✓ ${t('saved_done')}`;
+    toast(t('saved_doa'));
   });
 }
 
@@ -393,7 +393,7 @@ async function gatherTopics() {
 
 async function generateInsight(force = false) {
   const last7 = state.entries.filter((e) => Date.now() - e.ts < 8 * 86400000);
-  if (last7.length < 2) return toast('Catat minimal 2 mood dulu untuk membuat insight');
+  if (last7.length < 2) return toast(t('insight_min2'));
 
   if (!force) {
     const cache = await Meta.get('insightCache', null);
@@ -419,9 +419,7 @@ async function generateInsight(force = false) {
     await Meta.set('insightHistory', hist.slice(-12));
     await renderInsightHistory();
   } catch (err) {
-    const msg = !navigator.onLine || err?.status === 0
-      ? 'Kamu sedang offline. Coba lagi nanti.'
-      : err?.status === 429 ? 'Terlalu banyak permintaan. Coba lagi sebentar.' : 'Gagal membuat insight. Coba lagi.';
+    const msg = !navigator.onLine || err?.status === 0 ? t('err_offline') : err?.status === 429 ? t('err_429') : t('insight_fail');
     toast(msg);
   } finally {
     btn.disabled = false;
@@ -440,10 +438,10 @@ function download(filename, text) {
 function initBackup() {
   $('jExport').addEventListener('click', async () => {
     const items = (await Journal.all()) || [];
-    if (!items.length) return toast('Belum ada entri jurnal untuk diekspor');
+    if (!items.length) return toast(t('jx_none'));
     const clean = items.map(({ mood, note, ts }) => ({ mood, note, ts }));
     download('haribaik-jurnal.json', JSON.stringify(clean, null, 2));
-    toast(`${clean.length} entri jurnal diekspor`);
+    toast(t('jx_done').replace('{n}', clean.length));
   });
   const file = $('jFile');
   $('jImport').addEventListener('click', () => file.click());
@@ -464,10 +462,10 @@ function initBackup() {
           added++;
         }
       }
-      toast(added ? `${added} entri diimpor` : 'Tidak ada entri baru');
+      toast(added ? t('jx_imported').replace('{n}', added) : t('jx_nonew'));
       await refresh();
     } catch {
-      toast('File tidak valid');
+      toast(t('invalid_file'));
     } finally {
       file.value = '';
     }

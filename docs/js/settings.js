@@ -32,15 +32,15 @@ export async function openSettings({ welcome = false } = {}) {
       ${welcome ? `<p class="sheet-sub">${t('welcome_sub')}</p>` : ''}
 
       <label class="field"><span>${t('f_name')}</span>
-        <input id="setNama" type="text" maxlength="30" placeholder="Firman" value="${escAttr(profile.nama)}" />
+        <input id="setNama" type="text" maxlength="30" placeholder="${t('ph_name')}" value="${escAttr(profile.nama)}" />
       </label>
 
       <label class="field"><span>${t('f_goal')} <em>${t('f_optional')}</em></span>
-        <input id="setGoal" type="text" maxlength="80" value="${escAttr(profile.goal)}" />
+        <input id="setGoal" type="text" maxlength="80" placeholder="${t('ph_goal')}" value="${escAttr(profile.goal)}" />
       </label>
 
       <label class="field"><span>${t('f_age')} <em>${t('f_optional')}</em></span>
-        <input id="setUsia" type="number" min="5" max="120" inputmode="numeric" placeholder="21" value="${escAttr(profile.usia)}" />
+        <input id="setUsia" type="number" min="5" max="120" inputmode="numeric" placeholder="${t('ph_age')}" value="${escAttr(profile.usia)}" />
       </label>
 
       <label class="field"><span>${t('f_gender')}</span>
@@ -59,7 +59,7 @@ export async function openSettings({ welcome = false } = {}) {
       </label>
 
       <label class="field"><span>${t('f_role')} <em>${t('f_optional')}</em></span>
-        <input id="setPeran" type="text" maxlength="40" list="peranList" placeholder="mis. pelajar, karyawan, ibu rumah tangga" value="${escAttr(profile.peran)}" />
+        <input id="setPeran" type="text" maxlength="40" list="peranList" placeholder="${t('ph_role')}" value="${escAttr(profile.peran)}" />
         <datalist id="peranList">
           <option value="Pelajar / Mahasiswa"></option>
           <option value="Karyawan"></option>
@@ -143,7 +143,7 @@ export async function openSettings({ welcome = false } = {}) {
   });
 
   overlay.querySelector('#setNewChat').addEventListener('click', async () => {
-    if (!confirm('Mulai percakapan baru? Riwayat chat akan dikosongkan. Favorit & profil tetap aman.')) return;
+    if (!confirm(t('cf_newchat'))) return;
     await Messages.clear();
     location.reload();
   });
@@ -167,7 +167,7 @@ export async function openSettings({ welcome = false } = {}) {
     try {
       const data = JSON.parse(await f.text());
       if (!data || data.app !== 'HariBaik') throw new Error('format');
-      if (!confirm('Pulihkan data dari backup? Data ini akan digabung dengan data saat ini.')) {
+      if (!confirm(t('cf_restore'))) {
         bfile.value = '';
         return;
       }
@@ -196,17 +196,17 @@ export async function openSettings({ welcome = false } = {}) {
         }
       }
       for (const m of data.meta || []) if (m?.key) await Meta.set(m.key, m.value);
-      alert('Data berhasil dipulihkan.');
+      alert(t('al_restored'));
       location.reload();
     } catch {
-      alert('File backup tidak valid.');
+      alert(t('al_badbackup'));
     } finally {
       bfile.value = '';
     }
   });
 
   overlay.querySelector('#setReset').addEventListener('click', async () => {
-    if (!confirm('Hapus semua data (riwayat, favorit, pengaturan)? Tindakan ini tidak bisa dibatalkan.')) return;
+    if (!confirm(t('cf_reset'))) return;
     await resetAll();
     location.reload();
   });

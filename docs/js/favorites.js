@@ -32,15 +32,15 @@ async function render() {
   if (currentFilter !== 'all') items = items.filter((i) => i.source_type === currentFilter);
 
   const tagline = $('favTagline');
-  if (tagline) tagline.textContent = total ? `${total} kutipan tersimpan` : 'Kutipan yang kamu simpan';
+  if (tagline) tagline.textContent = total ? t('fav_count').replace('{n}', total) : t('tagline_favorites');
 
   if (!items.length) {
     grid.innerHTML = `
       <div class="empty-state">
         <div class="empty-emoji">🔖</div>
-        <h3>${total ? 'Tidak ada di filter ini' : 'Belum ada favorit'}</h3>
-        <p>${total ? 'Coba pilih filter lain di atas.' : 'Simpan kutipan yang menyentuh hatimu dari halaman Chat dengan tombol 🔖 Simpan.'}</p>
-        <a class="chip-btn" href="index.html">← Ke halaman Chat</a>
+        <h3>${total ? t('fav_empty_filter_t') : t('fav_empty_none_t')}</h3>
+        <p>${total ? t('fav_empty_filter_p') : t('fav_empty_none_p')}</p>
+        <a class="chip-btn" href="index.html">${t('fav_to_chat')}</a>
       </div>`;
     return;
   }
@@ -51,18 +51,18 @@ async function render() {
     const card = document.createElement('div');
     card.className = 'card ayat-card';
     card.innerHTML = `
-      <div class="label"><span>Kutipan</span><span class="badge ${badge.cls}">${t('label_' + badge.cls)}</span></div>
+      <div class="label"><span>${t('label_quote')}</span><span class="badge ${badge.cls}">${t('label_' + badge.cls)}</span></div>
       <div class="arabic">${escapeHtml(item.arabic)}</div>
       <div class="translation">"${escapeHtml(item.translation)}"</div>
       <div class="source">— ${escapeHtml(item.source)}</div>
       <div class="card-actions">
-        <button class="mini-btn js-share">📤 Bagikan</button>
-        <button class="mini-btn js-del">🗑️ Hapus</button>
+        <button class="mini-btn js-share">📤 ${t('btn_share')}</button>
+        <button class="mini-btn js-del">${t('del')}</button>
       </div>`;
     card.querySelector('.js-share').addEventListener('click', () => shareCard(item, toast));
     card.querySelector('.js-del').addEventListener('click', async () => {
       await Favorites.remove(item.id);
-      toast('Dihapus');
+      toast(t('deleted'));
       render();
     });
     grid.appendChild(card);
@@ -91,10 +91,10 @@ function download(filename, text) {
 function initToolbar() {
   $('favExport').addEventListener('click', async () => {
     const items = await Favorites.all();
-    if (!items.length) return toast('Belum ada favorit untuk diekspor');
+    if (!items.length) return toast(t('fav_none'));
     const clean = items.map(({ arabic, translation, source, source_type, ts }) => ({ arabic, translation, source, source_type, ts }));
     download('haribaik-favorit.json', JSON.stringify(clean, null, 2));
-    toast(`${clean.length} favorit diekspor`);
+    toast(t('fav_exported').replace('{n}', clean.length));
   });
 
   const file = $('favFile');
@@ -121,10 +121,10 @@ function initToolbar() {
           added++;
         }
       }
-      toast(added ? `${added} favorit diimpor` : 'Tidak ada favorit baru untuk diimpor');
+      toast(added ? t('fav_imported').replace('{n}', added) : t('fav_nonew'));
       render();
     } catch {
-      toast('File tidak valid');
+      toast(t('invalid_file'));
     } finally {
       file.value = '';
     }

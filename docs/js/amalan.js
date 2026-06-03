@@ -7,7 +7,7 @@ import { hijriMonth, hijriYear } from './context.js';
 import { trapFocus } from './a11y.js';
 import { CITIES, getCurrentCoords, getTimings, PRAYER_ORDER, reverseGeocode } from './pray.js';
 import { qiblaBearing, requestOrientationPermission, startCompass, compassSupported } from './qibla.js';
-import { applyI18n } from './i18n.js';
+import { t, getLang, applyI18n, presetHabits, weekdaysShort, locale } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -45,10 +45,10 @@ function isOn(key, d = state.today) {
 function deedItemsHtml(d) {
   const ramadan = isRamadan();
   const items = [
-    ...SALAT.map((s) => ({ key: `salat:${s}`, icon: '🕌', label: `Sholat ${s}`, on: !!d.salat?.[s] })),
-    { key: 'tilawah', icon: '📖', label: 'Tilawah Al-Quran', on: !!d.tilawah },
+    ...SALAT.map((s) => ({ key: `salat:${s}`, icon: '🕌', label: t('salat_' + s), on: !!d.salat?.[s] })),
+    { key: 'tilawah', icon: '📖', label: t('deed_tilawah'), on: !!d.tilawah },
   ];
-  if (ramadan) items.push({ key: 'puasa', icon: '🌙', label: 'Puasa', on: !!d.puasa });
+  if (ramadan) items.push({ key: 'puasa', icon: '🌙', label: t('deed_puasa'), on: !!d.puasa });
   return items.map((it) => `
     <button class="deed-item${it.on ? ' done' : ''}" data-key="${it.key}" aria-pressed="${it.on}">
       <span class="deed-ico">${it.icon}</span>
@@ -116,10 +116,10 @@ function renderStats() {
   const totalDays = state.all.filter((d) => salatCount(d) > 0 || d.tilawah || d.puasa).length;
 
   $('deedsStats').innerHTML = `
-    <div class="jstat"><b>🕌 ${salatStreak}</b><span>streak sholat</span></div>
-    <div class="jstat"><b>📖 ${tilawahStreak}</b><span>streak tilawah</span></div>
-    <div class="jstat"><b>⭐ ${fullStreak}</b><span>hari sempurna</span></div>
-    <div class="jstat"><b>${totalDays}</b><span>hari aktif</span></div>`;
+    <div class="jstat"><b>🕌 ${salatStreak}</b><span>${t('d_streak_salat')}</span></div>
+    <div class="jstat"><b>📖 ${tilawahStreak}</b><span>${t('d_streak_tilawah')}</span></div>
+    <div class="jstat"><b>⭐ ${fullStreak}</b><span>${t('d_perfect')}</span></div>
+    <div class="jstat"><b>${totalDays}</b><span>${t('d_active')}</span></div>`;
 
   const map = {};
   state.all.forEach((d) => { map[d.day] = d; });
@@ -129,10 +129,10 @@ function renderStats() {
     const k = dayKey(dt.getTime());
     const d = map[k] || emptyDeed(k);
     const sc = salatCount(d);
-    const label = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][dt.getDay()];
+    const label = weekdaysShort()[dt.getDay()];
     const pct = Math.round((sc / 5) * 100);
-    const aria = `${label}, ${sc} dari 5 sholat${d.tilawah ? ', tilawah selesai' : ''}. Ketuk untuk mengedit.`;
-    cells.push(`<button class="dweek-cell" data-day="${k}" aria-label="${aria}" title="${k}: ${sc}/5 sholat${d.tilawah ? ', tilawah' : ''}">
+    const aria = `${label}, ${sc}/5`;
+    cells.push(`<button class="dweek-cell" data-day="${k}" aria-label="${aria}" title="${k}: ${sc}/5">
       <div class="dweek-ring" style="--p:${pct}"><span>${sc}<small>/5</small></span></div>
       <i class="dweek-til ${d.tilawah ? 'on' : ''}"></i>
       <span>${label}</span>
@@ -146,13 +146,13 @@ async function openDayEditor(day) {
   let d = (await Deeds.get(day)) || emptyDeed(day);
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
-  const label = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(day + 'T00:00:00'));
+  const label = new Intl.DateTimeFormat(locale(), { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(day + 'T00:00:00'));
   overlay.innerHTML = `
     <div class="sheet" role="dialog" aria-modal="true" aria-label="Amalan ${label}">
       <div class="sheet-handle"></div>
       <h2 class="sheet-title">${label}</h2>
       <div class="deeds-list" id="edList"></div>
-      <div class="sheet-actions"><span class="spacer"></span><button class="chip-btn" id="edClose">Tutup</button></div>
+      <div class="sheet-actions"><span class="spacer"></span><button class="chip-btn" id="edClose">${t('close')}</button></div>
     </div>`;
   document.body.appendChild(overlay);
   requestAnimationFrame(() => overlay.classList.add('show'));
@@ -181,8 +181,6 @@ async function openDayEditor(day) {
 }
 
 // ---------- Istiqomah Challenge ----------
-const PRESET_HABITS = ['Tilawah 1 halaman', 'Sholat tepat waktu', 'Sedekah harian', 'Dzikir pagi & petang', 'Sholat Dhuha'];
-
 function getChallenge() { return Meta.get('challenge', null); }
 
 function challengeStreak(ch) {
@@ -198,10 +196,10 @@ function renderChallenge(ch) {
   const area = $('challengeArea');
   if (!ch) {
     area.innerHTML = `
-      <p class="jempty" style="text-align:left">Pilih satu kebiasaan baik dan jaga selama 30 hari. Bismillah 🌱</p>
-      <input id="chHabit" class="ch-input" type="text" maxlength="40" list="chPresets" placeholder="mis. Tilawah 1 halaman" aria-label="Kebiasaan" />
-      <datalist id="chPresets">${PRESET_HABITS.map((h) => `<option value="${escapeHtml(h)}"></option>`).join('')}</datalist>
-      <button class="primary-btn" id="chStart">Mulai challenge</button>`;
+      <p class="jempty" style="text-align:left">${t('ch_pick')}</p>
+      <input id="chHabit" class="ch-input" type="text" maxlength="40" list="chPresets" placeholder="${t('ch_ph')}" aria-label="${t('d_challenge')}" />
+      <datalist id="chPresets">${presetHabits().map((h) => `<option value="${escapeHtml(h)}"></option>`).join('')}</datalist>
+      <button class="primary-btn" id="chStart">${t('ch_start')}</button>`;
     $('chStart').addEventListener('click', startChallenge);
     return;
   }
@@ -225,17 +223,17 @@ function renderChallenge(ch) {
 
   area.innerHTML = `
     <div class="ch-head">
-      <div><b>${escapeHtml(ch.habit)}</b><div class="field-hint">Mulai ${escapeHtml(ch.startDay)} · 🔥 ${streak} hari beruntun</div></div>
+      <div><b>${escapeHtml(ch.habit)}</b><div class="field-hint">${t('ch_started')} ${escapeHtml(ch.startDay)} · 🔥 ${streak} ${t('ch_streak')}</div></div>
       <div class="ch-progress"><b>${doneCount}/${ch.target}</b><span>${pct}%</span></div>
     </div>
     <div class="ch-bar"><i style="width:${pct}%"></i></div>
     <div class="ch-grid">${grid}</div>
-    <p class="field-hint">Ketuk sel hari yang sudah/ belum kamu lakukan untuk menandainya.</p>
+    <p class="field-hint">${t('ch_grid_hint')}</p>
     <div class="ch-actions">
       ${complete
-        ? '<button class="primary-btn" id="chFinish">🎉 Selesaikan & arsipkan</button>'
-        : `<button class="primary-btn" id="chCheck"${todayDone ? ' disabled' : ''}>${todayDone ? '✓ Sudah hari ini' : 'Tandai selesai hari ini'}</button>`}
-      <button class="mini-btn danger" id="chCancel">Batalkan</button>
+        ? `<button class="primary-btn" id="chFinish">${t('ch_finish')}</button>`
+        : `<button class="primary-btn" id="chCheck"${todayDone ? ' disabled' : ''}>${todayDone ? t('ch_done_today') : t('ch_mark_today')}</button>`}
+      <button class="mini-btn danger" id="chCancel">${t('ch_cancel')}</button>
     </div>`;
 
   $('challengeArea').querySelector('.ch-grid').addEventListener('click', async (e) => {
@@ -254,7 +252,7 @@ function renderChallenge(ch) {
     ch.days[TODAY] = true;
     await Meta.set('challenge', ch);
     if (navigator.vibrate) navigator.vibrate(12);
-    toast('Mantap! Satu hari lagi terlewati 🌟');
+    toast(t('ch_day_toast'));
     renderChallenge(ch);
   });
   $('chFinish')?.addEventListener('click', async () => {
@@ -262,12 +260,12 @@ function renderChallenge(ch) {
     hist.push({ habit: ch.habit, startDay: ch.startDay, finishedDay: TODAY, daysDone: doneCount, target: ch.target });
     await Meta.set('challengeHistory', hist.slice(-20));
     await Meta.set('challenge', null);
-    toast('Alhamdulillah, challenge diarsipkan! 🎉');
+    toast(t('ch_archived'));
     renderChallenge(null);
     renderChallengeHistory();
   });
   $('chCancel').addEventListener('click', async () => {
-    if (!confirm('Batalkan challenge ini? Progresnya akan hilang.')) return;
+    if (!confirm(t('ch_cf_cancel'))) return;
     await Meta.set('challenge', null);
     renderChallenge(null);
   });
@@ -275,10 +273,10 @@ function renderChallenge(ch) {
 
 async function startChallenge() {
   const habit = $('chHabit').value.trim().slice(0, 40);
-  if (!habit) return toast('Tulis dulu kebiasaan yang ingin kamu jaga');
+  if (!habit) return toast(t('ch_write_first'));
   const ch = { habit, startDay: TODAY, target: 30, days: {} };
   await Meta.set('challenge', ch);
-  toast('Challenge dimulai. Bismillah! 🌱');
+  toast(t('ch_start_toast'));
   renderChallenge(ch);
 }
 
@@ -286,8 +284,8 @@ async function renderChallengeHistory() {
   const hist = (await Meta.get('challengeHistory', [])) || [];
   const el = $('challengeHistory');
   if (!hist.length) { el.innerHTML = ''; return; }
-  el.innerHTML = '<h3 class="jsub">Challenge selesai</h3>' +
-    hist.slice().reverse().map((h) => `<div class="ch-hist-item">✅ <b>${escapeHtml(h.habit)}</b> <small>${h.daysDone}/${h.target} hari · ${escapeHtml(h.finishedDay)}</small></div>`).join('');
+  el.innerHTML = `<h3 class="jsub">${t('ch_history')}</h3>` +
+    hist.slice().reverse().map((h) => `<div class="ch-hist-item">✅ <b>${escapeHtml(h.habit)}</b> <small>${h.daysDone}/${h.target} ${t('ch_days')} · ${escapeHtml(h.finishedDay)}</small></div>`).join('');
 }
 
 // ---------- Ramadan ----------
@@ -304,7 +302,7 @@ async function initRamadan() {
     applyRamadanUi(e.target.checked);
     await refresh();
     updateCountdown();
-    toast(e.target.checked ? 'Mode Ramadan aktif 🌙' : 'Mode Ramadan nonaktif');
+    toast(e.target.checked ? t('ramadan_on') : t('ramadan_off'));
   });
   $('imsakTime').addEventListener('change', (e) => { Meta.set('imsakTime', e.target.value); updateCountdown(); });
   $('iftarTime').addEventListener('change', (e) => { Meta.set('iftarTime', e.target.value); updateCountdown(); });
@@ -314,27 +312,25 @@ async function initRamadan() {
 }
 function applyRamadanUi(on) {
   $('ramadanExtra').hidden = !on;
-  $('ramadanHint').textContent = on
-    ? 'Nuansa Ramadan aktif. Puasa kini bisa ditandai di Amalan hari ini.'
-    : 'Aktifkan saat bulan Ramadan untuk fitur puasa & nuansa khusus.';
+  $('ramadanHint').textContent = on ? t('ramadan_hint_on') : t('ramadan_hint_off');
 }
 function updateCountdown() {
   const el = $('ramadanCountdown');
   if (!el) return;
   if (!isRamadan()) { el.textContent = ''; return; }
-  const mk = (t) => { if (!t) return null; const [h, m] = t.split(':').map(Number); const d = new Date(); d.setHours(h, m, 0, 0); return d; };
+  const mk = (hm) => { if (!hm) return null; const [h, m] = hm.split(':').map(Number); const d = new Date(); d.setHours(h, m, 0, 0); return d; };
   const now = new Date();
   const cands = [];
   const im = mk($('imsakTime').value);
   const ift = mk($('iftarTime').value);
-  if (im) cands.push({ t: im, label: 'imsak' });
-  if (ift) cands.push({ t: ift, label: 'berbuka' });
+  if (im) cands.push({ t: im, label: t('imsak') });
+  if (ift) cands.push({ t: ift, label: t('iftar') });
   if (!cands.length) { el.textContent = ''; return; }
   let next = cands.filter((c) => c.t > now).sort((a, b) => a.t - b.t)[0];
-  if (!next) { const c = cands.sort((a, b) => a.t - b.t)[0]; const t = new Date(c.t); t.setDate(t.getDate() + 1); next = { t, label: c.label }; }
+  if (!next) { const c = cands.sort((a, b) => a.t - b.t)[0]; const nt = new Date(c.t); nt.setDate(nt.getDate() + 1); next = { t: nt, label: c.label }; }
   const diff = next.t - now;
   const hh = Math.floor(diff / 3600000), mm = Math.floor((diff % 3600000) / 60000), ss = Math.floor((diff % 60000) / 1000);
-  el.innerHTML = `⏳ Menuju <b>${next.label}</b>: ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+  el.innerHTML = `${t('cd_to')} <b>${next.label}</b>: ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
 }
 
 async function maybeSuggestRamadan() {
@@ -342,7 +338,7 @@ async function maybeSuggestRamadan() {
   const y = hijriYear();
   if (Number(await Meta.get('ramadanSuggestedFor', 0)) === y) return;
   await Meta.set('ramadanSuggestedFor', y);
-  if (confirm('Bulan Ramadan telah tiba 🌙 Aktifkan Mode Ramadan?')) {
+  if (confirm(t('ramadan_suggest'))) {
     setRamadan(true);
     $('ramadanToggle').checked = true;
     applyRamadanUi(true);
@@ -362,16 +358,16 @@ function fillCitySelect() {
 async function initJadwal() {
   fillCitySelect();
   $('useLocation').addEventListener('click', async () => {
-    $('jadwalLoc').textContent = 'Mengambil lokasi…';
+    $('jadwalLoc').textContent = t('jl_getting');
     try {
       const { lat, lng } = await getCurrentCoords();
-      $('jadwalLoc').textContent = 'Mengenali kota…';
+      $('jadwalLoc').textContent = t('jl_recognizing');
       const name = await reverseGeocode(lat, lng);
       $('citySelect').value = ''; // lokasi GPS, bukan dari daftar kota
-      await loadPrayer({ lat, lng, label: name || 'Lokasimu' });
+      await loadPrayer({ lat, lng, label: name || (getLang() === 'en' ? 'My location' : 'Lokasimu') });
     } catch {
-      $('jadwalLoc').textContent = 'Lokasi ditolak';
-      toast('Izin lokasi ditolak. Pilih kota saja ya.');
+      $('jadwalLoc').textContent = t('jl_denied');
+      toast(t('loc_denied'));
     }
   });
   $('citySelect').addEventListener('change', async (e) => {
@@ -395,7 +391,7 @@ async function initJadwal() {
 }
 
 async function loadPrayer(loc) {
-  $('jadwalLoc').textContent = 'Memuat…';
+  $('jadwalLoc').textContent = t('jl_loading');
   try {
     const times = await getTimings(loc.lat, loc.lng);
     state.times = times;
@@ -414,14 +410,15 @@ async function loadPrayer(loc) {
     }
   } catch {
     $('jadwalLoc').textContent = navigator.onLine ? 'Gagal memuat' : 'Offline';
-    toast(navigator.onLine ? 'Gagal mengambil jadwal sholat' : 'Offline — jadwal tampil saat online');
+    toast(navigator.onLine ? t('jadwal_fail') : t('jadwal_offline'));
   }
 }
 
 function renderTimes(times) {
   $('jadwalTimes').innerHTML = PRAYER_ORDER.map((p) => {
     const minor = !FARD.includes(p);
-    return `<button class="jt-item${minor ? ' minor' : ''}" data-prayer="${p}" aria-label="Hitung mundur ke ${p}"><span>${p}</span><b>${times[p] || '–'}</b></button>`;
+    const nm = t('p_' + p, p);
+    return `<button class="jt-item${minor ? ' minor' : ''}" data-prayer="${p}" aria-label="${nm}"><span>${nm}</span><b>${times[p] || '–'}</b></button>`;
   }).join('');
   $('jadwalPick').hidden = false;
 }
@@ -466,8 +463,8 @@ function updatePrayerNext() {
 
   const diff = target.t - now;
   const hh = Math.floor(diff / 3600000), mm = Math.floor((diff % 3600000) / 60000), ss = Math.floor((diff % 60000) / 1000);
-  const tag = manual ? ' (dipilih)' : ' (berikutnya)';
-  el.innerHTML = `⏳ Menuju <b>${target.p}</b> (${state.times[target.p]})${tag} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+  const tag = manual ? ` ${t('tag_picked')}` : ` ${t('tag_next')}`;
+  el.innerHTML = `${t('cd_to')} <b>${t('p_' + target.p, target.p)}</b> (${state.times[target.p]})${tag} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
   document.querySelectorAll('#jadwalTimes .jt-item').forEach((i) => i.classList.toggle('next', i.dataset.prayer === target.p));
 }
 
@@ -486,17 +483,17 @@ async function initAdzan() {
   $('adzanToggle').checked = enabled;
   $('adzanToggle').addEventListener('change', async (e) => {
     if (e.target.checked) {
-      if (!('Notification' in window)) { e.target.checked = false; return toast('Browser tidak mendukung notifikasi'); }
+      if (!('Notification' in window)) { e.target.checked = false; return toast(t('notif_unsupported')); }
       let perm = Notification.permission;
       if (perm === 'default') perm = await Notification.requestPermission();
-      if (perm !== 'granted') { e.target.checked = false; return toast('Izin notifikasi ditolak'); }
+      if (perm !== 'granted') { e.target.checked = false; return toast(t('notif_denied')); }
       await Meta.set('adzanEnabled', true);
       await scheduleAdzan();
-      toast('Notifikasi adzan aktif 🔔');
+      toast(t('adzan_on'));
     } else {
       await Meta.set('adzanEnabled', false);
       clearAdzanTimers();
-      toast('Notifikasi adzan nonaktif');
+      toast(t('adzan_off'));
     }
   });
 }
@@ -536,7 +533,8 @@ async function fireAdzan(prayer) {
   if (notified[TODAY][prayer]) return;
   notified[TODAY][prayer] = true;
   await Meta.set('adzanNotified', notified);
-  showNotif(`🕌 Waktu ${prayer} telah tiba`, `Mari tunaikan sholat ${prayer}. Semoga Allah menerima.`);
+  const nm = t('p_' + prayer, prayer);
+  showNotif(`🕌 ${t('adzan_title').replace('{p}', nm)}`, t('adzan_body').replace('{p}', nm));
 }
 
 // ---------- Arah Kiblat ----------
@@ -544,11 +542,9 @@ function updateQibla(loc) {
   if (!loc) return;
   state.qiblaBearing = qiblaBearing(loc.lat, loc.lng);
   const deg = Math.round(state.qiblaBearing);
-  $('qiblaDeg').textContent = `${deg}° dari Utara`;
+  $('qiblaDeg').textContent = t('qibla_deg').replace('{d}', deg);
   $('qiblaNeedle').style.transform = `translateX(-50%) rotate(${state.qiblaBearing}deg)`;
-  $('qiblaHint').textContent = compassSupported()
-    ? 'Aktifkan kompas, lalu putar perangkat hingga 🕋 mengarah ke atas.'
-    : 'Arahkan bagian atas perangkat ke Utara — 🕋 menunjukkan arah kiblat.';
+  $('qiblaHint').textContent = compassSupported() ? t('qibla_hint_compass') : t('qibla_hint_static');
 }
 
 function onHeading(h) {
@@ -570,11 +566,11 @@ function initQibla() {
   if (!compassSupported()) { $('qiblaEnable').style.display = 'none'; }
   $('qiblaEnable').addEventListener('click', async () => {
     const ok = await requestOrientationPermission();
-    if (!ok) return toast('Izin sensor orientasi ditolak');
+    if (!ok) return toast(t('orient_denied'));
     if (state.stopCompass) state.stopCompass();
     state.stopCompass = startCompass(onHeading);
     if (!state.rafId) compassLoop();
-    toast('Kompas aktif 🧭');
+    toast(t('compass_on'));
   });
 }
 

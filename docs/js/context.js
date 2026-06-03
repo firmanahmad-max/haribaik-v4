@@ -2,6 +2,7 @@
 // hari, dan streak counter harian.
 
 import { Meta } from './db.js';
+import { locale, hijriMonths } from './i18n.js';
 
 export function timeOfDay(d = new Date()) {
   const h = d.getHours();
@@ -14,20 +15,17 @@ export function timeOfDay(d = new Date()) {
 const WAKTU_ICON = { Pagi: '🌅', Siang: '☀️', Sore: '🌇', Malam: '🌙' };
 
 export function hariName(d = new Date()) {
-  return ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][d.getDay()];
+  try {
+    return new Intl.DateTimeFormat(locale(), { weekday: 'long' }).format(d);
+  } catch {
+    return ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][d.getDay()];
+  }
 }
 
-// Nama bulan Hijriyah (Bahasa Indonesia) — dipetakan manual dari NOMOR bulan agar
-// tidak bergantung pada lokalisasi browser. Sebagian Android salah melokalkan nama
-// bulan kalender islam memakai tabel nama bulan Masehi (mis. bulan ke-12 -> "Desember").
-const HIJRI_MONTHS = [
-  'Muharam', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jumadilawal', 'Jumadilakhir',
-  'Rajab', 'Syakban', 'Ramadan', 'Syawal', 'Zulkaidah', 'Zulhijah',
-];
-
-// Tanggal Hijriyah via Intl (kalender islamic-umalqura, standar Indonesia) — tanpa library.
-// Ambil hari/bulan(angka)/tahun, lalu susun string sendiri + " H".
+// Tanggal Hijriyah via Intl (kalender islamic-umalqura) — nama bulan dipetakan manual
+// dari NOMOR bulan (mengikuti bahasa) agar tidak bergantung pelokalan browser.
 export function hijriDate(d = new Date()) {
+  const MONTHS = hijriMonths();
   try {
     const fmt = new Intl.DateTimeFormat('en-US', {
       calendar: 'islamic-umalqura',
@@ -42,8 +40,8 @@ export function hijriDate(d = new Date()) {
     const day = parseInt(get('day'), 10);
     const monthNum = parseInt(get('month'), 10);
     const year = get('year').replace(/\D/g, ''); // buang era bila ikut terbawa
-    if (!day || !monthNum || !year || !HIJRI_MONTHS[monthNum - 1]) return '';
-    return `${day} ${HIJRI_MONTHS[monthNum - 1]} ${year} H`;
+    if (!day || !monthNum || !year || !MONTHS[monthNum - 1]) return '';
+    return `${day} ${MONTHS[monthNum - 1]} ${year} H`;
   } catch {
     return '';
   }
@@ -70,7 +68,7 @@ export function hijriYear(d = new Date()) {
 // Tanggal Masehi (untuk ditampilkan saat chip Hijriyah diketuk).
 export function gregorianDate(d = new Date()) {
   try {
-    return new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat(locale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
   } catch {
     return '';
   }

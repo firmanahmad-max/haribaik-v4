@@ -9,7 +9,7 @@ import { initVoice } from './voice.js';
 import { initNotify } from './notify.js';
 import { initSettings, openSettings, maybeOnboard } from './settings.js';
 import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar } from './chat.js';
-import { t, getLang, applyI18n } from './i18n.js';
+import { t as tr, getLang, applyI18n } from './i18n.js';
 
 // Avatar pengguna berdasarkan jenis kelamin.
 function avatarFor(gender) {
@@ -39,10 +39,10 @@ function toast(msg) {
 
 // ---------- Context bar (+ toggle tanggal Masehi) ----------
 async function refreshContextBar() {
-  const t = buildTemporal();
-  $('ctxWaktu').textContent = `${t.icon} ${t.waktu}`;
+  const tm = buildTemporal();
+  $('ctxWaktu').textContent = `${tm.icon} ${tr('time_' + tm.waktu, tm.waktu)}`;
   const hijriEl = $('ctxHijri');
-  hijriEl.dataset.hijri = `🌙 ${t.hijri}`;
+  hijriEl.dataset.hijri = `🌙 ${tm.hijri}`;
   hijriEl.dataset.greg = `📅 ${gregorianDate()}`;
   hijriEl.textContent = hijriEl.dataset.hijri;
   hijriEl.title = 'Ketuk untuk lihat tanggal Masehi';
@@ -53,8 +53,8 @@ async function refreshContextBar() {
   };
   const streak = await touchStreak();
   const streakEl = $('ctxStreak');
-  streakEl.textContent = `🔥 ${streak} hari`;
-  streakEl.title = 'Hari berturut-turut membuka HariBaik. Streak ibadah ada di halaman Amalan.';
+  streakEl.textContent = `🔥 ${streak} ${tr('days')}`;
+  streakEl.title = tr('streak_title');
 }
 
 // ---------- Mood selector ----------
@@ -63,7 +63,7 @@ function buildMoodSelector() {
   MOODS.forEach((mood) => {
     const b = document.createElement('button');
     b.className = 'mood-pill';
-    b.textContent = `${MOOD_META[mood]?.emoji || ''} ${t('mood_' + mood, mood)}`.trim();
+    b.textContent = `${MOOD_META[mood]?.emoji || ''} ${tr('mood_' + mood, mood)}`.trim();
     b.addEventListener('click', () => {
       const wasSelected = b.classList.contains('selected');
       wrap.querySelectorAll('.mood-pill').forEach((p) => p.classList.remove('selected'));
@@ -158,10 +158,10 @@ async function requestAi(message, mood) {
 
 // Pesan error yang ramah & spesifik berdasarkan jenis kegagalan.
 function friendlyError(err) {
-  if (!navigator.onLine || err?.status === 0) return t('err_offline');
-  if (err?.status === 429) return t('err_429');
-  if (err?.status >= 500) return t('err_5xx');
-  return t('err_generic');
+  if (!navigator.onLine || err?.status === 0) return tr('err_offline');
+  if (err?.status === 429) return tr('err_429');
+  if (err?.status >= 500) return tr('err_5xx');
+  return tr('err_generic');
 }
 
 // ---------- Textarea auto-grow ----------
@@ -171,37 +171,42 @@ function autoGrow() {
   ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
 }
 
-// ---------- Greeting (bervariasi) ----------
-const SALAM = { Pagi: 'Selamat pagi', Siang: 'Selamat siang', Sore: 'Selamat sore', Malam: 'Selamat malam' };
+// ---------- Greeting (bervariasi, dwibahasa) ----------
+const SALAM_KEY = { Pagi: 'greet_morning', Siang: 'greet_noon', Sore: 'greet_afternoon', Malam: 'greet_evening' };
 const GREET_AYAT = [
-  { arabic: 'وَبَشِّرِ ٱلصَّـٰبِرِينَ', translation: 'Dan sampaikanlah kabar gembira kepada orang-orang yang sabar.', source: 'Al-Baqarah:155' },
-  { arabic: 'فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا', translation: 'Maka sesungguhnya bersama kesulitan ada kemudahan.', source: 'Asy-Syarh:5' },
-  { arabic: 'وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ', translation: 'Dan Dia bersamamu di mana pun kamu berada.', source: 'Al-Hadid:4' },
-  { arabic: 'أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ', translation: 'Ingatlah, hanya dengan mengingat Allah hati menjadi tenang.', source: "Ar-Ra'd:28" },
+  { arabic: 'وَبَشِّرِ ٱلصَّـٰبِرِينَ', source: 'Al-Baqarah:155', id: 'Dan sampaikanlah kabar gembira kepada orang-orang yang sabar.', en: 'And give good tidings to the patient.' },
+  { arabic: 'فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا', source: 'Asy-Syarh:5', id: 'Maka sesungguhnya bersama kesulitan ada kemudahan.', en: 'For indeed, with hardship comes ease.' },
+  { arabic: 'وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ', source: 'Al-Hadid:4', id: 'Dan Dia bersamamu di mana pun kamu berada.', en: 'And He is with you wherever you are.' },
+  { arabic: 'أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ', source: "Ar-Ra'd:28", id: 'Ingatlah, hanya dengan mengingat Allah hati menjadi tenang.', en: 'Indeed, in the remembrance of Allah hearts find rest.' },
 ];
 const GREET_DOA = [
-  { doa_arabic: 'اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا', doa_translation: 'Ya Allah, dengan rahmat-Mu kami memasuki pagi dan petang.' },
-  { doa_arabic: 'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي', doa_translation: 'Ya Tuhanku, lapangkanlah dadaku dan mudahkanlah urusanku.' },
+  { doa_arabic: 'اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا', id: 'Ya Allah, dengan rahmat-Mu kami memasuki pagi dan petang.', en: 'O Allah, by Your grace we enter the morning and the evening.' },
+  { doa_arabic: 'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي', id: 'Ya Tuhanku, lapangkanlah dadaku dan mudahkanlah urusanku.', en: 'My Lord, expand my chest and ease my affair.' },
 ];
 const GREET_AKSI = [
-  'Tarik napas perlahan tiga kali, lalu sebut satu hal yang kamu syukuri.',
-  'Tuliskan satu niat baik kecil untuk hari ini.',
-  'Kirim pesan baik ke satu orang yang kamu sayangi.',
+  { id: 'Tarik napas perlahan tiga kali, lalu sebut satu hal yang kamu syukuri.', en: 'Take three slow breaths, then name one thing you’re grateful for.' },
+  { id: 'Tuliskan satu niat baik kecil untuk hari ini.', en: 'Write down one small good intention for today.' },
+  { id: 'Kirim pesan baik ke satu orang yang kamu sayangi.', en: 'Send a kind message to someone you love.' },
 ];
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 function greeting() {
-  const t = buildTemporal();
-  const nama = state.profile.nama || 'Sahabat';
+  const tm = buildTemporal();
+  const lng = getLang();
+  const nama = state.profile.nama || tr('sahabat');
   const ayat = pick(GREET_AYAT);
   const doa = pick(GREET_DOA);
+  const aksi = pick(GREET_AKSI);
   renderAI(
     {
-      empati: `Assalamu'alaikum, ${nama}. ${SALAM[t.waktu]} 🌿 Apa yang sedang kamu rasakan hari ini? Ceritakan, atau pilih mood di bawah.`,
+      empati: tr('greet').replace('{name}', nama).replace('{time}', tr(SALAM_KEY[tm.waktu])),
       source_type: 'quran',
-      ...ayat,
-      aksi: pick(GREET_AKSI),
-      ...doa,
+      arabic: ayat.arabic,
+      translation: ayat[lng] || ayat.id,
+      source: ayat.source,
+      aksi: aksi[lng] || aksi.id,
+      doa_arabic: doa.doa_arabic,
+      doa_translation: doa[lng] || doa.id,
     },
     (reply) => send(reply),
     toast
@@ -216,8 +221,8 @@ async function maybeShowDisclaimer() {
   const bar = document.createElement('div');
   bar.className = 'disclaimer';
   bar.innerHTML =
-    `<span>ℹ️ ${t('disclaimer')}</span>` +
-    `<button class="mini-btn js-ok">${t('understood')}</button>`;
+    `<span>ℹ️ ${tr('disclaimer')}</span>` +
+    `<button class="mini-btn js-ok">${tr('understood')}</button>`;
   bar.querySelector('.js-ok').addEventListener('click', async () => {
     bar.remove();
     await Meta.set('disclaimerSeen', DISCLAIMER_VERSION);
@@ -251,7 +256,7 @@ async function init() {
   initSettings((profile) => {
     state.profile = profile;
     setUserAvatar(avatarFor(profile.gender));
-    toast('Pengaturan tersimpan');
+    toast(tr('saved_settings'));
   });
   await refreshContextBar();
 

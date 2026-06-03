@@ -6,6 +6,7 @@
 // waktu yang disetel, dan jalur notifikasi SW sudah disiapkan.
 
 import { Meta } from './db.js';
+import { t } from './i18n.js';
 
 export async function initNotify() {
   await maybeFireReminder();
@@ -31,7 +32,7 @@ async function maybeFireReminder() {
   target.setHours(hh, mm, 0, 0);
 
   if (now >= target) {
-    show('HariBaik 🌿', 'Mulai harimu dengan kebaikan. Yuk, sapa hatimu hari ini.');
+    show(t('rem_title'), t('rem_body'));
     await Meta.set('reminderShownDay', today);
   }
 }
