@@ -46,6 +46,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: hidden;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -61,17 +62,25 @@ header.app-header {
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 10;
 }
-.header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.brand { display: flex; align-items: center; gap: 10px; }
+.header-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 1; }
+.brand > div { min-width: 0; }
 .brand .logo {
-  width: 34px; height: 34px; border-radius: 10px;
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
   background: linear-gradient(135deg, var(--accent-gold), var(--accent-teal));
   display: grid; place-items: center; font-weight: 700; color: #0c1a13;
 }
-.brand h1 { font-size: 18px; letter-spacing: 0.3px; }
-.brand .tagline { font-size: 11px; color: var(--text-muted); }
+.brand h1 { font-size: 18px; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand .tagline { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-nav.tabs { display: flex; gap: 2px; flex-shrink: 0; }
+nav.tabs { display: flex; gap: 2px; flex-shrink: 1; flex-wrap: wrap; }
+.header-actions { flex-shrink: 0; }
+
+/* Layar sempit: pindahkan tab ke baris kedua selebar penuh agar header tidak meluber */
+@media (max-width: 480px) {
+  nav.tabs { order: 3; flex-basis: 100%; justify-content: space-around; margin-top: 8px; gap: 4px; }
+  .brand { flex: 1; }
+}
 nav.tabs a {
   color: var(--text-muted); text-decoration: none; font-size: 12.5px;
   padding: 6px 8px; border-radius: 10px; white-space: nowrap;
