@@ -2,7 +2,7 @@
 // Tiga object store: 'messages', 'favorites', 'meta'.
 
 const DB_NAME = 'haribaik';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 let dbPromise = null;
 
 function open() {
@@ -25,6 +25,10 @@ function open() {
       if (!db.objectStoreNames.contains('journal')) {
         const j = db.createObjectStore('journal', { keyPath: 'id', autoIncrement: true });
         j.createIndex('day', 'day', { unique: false });
+      }
+      // v3: amalan ibadah harian (satu record per hari)
+      if (!db.objectStoreNames.contains('deeds')) {
+        db.createObjectStore('deeds', { keyPath: 'day' });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -84,6 +88,14 @@ export const Journal = {
   clear: () => tx('journal', 'readwrite', (s) => s.clear()),
 };
 
+// ---------- deeds (amalan ibadah harian, satu record per hari) ----------
+export const Deeds = {
+  get: (day) => tx('deeds', 'readonly', (s) => reqValue(s.get(day))),
+  set: (day, data) => tx('deeds', 'readwrite', (s) => s.put({ ...data, day })),
+  all: () => tx('deeds', 'readonly', (s) => reqValue(s.getAll())),
+  clear: () => tx('deeds', 'readwrite', (s) => s.clear()),
+};
+
 // ---------- reports (kutipan yang dilaporkan, disimpan lokal) ----------
 export const Reports = {
   add: async (item) => {
@@ -109,6 +121,7 @@ export const Meta = {
 export async function resetAll() {
   await Messages.clear();
   await Journal.clear();
+  await Deeds.clear();
   await tx('favorites', 'readwrite', (s) => s.clear());
   await tx('meta', 'readwrite', (s) => s.clear());
 }

@@ -71,10 +71,10 @@ header.app-header {
 .brand h1 { font-size: 18px; letter-spacing: 0.3px; }
 .brand .tagline { font-size: 11px; color: var(--text-muted); }
 
-nav.tabs { display: flex; gap: 4px; }
+nav.tabs { display: flex; gap: 2px; flex-shrink: 0; }
 nav.tabs a {
-  color: var(--text-muted); text-decoration: none; font-size: 13px;
-  padding: 6px 10px; border-radius: 10px;
+  color: var(--text-muted); text-decoration: none; font-size: 12.5px;
+  padding: 6px 8px; border-radius: 10px; white-space: nowrap;
 }
 nav.tabs a.active, nav.tabs a:hover { color: var(--text-primary); background: var(--bg-elevated); }
 
@@ -403,6 +403,58 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .jinsight p { font-size: 14px; line-height: 1.55; margin-bottom: 8px; }
 .jinsight-saran { color: var(--text-primary); }
 .jinsight-day { color: var(--text-muted); font-size: 11px; }
+
+/* ---------- Amalan (Fase 3) ---------- */
+.deeds-count { font-size: 14px; color: var(--accent-gold); font-weight: 700; }
+.deeds-list { display: flex; flex-direction: column; gap: 8px; }
+.deed-item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); border-radius: 12px; padding: 12px 14px; font: inherit; font-size: 14.5px; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; }
+.deed-ico { font-size: 18px; }
+.deed-label { flex: 1; }
+.deed-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); display: grid; place-items: center; font-size: 13px; color: transparent; flex-shrink: 0; }
+.deed-item.done { border-color: var(--accent-teal); background: rgba(45, 155, 110, 0.12); }
+.deed-item.done .deed-check { background: var(--accent-teal); border-color: var(--accent-teal); color: #fff; }
+
+.deeds-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.dweek-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dweek-ring { position: relative; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--accent-teal) calc(var(--p) * 1%), rgba(127, 127, 127, 0.18) 0); }
+.dweek-ring::before { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--bg-secondary); }
+.dweek-ring span { position: relative; font-size: 11px; font-weight: 700; color: var(--text-primary); }
+.dweek-ring small { font-size: 8px; color: var(--text-muted); }
+.dweek-til { width: 8px; height: 8px; border-radius: 50%; background: transparent; border: 1px solid var(--border); }
+.dweek-til.on { background: var(--accent-gold); border-color: var(--accent-gold); }
+.dweek-cell span { font-size: 10.5px; color: var(--text-muted); }
+
+/* Istiqomah Challenge */
+.ch-input { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); border-radius: 12px; padding: 11px 13px; font: inherit; font-size: 14.5px; outline: none; margin-bottom: 10px; }
+.ch-input:focus { border-color: var(--accent-teal); }
+.ch-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.ch-progress { text-align: right; }
+.ch-progress b { display: block; color: var(--accent-gold); }
+.ch-progress span { font-size: 11px; color: var(--text-muted); }
+.ch-bar { height: 8px; background: var(--bg-elevated); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+.ch-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-teal), var(--accent-gold)); transition: width 0.4s ease; }
+.ch-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-bottom: 12px; }
+.ch-cell { aspect-ratio: 1; border-radius: 7px; background: var(--bg-elevated); border: 1px solid var(--border); display: grid; place-items: center; font-size: 11px; color: var(--text-muted); }
+.ch-cell.done { background: var(--accent-teal); border-color: var(--accent-teal); color: #fff; font-weight: 700; }
+.ch-cell.today { border-color: var(--accent-gold); }
+.ch-cell.future { opacity: 0.5; }
+.ch-actions { display: flex; gap: 8px; align-items: center; }
+.ch-actions .primary-btn { flex: 1; }
+.ch-done { margin-top: 10px; color: var(--accent-gold); font-size: 14px; text-align: center; }
+
+/* Ramadan mode */
+.switch { position: relative; display: inline-block; width: 48px; height: 28px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; inset: 0; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; transition: 0.2s; }
+.slider::before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: var(--text-muted); border-radius: 50%; transition: 0.2s; }
+.switch input:checked + .slider { background: var(--accent-teal); border-color: var(--accent-teal); }
+.switch input:checked + .slider::before { transform: translateX(20px); background: #fff; }
+.ramadan-card .row-between { align-items: center; }
+.ramadan-extra { margin-top: 12px; }
+.rtimes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+[data-ramadan='on'] { --accent-gold: #e8c468; --accent-purple: #c3b2ff; }
+[data-ramadan='on'] .ramadan-card { border-color: var(--accent-gold); box-shadow: 0 0 24px rgba(232, 196, 104, 0.12); }
+[data-ramadan='on'] .brand .logo { background: linear-gradient(135deg, #e8c468, #9b8cff); }
 
 /* ---------- Hormati prefers-reduced-motion ---------- */
 @media (prefers-reduced-motion: reduce) {

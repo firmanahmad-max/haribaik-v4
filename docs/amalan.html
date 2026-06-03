@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark" data-ramadan="off">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Amalan — HariBaik</title>
+  <meta name="theme-color" content="#0c1a13" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="header-row">
+        <div class="brand">
+          <div class="logo">H</div>
+          <div>
+            <h1>Amalan</h1>
+            <div class="tagline">Istiqomah dalam kebaikan</div>
+          </div>
+        </div>
+        <nav class="tabs">
+          <a href="index.html">Chat</a>
+          <a href="journal.html">Jurnal</a>
+          <a href="amalan.html" class="active">Amalan</a>
+          <a href="favorites.html">Favorit</a>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="journal-page">
+      <!-- Mode Ramadan -->
+      <section class="card jcard ramadan-card">
+        <div class="row-between">
+          <div><b id="ramadanLabel">🌙 Mode Ramadan</b><div class="field-hint" id="ramadanHint">Aktifkan saat bulan Ramadan untuk fitur puasa & nuansa khusus.</div></div>
+          <label class="switch"><input type="checkbox" id="ramadanToggle" /><span class="slider"></span></label>
+        </div>
+        <div id="ramadanExtra" class="ramadan-extra" hidden>
+          <div class="rtimes">
+            <label class="field"><span>Imsak</span><input id="imsakTime" type="time" /></label>
+            <label class="field"><span>Berbuka (Maghrib)</span><input id="iftarTime" type="time" /></label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Amalan hari ini -->
+      <section class="card jcard">
+        <div class="jhead">
+          <h2 class="jtitle">Amalan hari ini</h2>
+          <span class="deeds-count" id="deedsCount">0/6</span>
+        </div>
+        <div class="deeds-list" id="deedsList"></div>
+      </section>
+
+      <!-- Statistik ibadah -->
+      <section class="card jcard">
+        <h2 class="jtitle">Konsistensi</h2>
+        <div class="jstats-top" id="deedsStats"></div>
+        <h3 class="jsub">7 hari terakhir</h3>
+        <div class="deeds-week" id="deedsWeek"></div>
+      </section>
+
+      <!-- Istiqomah Challenge -->
+      <section class="card jcard">
+        <h2 class="jtitle">Istiqomah Challenge 30 Hari</h2>
+        <div id="challengeArea"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="js/amalan.js"></script>
+</body>
+</html>
