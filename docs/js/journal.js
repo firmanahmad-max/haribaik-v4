@@ -6,6 +6,7 @@ import { postInsight } from './api.js';
 import { initTheme } from './theme.js';
 import { shareCard } from './share.js';
 import { speak, stopSpeak, ttsSupported } from './tts.js';
+import { trapFocus } from './a11y.js';
 
 const $ = (id) => document.getElementById(id);
 const colorOf = (m) => MOOD_META[m]?.color || '#8a9a92';
@@ -135,6 +136,8 @@ function renderStats() {
     }).join('');
   }
 
+  renderCompare(all);
+
   // Legenda
   $('jLegend').innerHTML = MOODS.map((m) => `<span class="jleg"><i style="background:${colorOf(m)}"></i>${m}</span>`).join('');
 
@@ -154,6 +157,33 @@ function renderStats() {
   $('jTrend').innerHTML = cells.join('');
 
   renderMonthTrend(byDay);
+}
+
+// Perbandingan minggu ini vs minggu lalu (tanpa AI).
+function renderCompare(all) {
+  const el = $('jCompare');
+  const now = Date.now();
+  const thisWeek = all.filter((e) => now - e.ts < 7 * 86400000);
+  const lastWeek = all.filter((e) => now - e.ts >= 7 * 86400000 && now - e.ts < 14 * 86400000);
+  const avg = (arr) => (arr.length ? arr.reduce((a, e) => a + scoreOf(e.mood), 0) / arr.length : null);
+  const a1 = avg(thisWeek);
+  const a0 = avg(lastWeek);
+  if (a1 == null) { el.innerHTML = ''; return; }
+
+  let mood;
+  if (a0 == null) {
+    mood = 'Pekan pertamamu mencatat — teruskan ya! 🌱';
+  } else {
+    const d = a1 - a0;
+    mood = Math.abs(d) < 0.3
+      ? 'Suasana hatimu relatif serupa dengan pekan lalu.'
+      : d > 0
+        ? 'Suasana hatimu cenderung lebih cerah dari pekan lalu. 🌤️'
+        : 'Pekan ini terasa lebih berat dari sebelumnya. Tak apa, kamu sedang berusaha. 🤍';
+  }
+  const dCount = thisWeek.length - (lastWeek.length || 0);
+  const countTxt = a0 == null ? `${thisWeek.length} catatan pekan ini` : `${thisWeek.length} catatan pekan ini (${dCount >= 0 ? '+' : ''}${dCount} vs pekan lalu)`;
+  el.innerHTML = `<span class="jcompare-icon">📈</span><span>${mood} <b>${countTxt}</b></span>`;
 }
 
 function renderMonthTrend(byDay) {
@@ -243,8 +273,9 @@ function openDayDetail(k) {
   requestAnimationFrame(() => overlay.classList.add('show'));
   const close = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 250); };
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-  overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  trapFocus(overlay, overlay.querySelector('.sheet'), { onEscape: close });
   overlay.querySelector('#jDayClose').addEventListener('click', close);
+  overlay.querySelector('#jDayClose').focus();
 
   const list = overlay.querySelector('#jDayList');
   const draw = (items) => {
@@ -273,6 +304,26 @@ function openDayDetail(k) {
 async function loadCachedInsight() {
   const cache = await Meta.get('insightCache', null);
   if (cache?.data) renderInsight(cache.data, cache.generatedDay);
+  await renderInsightHistory();
+}
+
+// Riwayat refleksi mingguan (klik untuk menampilkan kembali).
+async function renderInsightHistory() {
+  const hist = (await Meta.get('insightHistory', [])) || [];
+  const el = $('jInsightHistory');
+  if (hist.length < 2) { el.innerHTML = ''; return; }
+  const items = hist.slice(-12).reverse();
+  el.innerHTML =
+    '<h3 class="jsub">Riwayat refleksi</h3><div class="jhist-list">' +
+    items.map((h, i) => `<button class="jhist-item" data-i="${i}">${escapeHtml(h.data.judul)}<small>${escapeHtml(h.day)}</small></button>`).join('') +
+    '</div>';
+  el.querySelectorAll('.jhist-item').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const h = items[Number(btn.dataset.i)];
+      renderInsight(h.data, h.day);
+      $('jInsight').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
 }
 
 function renderInsight(data, day) {
@@ -312,7 +363,8 @@ function renderInsight(data, day) {
     ], (sp) => { ttsBtn.classList.toggle('active', sp); ttsBtn.innerHTML = sp ? '⏹ Stop' : '🔊 Dengar'; });
   });
 
-  $('iShare').addEventListener('click', () => shareCard({ arabic: data.doa_arabic, translation: data.insight, source: data.judul }, toast));
+  // Bagikan: pakai doa (ringkas) agar muat di kartu — insight panjang dipakai untuk Salin/Dengar.
+  $('iShare').addEventListener('click', () => shareCard({ arabic: data.doa_arabic, translation: data.doa_translation, source: data.judul }, toast));
 
   $('iCopy').addEventListener('click', async () => {
     const txt = `${data.judul}\n\n${data.insight}\n\n🌱 ${data.saran}\n\n${data.doa_arabic}\n${data.doa_translation}\n\nvia HariBaik`;
@@ -360,6 +412,10 @@ async function generateInsight(force = false) {
     });
     renderInsight(data, dayKey(Date.now()));
     await Meta.set('insightCache', { generatedDay: dayKey(Date.now()), data });
+    const hist = (await Meta.get('insightHistory', [])) || [];
+    hist.push({ day: dayKey(Date.now()), data });
+    await Meta.set('insightHistory', hist.slice(-12));
+    await renderInsightHistory();
   } catch (err) {
     const msg = !navigator.onLine || err?.status === 0
       ? 'Kamu sedang offline. Coba lagi nanti.'

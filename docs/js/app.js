@@ -1,6 +1,6 @@
 // app.js — bootstrap & orkestrasi HariBaik V4.
 
-import { MOODS } from './config.js';
+import { MOODS, MOOD_META } from './config.js';
 import { postChat } from './api.js';
 import { Messages, Meta, Journal, nextRequestCount } from './db.js';
 import { buildTemporal, gregorianDate, touchStreak } from './context.js';
@@ -60,7 +60,7 @@ function buildMoodSelector() {
   MOODS.forEach((mood) => {
     const b = document.createElement('button');
     b.className = 'mood-pill';
-    b.textContent = mood;
+    b.textContent = `${MOOD_META[mood]?.emoji || ''} ${mood}`.trim();
     b.addEventListener('click', () => {
       const wasSelected = b.classList.contains('selected');
       wrap.querySelectorAll('.mood-pill').forEach((p) => p.classList.remove('selected'));
@@ -77,15 +77,13 @@ function buildMoodSelector() {
 }
 
 // ---------- Recent moods (untuk personalisasi) ----------
+// Sumber tunggal: store Jurnal (mood dari chat & jurnal sudah tergabung di sana).
 async function recentMoods() {
-  const list = (await Meta.get('moodLog', [])) || [];
-  return list.slice(-7).map((m) => m.mood);
-}
-async function logMood(mood) {
-  if (!mood) return;
-  const list = (await Meta.get('moodLog', [])) || [];
-  list.push({ mood, ts: Date.now() });
-  await Meta.set('moodLog', list.slice(-30));
+  const entries = (await Journal.all()) || [];
+  return entries
+    .sort((a, b) => a.ts - b.ts)
+    .slice(-7)
+    .map((e) => e.mood);
 }
 
 // ---------- Loading state ----------
@@ -113,9 +111,8 @@ async function send(text) {
   // simpan turn user
   state.history.push({ role: 'user', content: displayText });
   await Messages.add({ role: 'user', content: displayText, mood });
-  await logMood(mood);
-  // Satukan dengan Jurnal: mood yang dipilih di Chat ikut tercatat di jurnal.
-  if (mood) await Journal.add({ mood, note: (message || '').slice(0, 300), source: 'chat' });
+  // Satukan dengan Jurnal: mood dari Chat ikut tercatat (tanpa menyimpan isi pesan demi privasi).
+  if (mood) await Journal.add({ mood, source: 'chat' });
 
   // reset mood setelah dipakai
   state.selectedMood = null;

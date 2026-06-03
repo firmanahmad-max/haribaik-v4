@@ -4,6 +4,20 @@ export function ttsSupported() {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
+// Cache daftar voice (getVoices bisa kosong sampai event voiceschanged).
+let _voices = [];
+function loadVoices() { _voices = window.speechSynthesis?.getVoices?.() || []; }
+if (ttsSupported()) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+function voiceFor(langPrefix) {
+  return _voices.find((v) => (v.lang || '').toLowerCase().startsWith(langPrefix));
+}
+export function arabicVoiceAvailable() {
+  return !!voiceFor('ar');
+}
+
 export function stopSpeak() {
   if (ttsSupported()) window.speechSynthesis.cancel();
 }
@@ -30,7 +44,9 @@ export function speak(parts, onState) {
     const p = queue[i++];
     const u = new SpeechSynthesisUtterance(p.text);
     u.lang = p.lang || 'id-ID';
-    u.rate = 0.96;
+    const v = voiceFor((u.lang || '').slice(0, 2).toLowerCase());
+    if (v) u.voice = v;
+    u.rate = (u.lang || '').toLowerCase().startsWith('ar') ? 0.8 : 0.96;
     u.onend = next;
     u.onerror = () => onState?.(false);
     synth.speak(u);

@@ -102,6 +102,7 @@ export const Meta = {
     return v ? v.value : fallback;
   },
   set: (key, value) => tx('meta', 'readwrite', (s) => s.put({ key, value })),
+  all: () => tx('meta', 'readonly', (s) => reqValue(s.getAll())),
 };
 
 // Hapus seluruh data pengguna (riwayat, favorit, pengaturan).

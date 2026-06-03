@@ -1,7 +1,8 @@
 // settings.js — bottom-sheet pengaturan + onboarding pertama kali.
 // Menggantikan window.prompt untuk waktu pengingat, dan menampung nama/goal pengguna.
 
-import { Meta, Messages, resetAll } from './db.js';
+import { Meta, Messages, Favorites, Journal, resetAll } from './db.js';
+import { trapFocus } from './a11y.js';
 
 let onSaveCb = null;
 
@@ -72,6 +73,12 @@ export async function openSettings({ welcome = false } = {}) {
 
       <button class="ghost-btn" id="setNewChat" type="button">🧹 Mulai percakapan baru</button>
 
+      <div class="fav-toolbar">
+        <button class="mini-btn" id="setBackup" type="button">⬇️ Backup semua data</button>
+        <button class="mini-btn" id="setRestore" type="button">⬆️ Restore</button>
+        <input type="file" id="setBackupFile" accept="application/json" hidden />
+      </div>
+
       <div class="sheet-actions">
         <button class="mini-btn danger" id="setReset">🗑️ Reset data</button>
         <span class="spacer"></span>
@@ -96,26 +103,7 @@ export async function openSettings({ welcome = false } = {}) {
   overlay.querySelector('#setClose')?.addEventListener('click', close);
 
   // Aksesibilitas: Escape menutup (kecuali onboarding), Tab terkurung di dalam sheet.
-  const sheet = overlay.querySelector('.sheet');
-  overlay.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !welcome) {
-      e.preventDefault();
-      close();
-      return;
-    }
-    if (e.key !== 'Tab') return;
-    const f = sheet.querySelectorAll('input, select, button, a[href], [tabindex]:not([tabindex="-1"])');
-    if (!f.length) return;
-    const first = f[0];
-    const last = f[f.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  });
+  trapFocus(overlay, overlay.querySelector('.sheet'), { onEscape: welcome ? undefined : close });
 
   overlay.querySelector('#setSave').addEventListener('click', async () => {
     const nama = overlay.querySelector('#setNama').value.trim();
@@ -142,6 +130,55 @@ export async function openSettings({ welcome = false } = {}) {
     if (!confirm('Mulai percakapan baru? Riwayat chat akan dikosongkan. Favorit & profil tetap aman.')) return;
     await Messages.clear();
     location.reload();
+  });
+
+  // Backup menyeluruh: favorit + jurnal + meta (profil/pengaturan).
+  overlay.querySelector('#setBackup').addEventListener('click', async () => {
+    const [favorites, journal, meta] = await Promise.all([Favorites.all(), Journal.all(), Meta.all()]);
+    const data = { app: 'HariBaik', version: 1, exportedAt: Date.now(), favorites, journal, meta };
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    a.download = 'haribaik-backup.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  const bfile = overlay.querySelector('#setBackupFile');
+  overlay.querySelector('#setRestore').addEventListener('click', () => bfile.click());
+  bfile.addEventListener('change', async () => {
+    const f = bfile.files?.[0];
+    if (!f) return;
+    try {
+      const data = JSON.parse(await f.text());
+      if (!data || data.app !== 'HariBaik') throw new Error('format');
+      if (!confirm('Pulihkan data dari backup? Data ini akan digabung dengan data saat ini.')) {
+        bfile.value = '';
+        return;
+      }
+      const existFav = await Favorites.all();
+      const seenF = new Set(existFav.map((e) => `${e.source}|${e.translation}`));
+      for (const it of data.favorites || []) {
+        if (it?.translation && it?.source && !seenF.has(`${it.source}|${it.translation}`)) {
+          await Favorites.add({ arabic: it.arabic, translation: it.translation, source: it.source, source_type: (it.source_type || '').toLowerCase() });
+          seenF.add(`${it.source}|${it.translation}`);
+        }
+      }
+      const existJ = await Journal.all();
+      const seenJ = new Set(existJ.map((e) => `${e.ts}|${e.mood}`));
+      for (const it of data.journal || []) {
+        if (it?.mood && it?.ts && !seenJ.has(`${it.ts}|${it.mood}`)) {
+          await Journal.add({ mood: it.mood, note: it.note || '', ts: Number(it.ts) });
+          seenJ.add(`${it.ts}|${it.mood}`);
+        }
+      }
+      for (const m of data.meta || []) if (m?.key) await Meta.set(m.key, m.value);
+      alert('Data berhasil dipulihkan.');
+      location.reload();
+    } catch {
+      alert('File backup tidak valid.');
+    } finally {
+      bfile.value = '';
+    }
   });
 
   overlay.querySelector('#setReset').addEventListener('click', async () => {

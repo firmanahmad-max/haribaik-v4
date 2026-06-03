@@ -388,6 +388,16 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 
 .jempty { font-size: 13px; color: var(--text-muted); padding: 8px 2px; text-align: center; }
 
+.jcompare { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-primary); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 9px 12px; line-height: 1.4; }
+.jcompare:empty { display: none; }
+.jcompare-icon { font-size: 16px; flex-shrink: 0; }
+
+.jhistory { margin-top: 12px; }
+.jhist-list { display: flex; flex-direction: column; gap: 6px; }
+.jhist-item { width: 100%; text-align: left; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); border-radius: 10px; padding: 9px 12px; font: inherit; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.jhist-item small { color: var(--text-muted); font-size: 11px; flex-shrink: 0; }
+.jhist-item:hover { border-color: var(--accent-teal); }
+
 .jinsight-empty { font-size: 13px; color: var(--text-muted); }
 .jinsight h3 { font-size: 15px; color: var(--accent-gold); margin-bottom: 6px; }
 .jinsight p { font-size: 14px; line-height: 1.55; margin-bottom: 8px; }

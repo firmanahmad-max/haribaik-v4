@@ -2,7 +2,7 @@
 
 import { Favorites, Reports } from './db.js';
 import { shareCard } from './share.js';
-import { speak, stopSpeak, ttsSupported } from './tts.js';
+import { speak, stopSpeak, ttsSupported, arabicVoiceAvailable } from './tts.js';
 import { QUICK_REPLIES, badgeFor } from './config.js';
 
 const chatEl = () => document.getElementById('chat');
@@ -170,12 +170,22 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
         ttsBtn.innerHTML = '🔊 Dengar';
         return;
       }
+      // Lantunkan teks Arab bila tersedia voice 'ar', lalu terjemahan + aksi + doa (id).
+      const parts = arabicVoiceAvailable()
+        ? [
+            { text: r.arabic, lang: 'ar-SA' },
+            { text: r.translation, lang: 'id-ID' },
+            { text: r.aksi, lang: 'id-ID' },
+            { text: r.doa_arabic, lang: 'ar-SA' },
+            { text: r.doa_translation, lang: 'id-ID' },
+          ]
+        : [
+            { text: r.translation, lang: 'id-ID' },
+            { text: r.aksi, lang: 'id-ID' },
+            { text: r.doa_translation, lang: 'id-ID' },
+          ];
       const ok = speak(
-        [
-          { text: r.translation, lang: 'id-ID' },
-          { text: r.aksi, lang: 'id-ID' },
-          { text: r.doa_translation, lang: 'id-ID' },
-        ],
+        parts,
         (speaking) => {
           ttsBtn.classList.toggle('active', speaking);
           ttsBtn.innerHTML = speaking ? '⏹ Stop' : '🔊 Dengar';
