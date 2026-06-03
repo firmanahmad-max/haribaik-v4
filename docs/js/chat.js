@@ -44,10 +44,16 @@ const nextDoaLabel = makeRotator([
   '🤲 Doa', '🤲 Doa untukmu', '🤲 Doa hari ini', '🤲 Panjatkan ini', '🤲 Lirih doa', '🤲 Doa kecil',
 ]);
 
+// Avatar pengguna — disesuaikan dengan jenis kelamin lewat setUserAvatar().
+let userAvatar = '🧑';
+export function setUserAvatar(emoji) {
+  if (emoji) userAvatar = emoji;
+}
+
 export function renderUser(text, ts = Date.now()) {
   const wrap = document.createElement('div');
   wrap.className = 'msg user';
-  wrap.innerHTML = `<div class="avatar">🧕</div><div class="col"><div class="bubble">${escapeHtml(text)}</div><time class="msg-time">${fmtTime(ts)}</time></div>`;
+  wrap.innerHTML = `<div class="avatar">${userAvatar}</div><div class="col"><div class="bubble">${escapeHtml(text)}</div><time class="msg-time">${fmtTime(ts)}</time></div>`;
   chatEl().appendChild(wrap);
   scrollDown();
 }

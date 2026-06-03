@@ -15,7 +15,9 @@ function escAttr(s) {
 }
 
 export async function openSettings({ welcome = false } = {}) {
-  const profile = (await Meta.get('profile', { nama: '', goal: '' })) || { nama: '', goal: '' };
+  const profile = (await Meta.get('profile', {})) || {};
+  const gender = profile.gender || '';
+  const sel = (v) => (gender === v ? ' selected' : '');
   const reminderTime = (await Meta.get('reminderTime', '05:30')) || '05:30';
   const reminderEnabled = !!(await Meta.get('reminderEnabled', false));
 
@@ -33,6 +35,27 @@ export async function openSettings({ welcome = false } = {}) {
 
       <label class="field"><span>Apa yang sedang kamu usahakan? <em>(opsional)</em></span>
         <input id="setGoal" type="text" maxlength="80" placeholder="mis. lebih konsisten ibadah" value="${escAttr(profile.goal)}" />
+      </label>
+
+      <label class="field"><span>Jenis kelamin</span>
+        <select id="setGender">
+          <option value=""${sel('')}>— Pilih —</option>
+          <option value="Perempuan"${sel('Perempuan')}>Perempuan</option>
+          <option value="Laki-laki"${sel('Laki-laki')}>Laki-laki</option>
+        </select>
+      </label>
+
+      <label class="field"><span>Profesi / peran <em>(opsional)</em></span>
+        <input id="setPeran" type="text" maxlength="40" list="peranList" placeholder="mis. pelajar, karyawan, ibu rumah tangga" value="${escAttr(profile.peran)}" />
+        <datalist id="peranList">
+          <option value="Pelajar / Mahasiswa"></option>
+          <option value="Karyawan"></option>
+          <option value="Wiraswasta"></option>
+          <option value="Ibu rumah tangga"></option>
+          <option value="Guru"></option>
+          <option value="PNS / ASN"></option>
+          <option value="Tenaga kesehatan"></option>
+        </datalist>
       </label>
 
       <div class="field">
@@ -69,10 +92,13 @@ export async function openSettings({ welcome = false } = {}) {
   overlay.querySelector('#setSave').addEventListener('click', async () => {
     const nama = overlay.querySelector('#setNama').value.trim();
     const goal = overlay.querySelector('#setGoal').value.trim();
+    const genderVal = overlay.querySelector('#setGender').value;
+    const peran = overlay.querySelector('#setPeran').value.trim();
     const on = overlay.querySelector('#setReminderOn').checked;
     const time = overlay.querySelector('#setReminderTime').value || '05:30';
 
-    await Meta.set('profile', { nama, goal });
+    const profileOut = { nama, goal, gender: genderVal, peran };
+    await Meta.set('profile', profileOut);
     await Meta.set('reminderTime', time);
     await Meta.set('reminderEnabled', on);
 
@@ -80,7 +106,7 @@ export async function openSettings({ welcome = false } = {}) {
       try { await Notification.requestPermission(); } catch { /* abaikan */ }
     }
     close();
-    onSaveCb?.({ nama, goal });
+    onSaveCb?.(profileOut);
   });
 
   overlay.querySelector('#setReset').addEventListener('click', async () => {

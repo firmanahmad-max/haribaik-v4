@@ -24,6 +24,8 @@ const RESPONSE_SHAPE = `{
 export function buildSystemPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [] }) {
   const nama = (profile.nama || '').trim() || 'Sahabat';
   const goalLine = profile.goal ? `Tujuan/harapan user saat ini: ${profile.goal}.` : '';
+  const genderLine = profile.gender ? `Jenis kelamin pengguna: ${profile.gender}.` : '';
+  const peranLine = profile.peran ? `Profesi/peran pengguna: ${profile.peran}.` : '';
   const waktuLine = temporal.waktu ? `Sekarang waktu ${temporal.waktu}.` : '';
   const hariLine = temporal.hari ? `Hari ${temporal.hari}.` : '';
   const hijriLine = temporal.hijri ? `Tanggal Hijriyah: ${temporal.hijri}.` : '';
@@ -36,9 +38,10 @@ export function buildSystemPrompt({ profile = {}, temporal = {}, sourceInstructi
 Konten yang dihasilkan ditujukan untuk pengguna bernama ${nama}, dan harus ditulis dengan nada seorang sahabat Muslim yang hangat dan empatik (di dalam field JSON, bukan sebagai balasan langsung).
 
 Masukan dari pengguna (mood/keluhan) diberikan di bawah penanda "=== PESAN USER ===". Gunakan itu sebagai konteks untuk menyusun konten.
-${goalLine}
+${[goalLine, genderLine, peranLine].filter(Boolean).join('\n')}
 Konteks waktu: ${[waktuLine, hariLine, hijriLine].filter(Boolean).join(' ')}
 ${moodLine}
+Sesuaikan nada empati dan saran aksi agar relevan dengan jenis kelamin dan peran pengguna bila informasi itu tersedia (mis. saran untuk pelajar berbeda dari ibu rumah tangga atau karyawan).
 
 SUMBER RUJUKAN KALI INI: ${sourceInstruction}
 

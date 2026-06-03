@@ -8,7 +8,14 @@ import { initTheme } from './theme.js';
 import { initVoice } from './voice.js';
 import { initNotify } from './notify.js';
 import { initSettings, openSettings, maybeOnboard } from './settings.js';
-import { renderUser, renderAI, renderError, showTyping, hideTyping } from './chat.js';
+import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar } from './chat.js';
+
+// Avatar pengguna berdasarkan jenis kelamin.
+function avatarFor(gender) {
+  if (gender === 'Perempuan') return '🧕';
+  if (gender === 'Laki-laki') return '🧔';
+  return '🧑';
+}
 
 const $ = (id) => document.getElementById(id);
 
@@ -213,12 +220,14 @@ async function init() {
   initVoice($('voiceBtn'), $('input'), toast);
   initSettings((profile) => {
     state.profile = profile;
+    setUserAvatar(avatarFor(profile.gender));
     toast('Pengaturan tersimpan');
   });
   await refreshContextBar();
 
   // muat profil tersimpan
   state.profile = (await Meta.get('profile', { nama: '', goal: '' })) || { nama: '', goal: '' };
+  setUserAvatar(avatarFor(state.profile.gender));
 
   const restored = await restoreConversation();
   if (!restored) greeting();
