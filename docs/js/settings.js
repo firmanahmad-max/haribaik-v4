@@ -37,6 +37,10 @@ export async function openSettings({ welcome = false } = {}) {
         <input id="setGoal" type="text" maxlength="80" placeholder="mis. lebih konsisten ibadah" value="${escAttr(profile.goal)}" />
       </label>
 
+      <label class="field"><span>Usia <em>(opsional)</em></span>
+        <input id="setUsia" type="number" min="5" max="120" inputmode="numeric" placeholder="mis. 21" value="${escAttr(profile.usia)}" />
+      </label>
+
       <label class="field"><span>Jenis kelamin</span>
         <select id="setGender">
           <option value=""${sel('')}>— Pilih —</option>
@@ -93,11 +97,12 @@ export async function openSettings({ welcome = false } = {}) {
     const nama = overlay.querySelector('#setNama').value.trim();
     const goal = overlay.querySelector('#setGoal').value.trim();
     const genderVal = overlay.querySelector('#setGender').value;
+    const usia = overlay.querySelector('#setUsia').value.trim();
     const peran = overlay.querySelector('#setPeran').value.trim();
     const on = overlay.querySelector('#setReminderOn').checked;
     const time = overlay.querySelector('#setReminderTime').value || '05:30';
 
-    const profileOut = { nama, goal, gender: genderVal, peran };
+    const profileOut = { nama, goal, gender: genderVal, usia, peran };
     await Meta.set('profile', profileOut);
     await Meta.set('reminderTime', time);
     await Meta.set('reminderEnabled', on);
