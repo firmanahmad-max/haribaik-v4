@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#081410"/>
+      <stop offset="0.45" stop-color="#0c1a13"/>
+      <stop offset="1" stop-color="#11271b"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.34" r="0.5">
+      <stop offset="0" stop-color="#c4af78" stop-opacity="0.18"/>
+      <stop offset="0.6" stop-color="#2d9b6e" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#2d9b6e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9d9a7"/>
+      <stop offset="1" stop-color="#c4af78"/>
+    </linearGradient>
+    <g id="spark">
+      <path d="M0,-16 L3,-3 L16,0 L3,3 L0,16 L-3,3 L-16,0 L-3,-3 Z" fill="#e9d9a7"/>
+    </g>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#sky)"/>
+  <rect width="1080" height="1920" fill="url(#halo)"/>
+
+  <!-- ornamen geometris samar di sudut -->
+  <g fill="none" stroke="#c4af78" stroke-opacity="0.10" stroke-width="2">
+    <circle cx="120" cy="180" r="70"/>
+    <circle cx="120" cy="180" r="48"/>
+    <path d="M120,96 L184,180 L120,264 L56,180 Z"/>
+    <circle cx="960" cy="240" r="58"/>
+    <path d="M960,168 L1032,240 L960,312 L888,240 Z"/>
+  </g>
+
+  <!-- bintang-bintang -->
+  <g fill="#eef3ee">
+    <circle cx="180" cy="430" r="3" opacity="0.7"/>
+    <circle cx="300" cy="320" r="2" opacity="0.5"/>
+    <circle cx="420" cy="500" r="2.5" opacity="0.6"/>
+    <circle cx="560" cy="250" r="2" opacity="0.5"/>
+    <circle cx="690" cy="430" r="3" opacity="0.7"/>
+    <circle cx="820" cy="360" r="2.5" opacity="0.6"/>
+    <circle cx="900" cy="520" r="2" opacity="0.5"/>
+    <circle cx="240" cy="640" r="2" opacity="0.45"/>
+    <circle cx="500" cy="700" r="2.5" opacity="0.55"/>
+    <circle cx="780" cy="680" r="2" opacity="0.5"/>
+    <circle cx="380" cy="180" r="2" opacity="0.4"/>
+    <circle cx="640" cy="600" r="2" opacity="0.5"/>
+  </g>
+  <g fill="#c4af78">
+    <circle cx="150" cy="540" r="2" opacity="0.7"/>
+    <circle cx="930" cy="430" r="2.5" opacity="0.75"/>
+    <circle cx="610" cy="360" r="2" opacity="0.6"/>
+  </g>
+  <use href="#spark" x="250" y="270" transform="scale(0.8)" opacity="0.8"/>
+  <use href="#spark" x="860" y="600" transform="scale(0.7)" opacity="0.7"/>
+
+  <!-- siluet masjid -->
+  <g fill="#06100a">
+    <!-- menara kiri -->
+    <rect x="206" y="1320" width="30" height="340"/>
+    <path d="M206,1320 C206,1290 221,1276 221,1276 C221,1276 236,1290 236,1320 Z"/>
+    <rect x="219" y="1250" width="4" height="30"/>
+    <!-- menara kanan -->
+    <rect x="844" y="1320" width="30" height="340"/>
+    <path d="M844,1320 C844,1290 859,1276 859,1276 C859,1276 874,1290 874,1320 Z"/>
+    <rect x="857" y="1250" width="4" height="30"/>
+    <!-- bangunan utama -->
+    <rect x="300" y="1500" width="480" height="160"/>
+    <!-- kubah samping -->
+    <path d="M320,1500 C320,1456 336,1436 360,1429 C384,1436 400,1456 400,1500 Z"/>
+    <path d="M680,1500 C680,1456 696,1436 720,1429 C744,1436 760,1456 760,1500 Z"/>
+    <!-- kubah utama (bawang) -->
+    <path d="M458,1500 C452,1408 490,1346 540,1316 C590,1346 628,1408 622,1500 Z"/>
+    <rect x="537" y="1280" width="6" height="40"/>
+  </g>
+
+  <!-- bulan sabit kecil di puncak kubah -->
+  <g transform="translate(540,1262)" fill="url(#gold)">
+    <path d="M0,-16 a16,16 0 1 0 6,30 a13,13 0 1 1 -6,-30 Z"/>
+  </g>
+
+  <!-- lengkung pintu emas (elegan) -->
+  <path d="M508,1660 L508,1576 C508,1558 522,1546 540,1546 C558,1546 572,1558 572,1576 L572,1660 Z"
+        fill="none" stroke="#c4af78" stroke-opacity="0.5" stroke-width="3"/>
+
+  <!-- garis horizon emas tipis -->
+  <rect x="0" y="1660" width="1080" height="3" fill="#c4af78" opacity="0.25"/>
+</svg>

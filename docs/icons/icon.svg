@@ -4,14 +4,29 @@
       <stop offset="0" stop-color="#0c1a13"/>
       <stop offset="1" stop-color="#16291d"/>
     </linearGradient>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#c4af78"/>
-      <stop offset="1" stop-color="#2d9b6e"/>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9d9a7"/>
+      <stop offset="1" stop-color="#c4af78"/>
     </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.6">
+      <stop offset="0" stop-color="#2d9b6e" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#2d9b6e" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="crescent">
+      <rect width="512" height="512" fill="black"/>
+      <circle cx="235" cy="262" r="150" fill="white"/>
+      <circle cx="300" cy="238" r="128" fill="black"/>
+    </mask>
   </defs>
+
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <!-- crescent -->
-  <path d="M300 116a140 140 0 1 0 0 280 112 112 0 1 1 0-280z" fill="url(#g)"/>
-  <!-- star -->
-  <path d="M372 196l14 40 42 2-33 26 12 41-35-24-35 24 12-41-33-26 42-2z" fill="#c4af78"/>
+  <circle cx="256" cy="240" r="210" fill="url(#glow)"/>
+
+  <!-- bulan sabit -->
+  <circle cx="235" cy="262" r="150" fill="url(#gold)" mask="url(#crescent)"/>
+
+  <!-- bintang lima -->
+  <g transform="translate(348,292) scale(0.92)">
+    <path fill="url(#gold)" d="M0,-50 L11.76,-16.18 L47.55,-15.45 L19.02,6.18 L29.39,40.45 L0,20 L-29.39,40.45 L-19.02,6.18 L-47.55,-15.45 L-11.76,-16.18 Z"/>
+  </g>
 </svg>

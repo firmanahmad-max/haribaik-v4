@@ -244,6 +244,9 @@ async function init() {
 
   await initNotify();
 
+  // Hapus splash dari DOM setelah animasi keluar selesai (~3.3s).
+  setTimeout(() => document.getElementById('splash')?.remove(), 3400);
+
   // Service worker (PWA + notifikasi)
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
