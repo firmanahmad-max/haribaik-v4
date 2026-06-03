@@ -25,7 +25,13 @@ export async function getClient() {
   if (!supabase) {
     const createClient = await ensureLib();
     supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        // Lewati Web Locks (navigator.locks) yang bisa deadlock saat reload → UI blank.
+        lock: async (_name, _acquireTimeout, fn) => fn(),
+      },
     });
   }
   return supabase;
@@ -35,8 +41,17 @@ export async function getClient() {
 export async function getUser() {
   const c = await getClient();
   if (!c) return null;
-  const { data } = await c.auth.getUser();
-  return data?.user || null;
+  // Pakai getSession() (baca dari storage, lokal & cepat) — getUser() memanggil jaringan
+  // dan bisa menggantung saat reload. Tambah timeout agar UI tak pernah blank.
+  try {
+    const res = await Promise.race([
+      c.auth.getSession(),
+      new Promise((resolve) => setTimeout(() => resolve({ data: { session: null } }), 4000)),
+    ]);
+    return res?.data?.session?.user || null;
+  } catch {
+    return null;
+  }
 }
 export async function signInEmail(email) {
   const c = await getClient();
