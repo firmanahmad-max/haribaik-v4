@@ -1,8 +1,11 @@
 // amalan.js — halaman Amalan: tracker ibadah harian, statistik, Istiqomah Challenge,
 // dan Mode Ramadan (Fase 3 + perbaikan).
 
-import { Deeds, Meta, dayKey } from './db.js';
+import { Deeds, Meta, Journal, Favorites, Messages, dayKey } from './db.js';
 import { initTheme, isRamadan, setRamadan } from './theme.js';
+import { postReport } from './api.js';
+import { shareCard } from './share.js';
+import { speak, stopSpeak, ttsSupported } from './tts.js';
 import { hijriMonth, hijriYear } from './context.js';
 import { trapFocus } from './a11y.js';
 import { CITIES, getCurrentCoords, getTimings, PRAYER_ORDER, reverseGeocode } from './pray.js';
@@ -574,6 +577,109 @@ function initQibla() {
   });
 }
 
+// ---------- Laporan Spiritual Mingguan ----------
+function weekKey() {
+  const d = new Date();
+  const onejan = new Date(d.getFullYear(), 0, 1);
+  const wk = Math.ceil(((d - onejan) / 86400000 + onejan.getDay() + 1) / 7);
+  return `${d.getFullYear()}-W${wk}`;
+}
+
+async function buildReportData() {
+  const map = {};
+  state.all.forEach((d) => { map[d.day] = d; });
+  let salatDone = 0, tilawahDays = 0, puasaDays = 0, perfectDays = 0;
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(); dt.setDate(dt.getDate() - i);
+    const d = map[dayKey(dt.getTime())];
+    if (!d) continue;
+    salatDone += salatCount(d);
+    if (d.tilawah) tilawahDays++;
+    if (d.puasa) puasaDays++;
+    if (deedComplete(d, isRamadan())) perfectDays++;
+  }
+  const deeds = {
+    salatStreak: computeStreak((d) => SALAT.every((s) => d.salat?.[s])),
+    salatDone, tilawahStreak: computeStreak((d) => d.tilawah),
+    tilawahDays, perfectDays, puasaDays,
+  };
+  const journal = (await Journal.all()) || [];
+  const moods = journal.filter((e) => Date.now() - e.ts < 7 * 86400000).map((e) => e.mood);
+  const favCount = ((await Favorites.all()) || []).length;
+  const msgs = (await Messages.all()) || [];
+  const topics = msgs
+    .filter((m) => m.role === 'user' && Date.now() - m.ts < 8 * 86400000)
+    .slice(-6).map((m) => String(m.content || '').replace(/^\[[^\]]+\]\s*/, '').slice(0, 120)).filter(Boolean);
+  const profile = (await Meta.get('profile', {})) || {};
+  return { deeds, moods, favCount, topics, profile, lang: getLang() };
+}
+
+function renderReport(data) {
+  const el = $('repArea');
+  el.className = '';
+  el.innerHTML = `
+    <div class="rep">
+      <h3>${escapeHtml(data.judul)}</h3>
+      <p class="rep-sum">${escapeHtml(data.ringkasan)}</p>
+      <div class="rep-sec"><b>${t('rep_mood')}</b><p>${escapeHtml(data.mood)}</p></div>
+      <div class="rep-sec"><b>${t('rep_ibadah')}</b><p>${escapeHtml(data.ibadah)}</p></div>
+      <div class="rep-sec"><b>${t('rep_focus')}</b><p>${escapeHtml(data.fokus)}</p></div>
+      <div class="card doa-card">
+        <div class="label">${t('doa_label')}</div>
+        <div class="arabic">${escapeHtml(data.doa_arabic)}</div>
+        <div class="translation">${escapeHtml(data.doa_translation)}</div>
+      </div>
+      <div class="card-actions">
+        <button class="mini-btn" id="repTts">🔊 ${t('btn_listen')}</button>
+        <button class="mini-btn" id="repShare">📤 ${t('btn_share')}</button>
+        <button class="mini-btn" id="repCopy">📋 ${t('btn_copy')}</button>
+      </div>
+    </div>`;
+
+  const lng = getLang() === 'en' ? 'en-US' : 'id-ID';
+  const ttsBtn = $('repTts');
+  if (!ttsSupported()) ttsBtn.style.display = 'none';
+  else ttsBtn.addEventListener('click', () => {
+    if (ttsBtn.classList.contains('active')) { stopSpeak(); ttsBtn.classList.remove('active'); ttsBtn.innerHTML = `🔊 ${t('btn_listen')}`; return; }
+    speak([
+      { text: data.ringkasan, lang: lng }, { text: data.mood, lang: lng },
+      { text: data.ibadah, lang: lng }, { text: data.fokus, lang: lng }, { text: data.doa_translation, lang: lng },
+    ], (sp) => { ttsBtn.classList.toggle('active', sp); ttsBtn.innerHTML = sp ? '⏹ Stop' : `🔊 ${t('btn_listen')}`; });
+  });
+  $('repShare').addEventListener('click', () => shareCard({ arabic: data.doa_arabic, translation: data.doa_translation, source: data.judul }, toast));
+  $('repCopy').addEventListener('click', async () => {
+    const txt = `${data.judul}\n\n${data.ringkasan}\n\n${data.mood}\n\n${data.ibadah}\n\n🎯 ${data.fokus}\n\n${data.doa_arabic}\n${data.doa_translation}\n\nvia HariBaik`;
+    try { await navigator.clipboard.writeText(txt); toast(t('copied')); } catch { toast(t('copy_fail')); }
+  });
+}
+
+async function loadCachedReport() {
+  const cache = await Meta.get('reportCache', null);
+  if (cache?.data && cache.week === weekKey()) renderReport(cache.data);
+}
+
+async function generateReport() {
+  const payload = await buildReportData();
+  if (!payload.moods.length && !payload.deeds.salatDone && !payload.deeds.tilawahDays) {
+    return toast(t('rep_min'));
+  }
+  const btn = $('repBtn');
+  btn.disabled = true;
+  const prev = btn.textContent;
+  btn.textContent = '⏳…';
+  try {
+    const data = await postReport(payload);
+    renderReport(data);
+    await Meta.set('reportCache', { week: weekKey(), data });
+  } catch (err) {
+    const msg = !navigator.onLine || err?.status === 0 ? t('err_offline') : err?.status === 429 ? t('err_429') : t('rep_fail');
+    toast(msg);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prev;
+  }
+}
+
 // ---------- Refresh ----------
 async function refresh() {
   state.all = (await Deeds.all()) || [];
@@ -600,6 +706,8 @@ async function init() {
   await refresh();
   renderChallenge(await getChallenge());
   await renderChallengeHistory();
+  $('repBtn').addEventListener('click', generateReport);
+  await loadCachedReport();
   await maybeSuggestRamadan();
 }
 

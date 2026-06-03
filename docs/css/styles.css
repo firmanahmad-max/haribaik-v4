@@ -485,6 +485,14 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .ch-actions .primary-btn { flex: 1; }
 .ch-done { margin-top: 10px; color: var(--accent-gold); font-size: 14px; text-align: center; }
 
+/* Laporan Spiritual Mingguan */
+.rep-empty { font-size: 13px; color: var(--text-muted); }
+.rep h3 { font-size: 16px; color: var(--accent-gold); margin-bottom: 6px; }
+.rep-sum { font-size: 14px; line-height: 1.55; margin-bottom: 12px; }
+.rep-sec { margin-bottom: 11px; }
+.rep-sec b { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+.rep-sec p { font-size: 14px; line-height: 1.5; }
+
 /* Ramadan mode */
 .switch { position: relative; display: inline-block; width: 48px; height: 28px; flex-shrink: 0; }
 .switch input { opacity: 0; width: 0; height: 0; }

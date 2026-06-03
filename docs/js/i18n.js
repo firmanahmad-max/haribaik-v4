@@ -121,6 +121,11 @@ const DICT = {
     ch_day_toast: 'Mantap! Satu hari lagi terlewati 🌟', ch_archived: 'Alhamdulillah, challenge diarsipkan! 🎉',
     ch_cf_cancel: 'Batalkan challenge ini? Progresnya akan hilang.',
     ch_history: 'Challenge selesai', ch_days: 'hari', ch_ph: 'mis. Tilawah 1 halaman',
+    // Laporan mingguan
+    rep_title: '📊 Laporan Spiritual Mingguan', rep_make: '✨ Buat laporan',
+    rep_empty: 'Gabungan suasana hati & konsistensi ibadahmu sepekan, dirangkum AI.',
+    rep_mood: '💚 Suasana hati', rep_ibadah: '🕌 Ibadah', rep_focus: '🎯 Fokus pekan depan',
+    rep_min: 'Catat mood atau amalan dulu untuk membuat laporan', rep_fail: 'Gagal membuat laporan. Coba lagi.',
     // Reminder (notify)
     rem_title: 'HariBaik 🌿', rem_body: 'Mulai harimu dengan kebaikan. Yuk, sapa hatimu hari ini.',
   },
@@ -233,6 +238,10 @@ const DICT = {
     ch_day_toast: 'Great! One more day done 🌟', ch_archived: 'Alhamdulillah, challenge archived! 🎉',
     ch_cf_cancel: 'Cancel this challenge? Progress will be lost.',
     ch_history: 'Completed challenges', ch_days: 'days', ch_ph: 'e.g. Read 1 page of Quran',
+    rep_title: '📊 Weekly Spiritual Report', rep_make: '✨ Generate report',
+    rep_empty: 'A weekly summary of your mood & worship consistency, by AI.',
+    rep_mood: '💚 Mood', rep_ibadah: '🕌 Worship', rep_focus: '🎯 Focus for next week',
+    rep_min: 'Log some mood or deeds first to generate a report', rep_fail: 'Failed to generate report. Try again.',
     rem_title: 'HariBaik 🌿', rem_body: 'Start your day with kindness. Take a moment for your heart today.',
   },
 };
