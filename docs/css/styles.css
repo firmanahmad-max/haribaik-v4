@@ -140,7 +140,7 @@ nav.tabs a.active, nav.tabs a:hover { color: var(--text-primary); background: va
 .doa-card .arabic { font-size: 18px; color: var(--text-primary); text-align: right; margin: 4px 0 8px; }
 .doa-card .translation { font-size: 13px; color: var(--text-muted); }
 
-.card-actions { display: flex; gap: 8px; margin-top: 10px; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .mini-btn {
   background: transparent; border: 1px solid var(--border); color: var(--text-muted);
   padding: 5px 10px; border-radius: 9px; font-size: 12px; cursor: pointer; display: inline-flex; gap: 5px; align-items: center;
