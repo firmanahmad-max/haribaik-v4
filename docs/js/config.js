@@ -10,8 +10,8 @@ export const BACKEND_URL = isLocal
 
 // Supabase (Fase 4). Anon key aman ditaruh di frontend — keamanan data dijaga RLS.
 // Isi setelah membuat project Supabase + menjalankan supabase/schema.sql.
-export const SUPABASE_URL = '';
-export const SUPABASE_ANON_KEY = '';
+export const SUPABASE_URL = 'https://syiqxvnsvvzmhcumyzed.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5aXF4dm5zdnZ6bWhjdW15emVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTc2NDQsImV4cCI6MjA5NjA3MzY0NH0.FRKPcZH1OCTCtGgPHSZEl8jiWnsaqTEhoDHNyBUzrS0';
 
 export const MOODS = ['Senang', 'Sedih', 'Cemas', 'Kesal', 'Bersyukur', 'Lelah'];
 

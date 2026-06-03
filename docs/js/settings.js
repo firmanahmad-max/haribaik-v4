@@ -4,6 +4,7 @@
 import { Meta, Messages, Favorites, Journal, Deeds, resetAll } from './db.js';
 import { trapFocus } from './a11y.js';
 import { t, getLang, setLang } from './i18n.js';
+import { cloudEnabled, getUser, signInEmail, signInAnon, signOut, syncNow } from './cloud.js';
 
 let onSaveCb = null;
 
@@ -30,6 +31,19 @@ export async function openSettings({ welcome = false } = {}) {
       <div class="sheet-handle"></div>
       <h2 class="sheet-title">${welcome ? t('welcome_title') : t('set_title')}</h2>
       ${welcome ? `<p class="sheet-sub">${t('welcome_sub')}</p>` : ''}
+
+      ${cloudEnabled() ? `
+      <div class="cloud-box">
+        <b>${t('cloud_account')}</b>
+        <div class="cloud-status" id="cloudStatus">${t('cloud_checking')}</div>
+        <div id="cloudOut" hidden>
+          <input id="cloudEmail" class="ch-input" type="email" placeholder="${t('cloud_email_ph')}" style="margin:8px 0" />
+          <div class="fav-toolbar"><button class="mini-btn" id="cloudSignin" type="button">${t('cloud_signin')}</button><button class="mini-btn" id="cloudAnon" type="button">${t('cloud_anon')}</button></div>
+        </div>
+        <div id="cloudIn" hidden>
+          <div class="fav-toolbar"><button class="mini-btn" id="cloudSync" type="button">${t('cloud_sync')}</button><button class="mini-btn danger" id="cloudSignout" type="button">${t('cloud_signout')}</button></div>
+        </div>
+      </div>` : ''}
 
       <label class="field"><span>${t('f_name')}</span>
         <input id="setNama" type="text" maxlength="30" placeholder="${t('ph_name')}" value="${escAttr(profile.nama)}" />
@@ -112,6 +126,44 @@ export async function openSettings({ welcome = false } = {}) {
 
   // Aksesibilitas: Escape menutup (kecuali onboarding), Tab terkurung di dalam sheet.
   trapFocus(overlay, overlay.querySelector('.sheet'), { onEscape: welcome ? undefined : close });
+
+  // ---- Akun & Sinkron Cloud ----
+  if (cloudEnabled()) {
+    const renderCloud = async () => {
+      const u = await getUser();
+      overlay.querySelector('#cloudOut').hidden = !!u;
+      overlay.querySelector('#cloudIn').hidden = !u;
+      overlay.querySelector('#cloudStatus').textContent = u
+        ? (u.email ? t('cloud_in_as').replace('{x}', u.email) : t('cloud_in_anon'))
+        : t('cloud_signedout');
+    };
+    renderCloud();
+    overlay.querySelector('#cloudSignin')?.addEventListener('click', async () => {
+      const email = overlay.querySelector('#cloudEmail').value.trim();
+      if (!email) return;
+      try { const { error } = await signInEmail(email); if (error) throw error; alert(t('cloud_link_sent')); }
+      catch (e) { alert(`${t('cloud_err')}: ${e.message}`); }
+    });
+    overlay.querySelector('#cloudAnon')?.addEventListener('click', async () => {
+      try {
+        const { error } = await signInAnon();
+        if (error) throw error;
+        const u = await getUser();
+        if (u) await syncNow(u);
+        await renderCloud();
+        location.reload();
+      } catch { alert(t('cloud_anon_off')); }
+    });
+    overlay.querySelector('#cloudSync')?.addEventListener('click', async (e) => {
+      const u = await getUser();
+      if (!u) return;
+      const btn = e.target; btn.disabled = true; const prev = btn.textContent; btn.textContent = '⏳…';
+      try { await syncNow(u); alert(t('cloud_synced')); location.reload(); }
+      catch (err) { alert(`${t('cloud_err')}: ${err.message}`); }
+      finally { btn.disabled = false; btn.textContent = prev; }
+    });
+    overlay.querySelector('#cloudSignout')?.addEventListener('click', async () => { await signOut(); await renderCloud(); });
+  }
 
   overlay.querySelector('#setSave').addEventListener('click', async () => {
     const nama = overlay.querySelector('#setNama').value.trim();

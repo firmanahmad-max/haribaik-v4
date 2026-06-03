@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark" data-ramadan="off">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Dinding Doa — HariBaik</title>
+  <meta name="theme-color" content="#0c1a13" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="header-row">
+        <div class="brand">
+          <div class="logo">H</div>
+          <div>
+            <h1 data-i18n="doa_title">Dinding Doa</h1>
+            <div class="tagline" data-i18n="doa_sub">Titip doa, aamiin-kan doa saudara.</div>
+          </div>
+        </div>
+        <nav class="tabs">
+          <a href="index.html" data-i18n="nav_chat">Chat</a>
+          <a href="journal.html" data-i18n="nav_journal">Jurnal</a>
+          <a href="amalan.html" data-i18n="nav_deeds">Amalan</a>
+          <a href="doa.html" class="active" data-i18n="nav_doa">Doa</a>
+          <a href="favorites.html" data-i18n="nav_favorites">Favorit</a>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-btn" id="settingsBtn" title="Pengaturan" aria-label="Pengaturan">⚙️</button>
+          <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="journal-page" id="doaRoot"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <div id="shareCardMount"></div>
+  <script type="module" src="js/doa.js"></script>
+</body>
+</html>

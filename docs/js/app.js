@@ -10,6 +10,7 @@ import { initNotify } from './notify.js';
 import { initSettings, openSettings, maybeOnboard } from './settings.js';
 import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar } from './chat.js';
 import { t as tr, getLang, applyI18n } from './i18n.js';
+import { cloudEnabled, getUser, onAuth, syncNow } from './cloud.js';
 
 // Avatar pengguna berdasarkan jenis kelamin.
 function avatarFor(gender) {
@@ -289,6 +290,16 @@ async function init() {
   // Service worker (PWA + notifikasi)
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
+  // Cloud sync (jika login) — best-effort; muat ulang saat sign-in baru (mis. dari magic link).
+  if (cloudEnabled()) {
+    let hadUser = false;
+    getUser().then(async (u) => { hadUser = !!u; if (u) { try { await syncNow(u); await refreshContextBar(); } catch { /* abaikan */ } } });
+    onAuth(async (user) => {
+      if (user && !hadUser) { hadUser = true; try { await syncNow(user); } catch { /* abaikan */ } location.reload(); }
+      if (!user) hadUser = false;
+    });
   }
 
   // Onboarding bila belum ada nama (setelah UI siap).
