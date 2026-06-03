@@ -11,6 +11,7 @@ import { trapFocus } from './a11y.js';
 import { CITIES, getCurrentCoords, getTimings, PRAYER_ORDER, reverseGeocode } from './pray.js';
 import { qiblaBearing, requestOrientationPermission, startCompass, compassSupported } from './qibla.js';
 import { t, getLang, applyI18n, presetHabits, weekdaysShort, locale } from './i18n.js';
+import { initCloudSync } from './cloud.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -709,6 +710,11 @@ async function init() {
   $('repBtn').addEventListener('click', generateReport);
   await loadCachedReport();
   await maybeSuggestRamadan();
+  initCloudSync(async () => {
+    await refresh();
+    renderChallenge(await getChallenge());
+    await renderChallengeHistory();
+  });
 }
 
 init();

@@ -3,7 +3,15 @@
 import { applyI18n, t, locale } from './i18n.js';
 import { initTheme } from './theme.js';
 import { initSettings, openSettings } from './settings.js';
-import { cloudEnabled, getUser, onAuth, listDoa, myAamiins, postDoa, aamiin, deleteDoa, subscribeDoa } from './cloud.js';
+import { cloudEnabled, getUser, onAuth, listDoa, myAamiins, postDoa, aamiin, deleteDoa, reportDoa, subscribeDoa } from './cloud.js';
+
+// Filter kata kasar dasar (ID + EN). Bukan sensor sempurna — sekadar friksi awal;
+// pelanggaran serius ditangani tombol Laporkan + ambang auto-sembunyi di server.
+const BADWORDS = ['anjing', 'bangsat', 'kontol', 'memek', 'ngentot', 'bajingan', 'jancok', 'tolol', 'goblok', 'pepek', 'tai', 'fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick'];
+function hasProfanity(text) {
+  const low = ` ${text.toLowerCase().replace(/[^a-z\s]/g, ' ')} `;
+  return BADWORDS.some((w) => low.includes(` ${w} `));
+}
 
 const $ = (id) => document.getElementById(id);
 let me = null;
@@ -34,7 +42,9 @@ function doaCard(d) {
     <div class="doa-meta"><span>🤲 ${escapeHtml(d.display_name || t('anon'))}</span><span>${fmtTime(d.created_at)}</span></div>
     <div class="card-actions">
       <button class="mini-btn js-aamiin${done ? ' active' : ''}"${done ? ' disabled' : ''}>🤍 ${t('doa_aamiin')} · <b class="aamiin-n">${d.aamiin_count || 0}</b></button>
-      ${mine ? `<button class="mini-btn danger js-del">${t('del')}</button>` : ''}
+      ${mine
+        ? `<button class="mini-btn danger js-del">${t('del')}</button>`
+        : `<button class="mini-btn js-report" title="${t('doa_report')}">⚑</button>`}
     </div>
   </section>`;
 }
@@ -55,6 +65,13 @@ function wireCard(card) {
   });
   card.querySelector('.js-del')?.addEventListener('click', async () => {
     try { await deleteDoa(id); card.remove(); toast(t('doa_deleted')); } catch { toast(t('cloud_err')); }
+  });
+  card.querySelector('.js-report')?.addEventListener('click', async (e) => {
+    if (!confirm(t('doa_report_confirm'))) return;
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    try { await reportDoa(id); card.remove(); toast(t('doa_reported')); }
+    catch { btn.disabled = false; toast(t('cloud_err')); }
   });
 }
 
@@ -86,6 +103,7 @@ async function loadFeed() {
 async function sendDoa() {
   const text = $('doaText').value.trim();
   if (!text) return toast(t('doa_min'));
+  if (hasProfanity(text)) return toast(t('doa_profanity'));
   const name = $('doaName').value.trim();
   const btn = $('doaSend');
   btn.disabled = true;
@@ -95,7 +113,8 @@ async function sendDoa() {
     toast(t('doa_sent'));
     prependDoa(row);
   } catch (e) {
-    toast(`${t('cloud_err')}: ${e.message}`);
+    // Trigger rate-limit di server menaikkan pesan 'rate_limit: ...'.
+    toast(/rate_limit/i.test(e.message) ? t('doa_rate') : `${t('cloud_err')}: ${e.message}`);
   } finally {
     btn.disabled = false;
   }
@@ -120,7 +139,17 @@ async function render() {
   $('doaSend').addEventListener('click', sendDoa);
   await loadFeed();
   if (unsub) unsub();
-  unsub = await subscribeDoa((row) => prependDoa(row));
+  unsub = await subscribeDoa(
+    (row) => { if (!row.hidden) prependDoa(row); },
+    (row) => {
+      const feed = $('doaFeed');
+      const card = feed?.querySelector(`[data-id="${row.id}"]`);
+      if (!card) return;
+      if (row.hidden) { card.remove(); return; }
+      const n = card.querySelector('.aamiin-n');
+      if (n) n.textContent = row.aamiin_count || 0;
+    }
+  );
 }
 
 async function init() {

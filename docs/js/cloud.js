@@ -4,6 +4,7 @@
 
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { Journal, Favorites, Deeds, Meta } from './db.js';
+import { t } from './i18n.js';
 
 let supabase = null;
 let createClientFn = null;
@@ -68,6 +69,64 @@ export async function signOut() {
 export async function onAuth(cb) {
   const c = await getClient();
   c?.auth.onAuthStateChange((_e, session) => cb(session?.user || null));
+}
+// Upgrade akun anonim → email (mempertahankan data & user_id yang sama).
+// Mengirim tautan konfirmasi ke email; setelah diklik, akun anonim menjadi permanen.
+export async function linkEmail(email) {
+  const c = await getClient();
+  return c.auth.updateUser({ email }, { emailRedirectTo: location.href.split('#')[0] });
+}
+
+// ---------- Indikator sinkron (chip kecil pojok bawah) ----------
+function syncChip() {
+  let el = document.getElementById('cloudSyncChip');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'cloudSyncChip';
+    el.className = 'sync-chip';
+    el.setAttribute('aria-live', 'polite');
+    document.body.appendChild(el);
+  }
+  return el;
+}
+export function showSyncStatus(state) {
+  const map = {
+    syncing: { txt: t('sync_syncing'), cls: 'sync-chip show' },
+    synced: { txt: t('sync_done'), cls: 'sync-chip show ok' },
+    error: { txt: t('sync_fail'), cls: 'sync-chip show err' },
+  };
+  const s = map[state];
+  if (!s) return;
+  const el = syncChip();
+  el.textContent = s.txt;
+  el.className = s.cls;
+  if (state !== 'syncing') setTimeout(() => { el.className = 'sync-chip'; }, 2600);
+}
+
+// Dipakai SETIAP halaman saat dimuat: sinkron latar + tampilkan indikator,
+// muat ulang otomatis ketika baru sign-in (mis. kembali dari magic link),
+// dan panggil onSynced agar halaman me-render ulang data terbaru.
+export async function initCloudSync(onSynced) {
+  if (!cloudEnabled()) return;
+  let hadUser = false;
+  try {
+    const u = await getUser();
+    hadUser = !!u;
+    if (u) {
+      showSyncStatus('syncing');
+      try { await syncNow(u); showSyncStatus('synced'); await onSynced?.(); }
+      catch { showSyncStatus('error'); }
+    }
+  } catch { /* abaikan */ }
+  onAuth(async (user) => {
+    if (user && !hadUser) {
+      hadUser = true;
+      showSyncStatus('syncing');
+      try { await syncNow(user); } catch { /* abaikan */ }
+      location.reload();
+    }
+    if (!user) hadUser = false;
+  });
 }
 
 // ---------- Sinkron dua arah (gabung lokal ⇄ cloud) ----------
@@ -139,9 +198,20 @@ export async function syncNow(user) {
 // ---------- Dinding Doa ----------
 export async function listDoa(limit = 50) {
   const c = await getClient();
-  const { data, error } = await c.from('doa_requests').select('*').order('created_at', { ascending: false }).limit(limit);
+  // Saring doa tersembunyi (dilaporkan). Bila kolom `hidden` belum ada (migrasi
+  // keamanan belum dijalankan), jatuh ke kueri tanpa filter agar feed tetap jalan.
+  let { data, error } = await c.from('doa_requests').select('*').eq('hidden', false).order('created_at', { ascending: false }).limit(limit);
+  if (error && /hidden/.test(error.message || '')) {
+    ({ data, error } = await c.from('doa_requests').select('*').order('created_at', { ascending: false }).limit(limit));
+  }
   if (error) throw error;
   return data || [];
+}
+// Laporkan doa. Setelah ambang laporan tercapai, doa otomatis disembunyikan (di server).
+export async function reportDoa(doaId, reason) {
+  const c = await getClient();
+  const { error } = await c.rpc('report_doa', { p_doa: doaId, p_reason: (reason || '').slice(0, 200) });
+  if (error) throw error;
 }
 export async function myAamiins() {
   const u = await getUser();
@@ -170,10 +240,11 @@ export async function deleteDoa(id) {
   const { error } = await c.from('doa_requests').delete().eq('id', id);
   if (error) throw error;
 }
-export async function subscribeDoa(onInsert) {
+export async function subscribeDoa(onInsert, onUpdate) {
   const c = await getClient();
   const ch = c.channel('doa-wall')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'doa_requests' }, (p) => onInsert(p.new))
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'doa_requests' }, (p) => onUpdate?.(p.new))
     .subscribe();
   return () => c.removeChannel(ch);
 }

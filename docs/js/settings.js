@@ -4,7 +4,7 @@
 import { Meta, Messages, Favorites, Journal, Deeds, resetAll } from './db.js';
 import { trapFocus } from './a11y.js';
 import { t, getLang, setLang } from './i18n.js';
-import { cloudEnabled, getUser, signInEmail, signInAnon, signOut, syncNow } from './cloud.js';
+import { cloudEnabled, getUser, signInEmail, signInAnon, signOut, syncNow, linkEmail } from './cloud.js';
 
 let onSaveCb = null;
 
@@ -41,6 +41,11 @@ export async function openSettings({ welcome = false } = {}) {
           <div class="fav-toolbar"><button class="mini-btn" id="cloudSignin" type="button">${t('cloud_signin')}</button><button class="mini-btn" id="cloudAnon" type="button">${t('cloud_anon')}</button></div>
         </div>
         <div id="cloudIn" hidden>
+          <div id="cloudUpgrade" hidden>
+            <small class="field-hint">${t('cloud_upgrade_hint')}</small>
+            <input id="cloudUpEmail" class="ch-input" type="email" placeholder="${t('cloud_email_ph')}" style="margin:8px 0" />
+            <button class="mini-btn" id="cloudUpBtn" type="button">${t('cloud_upgrade_btn')}</button>
+          </div>
           <div class="fav-toolbar"><button class="mini-btn" id="cloudSync" type="button">${t('cloud_sync')}</button><button class="mini-btn danger" id="cloudSignout" type="button">${t('cloud_signout')}</button></div>
         </div>
       </div>` : ''}
@@ -131,8 +136,10 @@ export async function openSettings({ welcome = false } = {}) {
   if (cloudEnabled()) {
     const renderCloud = async () => {
       const u = await getUser();
+      const anon = !!(u && u.is_anonymous);
       overlay.querySelector('#cloudOut').hidden = !!u;
       overlay.querySelector('#cloudIn').hidden = !u;
+      overlay.querySelector('#cloudUpgrade').hidden = !anon;
       overlay.querySelector('#cloudStatus').textContent = u
         ? (u.email ? t('cloud_in_as').replace('{x}', u.email) : t('cloud_in_anon'))
         : t('cloud_signedout');
@@ -142,6 +149,13 @@ export async function openSettings({ welcome = false } = {}) {
       const email = overlay.querySelector('#cloudEmail').value.trim();
       if (!email) return;
       try { const { error } = await signInEmail(email); if (error) throw error; alert(t('cloud_link_sent')); }
+      catch (e) { alert(`${t('cloud_err')}: ${e.message}`); }
+    });
+    // Upgrade akun anonim → email (data tetap tersimpan, akun jadi permanen).
+    overlay.querySelector('#cloudUpBtn')?.addEventListener('click', async () => {
+      const email = overlay.querySelector('#cloudUpEmail').value.trim();
+      if (!email) return;
+      try { const { error } = await linkEmail(email); if (error) throw error; alert(t('cloud_link_upgrade')); }
       catch (e) { alert(`${t('cloud_err')}: ${e.message}`); }
     });
     overlay.querySelector('#cloudAnon')?.addEventListener('click', async () => {

@@ -8,6 +8,7 @@ import { shareCard } from './share.js';
 import { speak, stopSpeak, ttsSupported } from './tts.js';
 import { trapFocus } from './a11y.js';
 import { t, getLang, applyI18n, locale, weekdaysShort } from './i18n.js';
+import { initCloudSync } from './cloud.js';
 
 const $ = (id) => document.getElementById(id);
 const colorOf = (m) => MOOD_META[m]?.color || '#8a9a92';
@@ -501,6 +502,7 @@ async function init() {
   initBackup();
   await refresh();
   await loadCachedInsight();
+  initCloudSync(() => refresh());
 }
 
 init();

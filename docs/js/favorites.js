@@ -5,6 +5,7 @@ import { initTheme } from './theme.js';
 import { shareCard } from './share.js';
 import { badgeFor } from './config.js';
 import { t, applyI18n } from './i18n.js';
+import { initCloudSync } from './cloud.js';
 
 const $ = (id) => document.getElementById(id);
 let currentFilter = 'all';
@@ -136,3 +137,4 @@ initTheme($('themeBtn'));
 initFilters();
 initToolbar();
 render();
+initCloudSync(() => render());
