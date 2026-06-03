@@ -207,9 +207,11 @@ function greeting() {
   );
 }
 
-// ---------- Disclaimer keaslian konten (sekali, bisa ditutup) ----------
+// ---------- Disclaimer keaslian konten (sekali per versi, bisa ditutup) ----------
+// Naikkan versi bila teks disclaimer diperbarui agar tampil sekali lagi untuk semua.
+const DISCLAIMER_VERSION = 2;
 async function maybeShowDisclaimer() {
-  if (await Meta.get('disclaimerSeen', false)) return;
+  if (Number(await Meta.get('disclaimerSeen', 0)) >= DISCLAIMER_VERSION) return;
   const bar = document.createElement('div');
   bar.className = 'disclaimer';
   bar.innerHTML =
@@ -217,7 +219,7 @@ async function maybeShowDisclaimer() {
     '<button class="mini-btn js-ok">Mengerti</button>';
   bar.querySelector('.js-ok').addEventListener('click', async () => {
     bar.remove();
-    await Meta.set('disclaimerSeen', true);
+    await Meta.set('disclaimerSeen', DISCLAIMER_VERSION);
   });
   const chat = $('chat');
   chat.insertBefore(bar, chat.firstChild);
