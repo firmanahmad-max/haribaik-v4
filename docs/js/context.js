@@ -49,6 +49,15 @@ export function hijriDate(d = new Date()) {
   }
 }
 
+// Tanggal Masehi (untuk ditampilkan saat chip Hijriyah diketuk).
+export function gregorianDate(d = new Date()) {
+  try {
+    return new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  } catch {
+    return '';
+  }
+}
+
 export function buildTemporal(d = new Date()) {
   const waktu = timeOfDay(d);
   return {

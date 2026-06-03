@@ -1,6 +1,6 @@
 // sw.js — service worker: offline cache app shell + jalur notifikasi.
 
-const CACHE = 'haribaik-v4-5';
+const CACHE = 'haribaik-v4-6';
 const SHELL = [
   'index.html',
   'favorites.html',
@@ -12,16 +12,28 @@ const SHELL = [
   'js/chat.js',
   'js/voice.js',
   'js/theme.js',
+  'js/settings.js',
   'js/favorites.js',
   'js/share.js',
   'js/notify.js',
   'js/app.js',
   'icons/icon.svg',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
   'manifest.json',
 ];
+// Library pihak ketiga (di-cache agar fitur Share tetap jalan offline).
+const THIRD_PARTY = ['https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE).then(async (c) => {
+      await c.addAll(SHELL); // shell wajib
+      // Pihak ketiga: best-effort, jangan gagalkan instalasi bila offline.
+      await Promise.allSettled(THIRD_PARTY.map((u) => c.add(new Request(u, { mode: 'cors' }))));
+      await self.skipWaiting();
+    })
+  );
 });
 
 self.addEventListener('activate', (e) => {

@@ -25,11 +25,21 @@ function escapeHtml(s) {
 async function render() {
   const grid = $('favGrid');
   let items = await Favorites.all();
+  const total = items.length;
   items = items.sort((a, b) => b.ts - a.ts);
   if (currentFilter !== 'all') items = items.filter((i) => i.source_type === currentFilter);
 
+  const tagline = $('favTagline');
+  if (tagline) tagline.textContent = total ? `${total} kutipan tersimpan` : 'Kutipan yang kamu simpan';
+
   if (!items.length) {
-    grid.innerHTML = '<div class="empty-state">Belum ada favorit. Simpan kutipan dari halaman Chat dengan tombol 🔖.</div>';
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-emoji">🔖</div>
+        <h3>${total ? 'Tidak ada di filter ini' : 'Belum ada favorit'}</h3>
+        <p>${total ? 'Coba pilih filter lain di atas.' : 'Simpan kutipan yang menyentuh hatimu dari halaman Chat dengan tombol 🔖 Simpan.'}</p>
+        <a class="chip-btn" href="index.html">← Ke halaman Chat</a>
+      </div>`;
     return;
   }
 

@@ -1,4 +1,5 @@
 // notify.js — pengingat harian via Notification API + Service Worker.
+// Konfigurasi (waktu, aktif/nonaktif) diatur di panel Pengaturan (settings.js).
 //
 // Catatan keterbatasan (MVP): push terjadwal yang andal pada waktu tetap memerlukan
 // push server (Fase 4). Di sini pengingat dipicu saat app dibuka/kembali aktif melewati
@@ -6,32 +7,7 @@
 
 import { Meta } from './db.js';
 
-const DEFAULT_TIME = '05:30'; // setelah Subuh
-
-export async function initNotify(btn, toast) {
-  btn?.addEventListener('click', async () => {
-    if (!('Notification' in window)) {
-      toast?.('Browser tidak mendukung notifikasi');
-      return;
-    }
-    if (Notification.permission === 'granted') {
-      const time = await promptTime();
-      if (time) {
-        await Meta.set('reminderTime', time);
-        toast?.(`Pengingat diatur pukul ${time}`);
-      }
-      return;
-    }
-    const perm = await Notification.requestPermission();
-    if (perm === 'granted') {
-      await Meta.set('reminderTime', DEFAULT_TIME);
-      toast?.(`Pengingat aktif (pukul ${DEFAULT_TIME})`);
-    } else {
-      toast?.('Izin notifikasi ditolak');
-    }
-  });
-
-  // Cek saat app dibuka: jika sudah lewat waktu pengingat & belum tampil hari ini.
+export async function initNotify() {
   await maybeFireReminder();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') maybeFireReminder();
@@ -40,6 +16,7 @@ export async function initNotify(btn, toast) {
 
 async function maybeFireReminder() {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!(await Meta.get('reminderEnabled', false))) return;
 
   const time = await Meta.get('reminderTime', null);
   if (!time) return;
@@ -60,18 +37,12 @@ async function maybeFireReminder() {
 }
 
 function show(title, body) {
-  const opts = { body, icon: 'icons/icon.svg', badge: 'icons/icon.svg', tag: 'haribaik-daily' };
+  const opts = { body, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: 'haribaik-daily' };
   if (navigator.serviceWorker?.ready) {
-    navigator.serviceWorker.ready.then((reg) => reg.showNotification(title, opts)).catch(() => {
-      new Notification(title, opts);
-    });
+    navigator.serviceWorker.ready
+      .then((reg) => reg.showNotification(title, opts))
+      .catch(() => new Notification(title, opts));
   } else {
     new Notification(title, opts);
   }
-}
-
-function promptTime() {
-  const v = prompt('Atur waktu pengingat harian (format HH:MM):', '05:30');
-  if (v && /^\d{2}:\d{2}$/.test(v)) return v;
-  return null;
 }

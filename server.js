@@ -6,6 +6,29 @@ import { handleChat } from './api/chat.js';
 
 const PORT = process.env.PORT || 3000;
 
+// --- Rate limit sederhana per-IP (in-memory, sliding window) ---
+const RL_MAX = Number(process.env.RATE_LIMIT_MAX || 20); // maks request
+const RL_WINDOW = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000); // per jendela (ms)
+const rlHits = new Map(); // ip -> number[] timestamps
+
+function clientIp(req) {
+  const xff = req.headers['x-forwarded-for'];
+  if (typeof xff === 'string' && xff.length) return xff.split(',')[0].trim();
+  return req.socket?.remoteAddress || 'unknown';
+}
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const arr = (rlHits.get(ip) || []).filter((t) => now - t < RL_WINDOW);
+  arr.push(now);
+  rlHits.set(ip, arr);
+  // Prune sesekali agar Map tidak membengkak.
+  if (rlHits.size > 5000) {
+    for (const [k, v] of rlHits) if (!v.some((t) => now - t < RL_WINDOW)) rlHits.delete(k);
+  }
+  return arr.length > RL_MAX;
+}
+
 const ALLOWED_ORIGINS = new Set([
   'https://firmanahmad-max.github.io',
   'http://localhost:3000',
@@ -70,6 +93,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'POST' && url.pathname === '/api/chat') {
+    if (isRateLimited(clientIp(req))) {
+      return sendJson(res, 429, { error: 'Terlalu banyak permintaan. Coba lagi sebentar.' });
+    }
     let body;
     try {
       body = await readBody(req);

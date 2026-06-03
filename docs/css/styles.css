@@ -220,3 +220,65 @@ footer.composer {
 .share-card .s-watermark { text-align: center; color: #c4af78; margin-top: 30px; font-size: 13px; letter-spacing: 1px; font-weight: 700; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* ---------- Timestamps ---------- */
+.col { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.msg.user .col { align-items: flex-end; }
+.msg-time { font-size: 10.5px; color: var(--text-muted); opacity: 0.75; padding: 0 4px; }
+.msg.ai .stack > .msg-time { align-self: flex-start; }
+
+/* ---------- Send button loading ---------- */
+.send-btn.loading { cursor: default; }
+.spinner {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #fff;
+  display: inline-block; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.input-row textarea:disabled { opacity: 0.6; }
+
+/* ---------- Save pop animation ---------- */
+.mini-btn.pop { animation: pop 0.3s ease; }
+@keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.mood-pill.selected { animation: pop 0.25s ease; }
+
+/* ---------- Settings bottom-sheet ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.modal-overlay.show { opacity: 1; }
+.sheet {
+  background: var(--bg-secondary); border: 1px solid var(--border); border-bottom: none;
+  border-radius: 24px 24px 0 0; padding: 10px 20px 26px; width: 100%; max-width: 720px;
+  max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow);
+  transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.modal-overlay.show .sheet { transform: translateY(0); }
+.sheet-handle { width: 42px; height: 4px; border-radius: 2px; background: var(--border); margin: 4px auto 14px; }
+.sheet-title { font-size: 19px; margin-bottom: 4px; }
+.sheet-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-size: 13px; color: var(--text-muted); }
+.field em { font-style: normal; opacity: 0.7; }
+.field input[type='text'], .field input[type='time'] {
+  background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary);
+  border-radius: 12px; padding: 11px 13px; font: inherit; font-size: 14.5px; outline: none;
+}
+.field input:focus { border-color: var(--accent-teal); }
+.row-between { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text-primary); font-size: 14.5px; }
+.row-between input[type='checkbox'] { width: 20px; height: 20px; accent-color: var(--accent-teal); }
+.field-hint { font-size: 11.5px; color: var(--text-muted); }
+.sheet-actions { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.sheet-actions .spacer { flex: 1; }
+.primary-btn {
+  background: var(--accent-teal); color: #fff; border: none; padding: 10px 20px;
+  border-radius: 12px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.primary-btn:hover { filter: brightness(1.05); }
+.mini-btn.danger { border-color: rgba(192, 57, 43, 0.6); color: #e07a6f; }
+
+/* ---------- Empty state (favorites) ---------- */
+.empty-state .empty-emoji { font-size: 44px; margin-bottom: 8px; }
+.empty-state h3 { color: var(--text-primary); margin-bottom: 6px; font-size: 16px; }
+.empty-state p { margin-bottom: 16px; line-height: 1.5; }

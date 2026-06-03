@@ -17,6 +17,15 @@ function escapeHtml(s) {
   );
 }
 
+// Jam:menit untuk timestamp pesan.
+function fmtTime(ts = Date.now()) {
+  try {
+    return new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(new Date(ts));
+  } catch {
+    return '';
+  }
+}
+
 // Label kartu dirotasi bergantian agar tidak membosankan.
 // Tiap rotator mulai dari indeks acak supaya urutannya tidak selalu sama tiap sesi.
 function makeRotator(labels) {
@@ -35,10 +44,10 @@ const nextDoaLabel = makeRotator([
   '🤲 Doa', '🤲 Doa untukmu', '🤲 Doa hari ini', '🤲 Panjatkan ini', '🤲 Lirih doa', '🤲 Doa kecil',
 ]);
 
-export function renderUser(text) {
+export function renderUser(text, ts = Date.now()) {
   const wrap = document.createElement('div');
   wrap.className = 'msg user';
-  wrap.innerHTML = `<div class="avatar">🧕</div><div class="bubble">${escapeHtml(text)}</div>`;
+  wrap.innerHTML = `<div class="avatar">🧕</div><div class="col"><div class="bubble">${escapeHtml(text)}</div><time class="msg-time">${fmtTime(ts)}</time></div>`;
   chatEl().appendChild(wrap);
   scrollDown();
 }
@@ -63,7 +72,7 @@ export function hideTyping() {
  * @param {(reply:string)=>void} onQuickReply
  * @param {(msg:string)=>void} toast
  */
-export function renderAI(r, onQuickReply, toast) {
+export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
   const isQuran = (r.source_type || '').toLowerCase() === 'quran';
   const badgeClass = isQuran ? 'quran' : 'hadits';
   const badgeLabel = isQuran ? 'Al-Quran' : 'Hadits';
@@ -82,6 +91,7 @@ export function renderAI(r, onQuickReply, toast) {
         <div class="source">— ${escapeHtml(r.source)}</div>
         <div class="card-actions">
           <button class="mini-btn js-fav" title="Simpan ke favorit">🔖 Simpan</button>
+          <button class="mini-btn js-copy" title="Salin teks">📋 Salin</button>
           <button class="mini-btn js-share" title="Bagikan">📤 Bagikan</button>
         </div>
       </div>
@@ -97,6 +107,7 @@ export function renderAI(r, onQuickReply, toast) {
         <div class="translation">${escapeHtml(r.doa_translation)}</div>
       </div>
 
+      <time class="msg-time">${fmtTime(ts)}</time>
       <div class="quick-replies"></div>
     </div>`;
 
@@ -110,18 +121,31 @@ export function renderAI(r, onQuickReply, toast) {
     qr.appendChild(b);
   });
 
-  // Favorit
+  // Favorit (+ animasi & haptic)
   const favBtn = wrap.querySelector('.js-fav');
   favBtn.addEventListener('click', async () => {
+    if (favBtn.classList.contains('active')) return;
     await Favorites.add({
       arabic: r.arabic,
       translation: r.translation,
       source: r.source,
       source_type: (r.source_type || '').toLowerCase(),
     });
-    favBtn.classList.add('active');
+    favBtn.classList.add('active', 'pop');
     favBtn.innerHTML = '✓ Tersimpan';
+    if (navigator.vibrate) navigator.vibrate(12);
     toast?.('Disimpan ke favorit');
+  });
+
+  // Salin
+  wrap.querySelector('.js-copy').addEventListener('click', async () => {
+    const txt = `${r.arabic}\n\n"${r.translation}"\n— ${r.source}\n\nvia HariBaik`;
+    try {
+      await navigator.clipboard.writeText(txt);
+      toast?.('Teks disalin');
+    } catch {
+      toast?.('Gagal menyalin');
+    }
   });
 
   // Share
@@ -131,10 +155,25 @@ export function renderAI(r, onQuickReply, toast) {
   scrollDown();
 }
 
-export function renderError(msg) {
+export function renderError(msg, onRetry) {
   const wrap = document.createElement('div');
   wrap.className = 'msg ai';
-  wrap.innerHTML = `<div class="avatar">H</div><div class="bubble">⚠️ ${escapeHtml(msg)}</div>`;
+  wrap.innerHTML = `
+    <div class="avatar">H</div>
+    <div class="stack">
+      <div class="bubble">⚠️ ${escapeHtml(msg)}</div>
+      <div class="quick-replies"></div>
+    </div>`;
+  if (typeof onRetry === 'function') {
+    const b = document.createElement('button');
+    b.className = 'chip-btn';
+    b.textContent = '🔄 Coba lagi';
+    b.addEventListener('click', () => {
+      wrap.remove();
+      onRetry();
+    });
+    wrap.querySelector('.quick-replies').appendChild(b);
+  }
   chatEl().appendChild(wrap);
   scrollDown();
 }

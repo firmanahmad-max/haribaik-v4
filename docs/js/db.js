@@ -73,6 +73,13 @@ export const Meta = {
   set: (key, value) => tx('meta', 'readwrite', (s) => s.put({ key, value })),
 };
 
+// Hapus seluruh data pengguna (riwayat, favorit, pengaturan).
+export async function resetAll() {
+  await Messages.clear();
+  await tx('favorites', 'readwrite', (s) => s.clear());
+  await tx('meta', 'readwrite', (s) => s.clear());
+}
+
 // Helper counter rotasi (persisten).
 export async function nextRequestCount() {
   const current = (await Meta.get('requestCount', 0)) || 0;

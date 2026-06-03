@@ -69,8 +69,12 @@ function parseAiText(text) {
   } catch {
     /* lanjut */
   }
-  const snippet = text.slice(0, 200).replace(/\s+/g, ' ');
-  throw new Error(`Format respons AI tak dikenali. Cuplikan: ${snippet}`);
+  // Cuplikan mentah hanya ditampilkan saat DEBUG agar tidak membocorkan isi prompt di produksi.
+  if (process.env.DEBUG === '1') {
+    const snippet = text.slice(0, 200).replace(/\s+/g, ' ');
+    throw new Error(`Format respons AI tak dikenali. Cuplikan: ${snippet}`);
+  }
+  throw new Error('Format respons AI tak dikenali');
 }
 
 /**
