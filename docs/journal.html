@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Jurnal & Statistik — HariBaik</title>
+  <meta name="theme-color" content="#0c1a13" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="header-row">
+        <div class="brand">
+          <div class="logo">H</div>
+          <div>
+            <h1>Jurnal</h1>
+            <div class="tagline">Pantau perjalanan hatimu</div>
+          </div>
+        </div>
+        <nav class="tabs">
+          <a href="index.html">Chat</a>
+          <a href="journal.html" class="active">Jurnal</a>
+          <a href="favorites.html">Favorit</a>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="journal-page">
+      <!-- Catat mood -->
+      <section class="card jcard">
+        <h2 class="jtitle">Bagaimana perasaanmu?</h2>
+        <div class="mood-selector inline" id="jMoodSelector"></div>
+        <textarea id="jNote" rows="2" placeholder="Tulis catatan singkat (opsional)…" aria-label="Catatan"></textarea>
+        <button class="primary-btn" id="jSave">Simpan ke jurnal</button>
+      </section>
+
+      <!-- Insight AI mingguan -->
+      <section class="card jcard">
+        <div class="jhead">
+          <h2 class="jtitle">Insight mingguan</h2>
+          <button class="mini-btn" id="jInsightBtn">✨ Buat insight</button>
+        </div>
+        <div id="jInsight" class="jinsight-empty">Catat mood beberapa hari, lalu buat refleksi mingguan dari AI di sini.</div>
+      </section>
+
+      <!-- Statistik -->
+      <section class="card jcard">
+        <h2 class="jtitle">Statistik</h2>
+        <div class="jstats-top" id="jStatsTop"></div>
+        <h3 class="jsub">Sebaran mood</h3>
+        <div id="jDist" class="jdist"></div>
+        <h3 class="jsub">7 hari terakhir</h3>
+        <div id="jTrend" class="jtrend"></div>
+      </section>
+
+      <!-- Kalender -->
+      <section class="card jcard">
+        <div class="jhead">
+          <button class="mini-btn" id="jPrev" aria-label="Bulan sebelumnya">‹</button>
+          <h2 class="jtitle" id="jMonthLabel">—</h2>
+          <button class="mini-btn" id="jNext" aria-label="Bulan berikutnya">›</button>
+        </div>
+        <div class="jcal-grid jcal-head" id="jCalHead"></div>
+        <div class="jcal-grid" id="jCalBody"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="js/journal.js"></script>
+</body>
+</html>

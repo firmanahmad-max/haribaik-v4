@@ -2,6 +2,7 @@
 
 import { Favorites, Reports } from './db.js';
 import { shareCard } from './share.js';
+import { speak, stopSpeak, ttsSupported } from './tts.js';
 import { QUICK_REPLIES } from './config.js';
 
 const chatEl = () => document.getElementById('chat');
@@ -99,6 +100,7 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
           <button class="mini-btn js-fav" title="Simpan ke favorit">🔖 Simpan</button>
           <button class="mini-btn js-copy" title="Salin teks">📋 Salin</button>
           <button class="mini-btn js-share" title="Bagikan">📤 Bagikan</button>
+          <button class="mini-btn js-tts" title="Dengarkan">🔊 Dengar</button>
           <button class="mini-btn js-report" title="Laporkan kutipan tidak akurat">🚩 Laporkan</button>
         </div>
       </div>
@@ -157,6 +159,33 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
 
   // Share
   wrap.querySelector('.js-share').addEventListener('click', () => shareCard(r, toast));
+
+  // Dengarkan (TTS)
+  const ttsBtn = wrap.querySelector('.js-tts');
+  if (!ttsSupported()) {
+    ttsBtn.style.display = 'none';
+  } else {
+    ttsBtn.addEventListener('click', () => {
+      if (ttsBtn.classList.contains('active')) {
+        stopSpeak();
+        ttsBtn.classList.remove('active');
+        ttsBtn.innerHTML = '🔊 Dengar';
+        return;
+      }
+      const ok = speak(
+        [
+          { text: r.translation, lang: 'id-ID' },
+          { text: r.aksi, lang: 'id-ID' },
+          { text: r.doa_translation, lang: 'id-ID' },
+        ],
+        (speaking) => {
+          ttsBtn.classList.toggle('active', speaking);
+          ttsBtn.innerHTML = speaking ? '⏹ Stop' : '🔊 Dengar';
+        }
+      );
+      if (!ok) toast?.('Suara tidak didukung di perangkat ini');
+    });
+  }
 
   // Laporkan kutipan tidak akurat
   const reportBtn = wrap.querySelector('.js-report');

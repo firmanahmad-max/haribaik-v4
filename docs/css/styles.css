@@ -327,6 +327,49 @@ footer.composer {
 /* ---------- Favorites toolbar (export/import) ---------- */
 .fav-toolbar { display: flex; gap: 8px; margin-bottom: 6px; }
 
+/* ---------- Jurnal & Statistik (Fase 2) ---------- */
+.journal-page { max-width: 720px; margin: 0 auto; width: 100%; padding: 16px; display: flex; flex-direction: column; gap: 14px; flex: 1; overflow-y: auto; }
+.jcard { display: flex; flex-direction: column; gap: 12px; }
+.jtitle { font-size: 16px; }
+.jsub { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+.jhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mood-selector.inline { padding: 0; }
+#jNote { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); border-radius: 12px; padding: 11px 13px; font: inherit; font-size: 14px; resize: none; outline: none; }
+#jNote:focus { border-color: var(--accent-teal); }
+
+.jstats-top { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.jstat { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 10px 6px; text-align: center; }
+.jstat b { display: block; font-size: 18px; color: var(--accent-gold); }
+.jstat span { font-size: 11px; color: var(--text-muted); }
+
+.jdist { display: flex; flex-direction: column; gap: 7px; }
+.jdist-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.jdist-label { width: 110px; flex-shrink: 0; }
+.jdist-bar { flex: 1; height: 10px; background: var(--bg-elevated); border-radius: 6px; overflow: hidden; }
+.jdist-bar i { display: block; height: 100%; border-radius: 6px; transition: width 0.4s ease; }
+.jdist-n { width: 22px; text-align: right; color: var(--text-muted); }
+
+.jtrend { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.jtrend-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.jtrend-cell i { width: 100%; height: 30px; border-radius: 8px; }
+.jtrend-cell span { font-size: 10.5px; color: var(--text-muted); }
+
+.jcal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.jcal-head { margin-bottom: 4px; }
+.jcal-cell { position: relative; aspect-ratio: 1; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; background: var(--bg-elevated); border: 1px solid transparent; }
+.jcal-cell.empty { background: transparent; }
+.jcal-dow { background: transparent; color: var(--text-muted); font-size: 11px; aspect-ratio: auto; padding: 2px 0; }
+.jcal-cell.today { border-color: var(--accent-gold); }
+.jcal-num { position: absolute; top: 4px; left: 6px; color: var(--text-muted); font-size: 11px; }
+.jcal-dot { width: 12px; height: 12px; border-radius: 50%; }
+.jcal-count { position: absolute; bottom: 3px; right: 5px; font-size: 9px; color: var(--text-muted); font-style: normal; }
+
+.jinsight-empty { font-size: 13px; color: var(--text-muted); }
+.jinsight h3 { font-size: 15px; color: var(--accent-gold); margin-bottom: 6px; }
+.jinsight p { font-size: 14px; line-height: 1.55; margin-bottom: 8px; }
+.jinsight-saran { color: var(--text-primary); }
+.jinsight-day { color: var(--text-muted); font-size: 11px; }
+
 /* ---------- Hormati prefers-reduced-motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

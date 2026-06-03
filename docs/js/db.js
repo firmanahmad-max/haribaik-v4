@@ -2,7 +2,7 @@
 // Tiga object store: 'messages', 'favorites', 'meta'.
 
 const DB_NAME = 'haribaik';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let dbPromise = null;
 
 function open() {
@@ -20,6 +20,11 @@ function open() {
       }
       if (!db.objectStoreNames.contains('meta')) {
         db.createObjectStore('meta', { keyPath: 'key' });
+      }
+      // v2: jurnal mood harian
+      if (!db.objectStoreNames.contains('journal')) {
+        const j = db.createObjectStore('journal', { keyPath: 'id', autoIncrement: true });
+        j.createIndex('day', 'day', { unique: false });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -64,6 +69,20 @@ export const Favorites = {
   all: () => tx('favorites', 'readonly', (s) => reqValue(s.getAll())),
 };
 
+// ---------- journal (mood harian) ----------
+export function dayKey(ts = Date.now()) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+export const Journal = {
+  add: (entry) => {
+    const ts = entry.ts || Date.now();
+    return tx('journal', 'readwrite', (s) => reqValue(s.add({ ...entry, ts, day: dayKey(ts) })));
+  },
+  all: () => tx('journal', 'readonly', (s) => reqValue(s.getAll())),
+  clear: () => tx('journal', 'readwrite', (s) => s.clear()),
+};
+
 // ---------- reports (kutipan yang dilaporkan, disimpan lokal) ----------
 export const Reports = {
   add: async (item) => {
@@ -87,6 +106,7 @@ export const Meta = {
 // Hapus seluruh data pengguna (riwayat, favorit, pengaturan).
 export async function resetAll() {
   await Messages.clear();
+  await Journal.clear();
   await tx('favorites', 'readwrite', (s) => s.clear());
   await tx('meta', 'readwrite', (s) => s.clear());
 }

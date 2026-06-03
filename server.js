@@ -3,6 +3,7 @@
 
 import http from 'node:http';
 import { handleChat } from './api/chat.js';
+import { handleInsight } from './api/insight.js';
 
 const PORT = process.env.PORT || 3000;
 
@@ -104,6 +105,24 @@ const server = http.createServer(async (req, res) => {
     }
     try {
       const { status, body: out } = await handleChat(body);
+      return sendJson(res, status, out);
+    } catch (err) {
+      return sendJson(res, 500, { error: 'Kesalahan server', detail: err.message });
+    }
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/insight') {
+    if (isRateLimited(clientIp(req))) {
+      return sendJson(res, 429, { error: 'Terlalu banyak permintaan. Coba lagi sebentar.' });
+    }
+    let body;
+    try {
+      body = await readBody(req);
+    } catch (err) {
+      return sendJson(res, 400, { error: err.message });
+    }
+    try {
+      const { status, body: out } = await handleInsight(body);
       return sendJson(res, status, out);
     } catch (err) {
       return sendJson(res, 500, { error: 'Kesalahan server', detail: err.message });
