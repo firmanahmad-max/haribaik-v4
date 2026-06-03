@@ -13,6 +13,10 @@ export const BACKEND_URL = isLocal
 export const SUPABASE_URL = 'https://syiqxvnsvvzmhcumyzed.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5aXF4dm5zdnZ6bWhjdW15emVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTc2NDQsImV4cCI6MjA5NjA3MzY0NH0.FRKPcZH1OCTCtGgPHSZEl8jiWnsaqTEhoDHNyBUzrS0';
 
+// VAPID public key untuk Web Push (private key ada di env backend, JANGAN di sini).
+// Hasilkan pasangan baru dengan: node scripts/gen-vapid.mjs
+export const VAPID_PUBLIC_KEY = 'BHjhKOQQKn6jpbBP3nqlKEYRvUcyAvgcfrfTtgHVG0ha9aIjPzRGxh0x4JvEC0g-FDaSr6-MKR7D-uy28_9TIZ0';
+
 export const MOODS = ['Senang', 'Sedih', 'Cemas', 'Kesal', 'Bersyukur', 'Lelah'];
 
 // Metadata mood terpusat (emoji, warna, skor valensi 1-5) — dipakai chat & jurnal.

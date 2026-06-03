@@ -7,9 +7,11 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node scripts/test-parse.mjs && node scripts/test-rotation.mjs",
+    "test": "node scripts/test-parse.mjs && node scripts/test-rotation.mjs && node scripts/test-webpush.mjs",
     "test:parse": "node scripts/test-parse.mjs",
-    "test:rotation": "node scripts/test-rotation.mjs"
+    "test:rotation": "node scripts/test-rotation.mjs",
+    "test:webpush": "node scripts/test-webpush.mjs",
+    "gen-vapid": "node scripts/gen-vapid.mjs"
   },
   "keywords": ["islamic", "motivation", "quran", "hadits", "ai", "pwa", "haribaik"],
   "author": "firmanahmad-max",

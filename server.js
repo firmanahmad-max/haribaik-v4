@@ -5,6 +5,8 @@ import http from 'node:http';
 import { handleChat } from './api/chat.js';
 import { handleInsight } from './api/insight.js';
 import { handleReport } from './api/report.js';
+import { handlePushTest } from './api/push.js';
+import { startScheduler } from './api/scheduler.js';
 
 const PORT = process.env.PORT || 3000;
 
@@ -130,6 +132,24 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  if (req.method === 'POST' && url.pathname === '/api/push/test') {
+    if (isRateLimited(clientIp(req))) {
+      return sendJson(res, 429, { error: 'Terlalu banyak permintaan. Coba lagi sebentar.' });
+    }
+    let body;
+    try {
+      body = await readBody(req);
+    } catch (err) {
+      return sendJson(res, 400, { error: err.message });
+    }
+    try {
+      const { status, body: out } = await handlePushTest(body);
+      return sendJson(res, status, out);
+    } catch (err) {
+      return sendJson(res, 500, { error: 'Kesalahan server', detail: err.message });
+    }
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/report') {
     if (isRateLimited(clientIp(req))) {
       return sendJson(res, 429, { error: 'Terlalu banyak permintaan. Coba lagi sebentar.' });
@@ -154,4 +174,5 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   const mode = process.env.MOCK_AI === '1' || !process.env.SUMOPOD_API_KEY ? 'MOCK' : 'LIVE';
   console.log(`HariBaik API v4.0 listening on :${PORT} [AI mode: ${mode}]`);
+  startScheduler(); // notifikasi latar (adzan + pengingat); no-op bila env belum lengkap
 });

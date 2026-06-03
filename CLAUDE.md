@@ -29,3 +29,12 @@ IndexedDB `haribaik` v1, store: `messages`, `favorites` (index `source_type`), `
 - Ganti `BACKEND_URL` non-lokal di `docs/js/config.js` (masih placeholder V3).
 - Tambah origin GitHub Pages HariBaik ke `ALLOWED_ORIGINS` di `server.js`.
 - Tambah ikon PNG 192/512 ke `manifest.json` untuk installability penuh.
+
+## Notifikasi latar / Web Push (Fase 4 #3)
+- **Murni Node, tanpa npm**: `api/webpush.js` = VAPID (ES256 JWT) + enkripsi payload aes128gcm (RFC 8291/8188) via `node:crypto`. Verifikasi offline: `node scripts/test-webpush.mjs` (round-trip dekripsi + verify JWT).
+- **Kunci VAPID**: `node scripts/gen-vapid.mjs`. Public → `docs/js/config.js#VAPID_PUBLIC_KEY`; private → env `VAPID_PRIVATE_KEY` (server saja).
+- **Scheduler** (`api/scheduler.js`): `setInterval` 30 dtk, baca semua `push_subscriptions` via **SERVICE ROLE KEY** (env `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`), hitung waktu lokal per `tz`, kirim pengingat harian + adzan (jadwal via Aladhan method 20, cache memori). Dedupe via kolom `last_sent` (slot `YYYY-MM-DD:reminder|<Sholat>`). No-op bila env belum lengkap.
+- **Endpoint** `POST /api/push/test` (`api/push.js`): kirim notifikasi uji ke langganan pemanggil (verifikasi end-to-end di perangkat).
+- **Klien** (`docs/js/push.js`): `enablePush/syncPushPrefs/disablePush/sendTestPush`. Langganan butuh sesi Supabase (anon boleh; auto sign-in anon saat enable). Preferensi (tz, lang, reminder, adzan, lat/lng) disimpan di baris `push_subscriptions` (RLS own-row). Dipicu dari Settings (toggle pengingat + tombol Tes) & Amalan (toggle adzan + ganti lokasi).
+- **SW** (`docs/sw.js`): handler `push` (tampilkan notif), `notificationclick` (buka `data.url`), `pushsubscriptionchange` (langganan ulang). Cache → `haribaik-v4-30`.
+- **SQL**: `supabase/migration_push.sql` (tabel `push_subscriptions` + RLS). Catatan deploy: set 4 env di Railway (VAPID public/private/subject + service_role + SUPABASE_URL), commit config public key, jalankan migrasi.

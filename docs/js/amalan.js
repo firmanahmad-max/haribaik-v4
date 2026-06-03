@@ -12,6 +12,7 @@ import { CITIES, getCurrentCoords, getTimings, PRAYER_ORDER, reverseGeocode } fr
 import { qiblaBearing, requestOrientationPermission, startCompass, compassSupported } from './qibla.js';
 import { t, getLang, applyI18n, presetHabits, weekdaysShort, locale } from './i18n.js';
 import { initCloudSync } from './cloud.js';
+import { pushSupported, pushConfigured, enablePush, syncPushPrefs } from './push.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -401,6 +402,7 @@ async function loadPrayer(loc) {
     state.times = times;
     state.loc = loc;
     await Meta.set('prayerLoc', loc);
+    if (pushSupported() && pushConfigured()) { try { await syncPushPrefs(); } catch { /* */ } }
     $('jadwalLoc').textContent = `📍 ${loc.label}`;
     renderTimes(times);
     updatePrayerNext();
@@ -493,10 +495,15 @@ async function initAdzan() {
       if (perm !== 'granted') { e.target.checked = false; return toast(t('notif_denied')); }
       await Meta.set('adzanEnabled', true);
       await scheduleAdzan();
+      // Notifikasi latar: langganan push agar adzan muncul walau app tertutup.
+      if (pushSupported() && pushConfigured()) {
+        try { await enablePush(); await syncPushPrefs(); } catch { /* tetap pakai adzan saat app terbuka */ }
+      }
       toast(t('adzan_on'));
     } else {
       await Meta.set('adzanEnabled', false);
       clearAdzanTimers();
+      if (pushSupported() && pushConfigured()) { try { await syncPushPrefs(); } catch { /* */ } }
       toast(t('adzan_off'));
     }
   });

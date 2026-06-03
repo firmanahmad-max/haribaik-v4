@@ -1,6 +1,6 @@
 // sw.js — service worker: offline cache app shell + jalur notifikasi.
 
-const CACHE = 'haribaik-v4-29';
+const CACHE = 'haribaik-v4-30';
 const SHELL = [
   'index.html',
   'favorites.html',
@@ -25,6 +25,7 @@ const SHELL = [
   'js/qibla.js',
   'js/cloud.js',
   'js/doa.js',
+  'js/push.js',
   'js/tts.js',
   'js/share.js',
   'js/notify.js',
@@ -78,13 +79,40 @@ self.addEventListener('fetch', (e) => {
   );
 });
 
-// Klik notifikasi → fokus/buka app.
+// Push masuk dari server (adzan / pengingat) → tampilkan notifikasi.
+self.addEventListener('push', (e) => {
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch { data = { body: e.data && e.data.text() }; }
+  const title = data.title || 'HariBaik 🌿';
+  const opts = {
+    body: data.body || '',
+    icon: 'icons/icon-192.png',
+    badge: 'icons/icon-192.png',
+    tag: data.tag || 'haribaik',
+    data: { url: data.url || 'index.html' },
+    vibrate: [80, 40, 80],
+  };
+  e.waitUntil(self.registration.showNotification(title, opts));
+});
+
+// Endpoint langganan bisa berubah → langganan ulang dengan kunci yang sama.
+self.addEventListener('pushsubscriptionchange', (e) => {
+  e.waitUntil((async () => {
+    try {
+      const key = e.oldSubscription && e.oldSubscription.options && e.oldSubscription.options.applicationServerKey;
+      if (key) await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+    } catch { /* akan dipulihkan saat app dibuka */ }
+  })());
+});
+
+// Klik notifikasi → fokus/buka app pada halaman terkait.
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
+  const target = (e.notification.data && e.notification.data.url) || 'index.html';
   e.waitUntil(
     self.clients.matchAll({ type: 'window' }).then((list) => {
-      for (const c of list) if ('focus' in c) return c.focus();
-      return self.clients.openWindow('index.html');
+      for (const c of list) if ('focus' in c) { c.navigate?.(target); return c.focus(); }
+      return self.clients.openWindow(target);
     })
   );
 });

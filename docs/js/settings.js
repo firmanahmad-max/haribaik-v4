@@ -5,6 +5,7 @@ import { Meta, Messages, Favorites, Journal, Deeds, resetAll } from './db.js';
 import { trapFocus } from './a11y.js';
 import { t, getLang, setLang } from './i18n.js';
 import { cloudEnabled, getUser, signInEmail, signInAnon, signOut, syncNow, linkEmail } from './cloud.js';
+import { pushSupported, pushConfigured, enablePush, disablePush, sendTestPush, isPushSubscribed, syncPushPrefs } from './push.js';
 
 let onSaveCb = null;
 
@@ -98,6 +99,16 @@ export async function openSettings({ welcome = false } = {}) {
         <small class="field-hint">${t('reminder_hint')}</small>
       </div>
 
+      ${pushSupported() && pushConfigured() ? `
+      <div class="field" id="pushField">
+        <div class="row-between"><span>${t('f_push')}</span><span class="cloud-status" id="pushStatus">…</span></div>
+        <div class="fav-toolbar">
+          <button class="mini-btn" id="pushTest" type="button">${t('push_test')}</button>
+          <button class="mini-btn danger" id="pushOff" type="button" hidden>${t('push_off')}</button>
+        </div>
+        <small class="field-hint">${t('push_hint')}</small>
+      </div>` : ''}
+
       <button class="ghost-btn" id="setNewChat" type="button">${t('new_chat')}</button>
 
       <div class="fav-toolbar">
@@ -179,6 +190,27 @@ export async function openSettings({ welcome = false } = {}) {
     overlay.querySelector('#cloudSignout')?.addEventListener('click', async () => { await signOut(); await renderCloud(); });
   }
 
+  // ---- Notifikasi latar (Web Push) ----
+  if (pushSupported() && pushConfigured()) {
+    const statusEl = overlay.querySelector('#pushStatus');
+    const offBtn = overlay.querySelector('#pushOff');
+    const renderPush = async () => {
+      const on = await isPushSubscribed();
+      if (statusEl) statusEl.textContent = on ? t('push_on_s') : t('push_off_s');
+      if (offBtn) offBtn.hidden = !on;
+    };
+    renderPush();
+    overlay.querySelector('#pushTest')?.addEventListener('click', async (e) => {
+      const b = e.target; b.disabled = true; const prev = b.textContent; b.textContent = '⏳…';
+      try { await sendTestPush(); await renderPush(); alert(t('push_test_ok')); }
+      catch (err) {
+        const map = { denied: t('notif_denied'), unsupported: t('notif_unsupported') };
+        alert(map[err.message] || `${t('push_test_fail')}${err.message ? ` (${err.message})` : ''}`);
+      } finally { b.disabled = false; b.textContent = prev; }
+    });
+    offBtn?.addEventListener('click', async () => { await disablePush(); await renderPush(); });
+  }
+
   overlay.querySelector('#setSave').addEventListener('click', async () => {
     const nama = overlay.querySelector('#setNama').value.trim();
     const goal = overlay.querySelector('#setGoal').value.trim();
@@ -195,6 +227,13 @@ export async function openSettings({ welcome = false } = {}) {
 
     if (on && 'Notification' in window && Notification.permission === 'default') {
       try { await Notification.requestPermission(); } catch { /* abaikan */ }
+    }
+
+    // Notifikasi latar: bila pengingat diaktifkan, langganan push (best-effort)
+    // lalu sinkronkan preferensi (waktu/aktif) ke server.
+    if (pushSupported() && pushConfigured()) {
+      if (on) { try { await enablePush(); } catch { /* izin ditolak → tetap pakai pengingat saat app terbuka */ } }
+      try { await syncPushPrefs(); } catch { /* abaikan */ }
     }
 
     // Ganti bahasa → muat ulang agar seluruh UI ikut berubah.
