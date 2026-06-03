@@ -5,13 +5,14 @@ import { Deeds, Meta, dayKey } from './db.js';
 import { initTheme, isRamadan, setRamadan } from './theme.js';
 import { hijriMonth, hijriYear } from './context.js';
 import { trapFocus } from './a11y.js';
+import { CITIES, getCurrentCoords, getTimings, PRAYER_ORDER } from './pray.js';
 
 const $ = (id) => document.getElementById(id);
 
 const SALAT = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 const TODAY = dayKey(Date.now());
 
-const state = { today: null, all: [] };
+const state = { today: null, all: [], times: null, loc: null };
 
 let toastTimer = null;
 function toast(msg) {
@@ -306,7 +307,7 @@ async function initRamadan() {
   $('imsakTime').addEventListener('change', (e) => { Meta.set('imsakTime', e.target.value); updateCountdown(); });
   $('iftarTime').addEventListener('change', (e) => { Meta.set('iftarTime', e.target.value); updateCountdown(); });
 
-  countdownTimer = setInterval(updateCountdown, 1000);
+  countdownTimer = setInterval(() => { updateCountdown(); updatePrayerNext(); }, 1000);
   updateCountdown();
 }
 function applyRamadanUi(on) {
@@ -348,6 +349,95 @@ async function maybeSuggestRamadan() {
   }
 }
 
+// ---------- Jadwal Sholat ----------
+const FARD = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
+
+function fillCitySelect() {
+  const sel = $('citySelect');
+  CITIES.forEach((c) => { const o = document.createElement('option'); o.value = c.name; o.textContent = c.name; sel.appendChild(o); });
+}
+
+async function initJadwal() {
+  fillCitySelect();
+  $('useLocation').addEventListener('click', async () => {
+    $('jadwalLoc').textContent = 'Mengambil lokasi…';
+    try {
+      const { lat, lng } = await getCurrentCoords();
+      await loadPrayer({ lat, lng, label: 'Lokasimu' });
+    } catch {
+      $('jadwalLoc').textContent = 'Lokasi ditolak';
+      toast('Izin lokasi ditolak. Pilih kota saja ya.');
+    }
+  });
+  $('citySelect').addEventListener('change', async (e) => {
+    const c = CITIES.find((x) => x.name === e.target.value);
+    if (c) await loadPrayer({ lat: c.lat, lng: c.lng, label: c.name });
+  });
+
+  const saved = await Meta.get('prayerLoc', null);
+  if (saved) {
+    if (CITIES.some((c) => c.name === saved.label)) $('citySelect').value = saved.label;
+    await loadPrayer(saved);
+  }
+}
+
+async function loadPrayer(loc) {
+  $('jadwalLoc').textContent = 'Memuat…';
+  try {
+    const times = await getTimings(loc.lat, loc.lng);
+    state.times = times;
+    state.loc = loc;
+    await Meta.set('prayerLoc', loc);
+    $('jadwalLoc').textContent = `📍 ${loc.label}`;
+    renderTimes(times);
+    updatePrayerNext();
+    // Auto-isi Imsak & Berbuka untuk Mode Ramadan.
+    if (isRamadan()) {
+      if (times.Imsak) { $('imsakTime').value = times.Imsak; await Meta.set('imsakTime', times.Imsak); }
+      if (times.Maghrib) { $('iftarTime').value = times.Maghrib; await Meta.set('iftarTime', times.Maghrib); }
+      updateCountdown();
+    }
+  } catch {
+    $('jadwalLoc').textContent = navigator.onLine ? 'Gagal memuat' : 'Offline';
+    toast(navigator.onLine ? 'Gagal mengambil jadwal sholat' : 'Offline — jadwal tampil saat online');
+  }
+}
+
+function renderTimes(times) {
+  $('jadwalTimes').innerHTML = PRAYER_ORDER.map((p) => {
+    const minor = !FARD.includes(p);
+    return `<div class="jt-item${minor ? ' minor' : ''}" data-prayer="${p}"><span>${p}</span><b>${times[p] || '–'}</b></div>`;
+  }).join('');
+}
+
+function parseToday(hm) {
+  if (!hm) return null;
+  const [h, m] = hm.split(':').map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+function updatePrayerNext() {
+  const el = $('jadwalNext');
+  if (!el || !state.times) return;
+  const now = new Date();
+  let next = null;
+  for (const p of FARD) {
+    const t = parseToday(state.times[p]);
+    if (t && t > now) { next = { p, t }; break; }
+  }
+  if (!next) {
+    const t = parseToday(state.times.Subuh);
+    if (t) { t.setDate(t.getDate() + 1); next = { p: 'Subuh', t }; }
+  }
+  if (!next) { el.textContent = ''; return; }
+  const diff = next.t - now;
+  const hh = Math.floor(diff / 3600000), mm = Math.floor((diff % 3600000) / 60000), ss = Math.floor((diff % 60000) / 1000);
+  el.innerHTML = `⏳ Menuju <b>${next.p}</b> (${state.times[next.p]}) · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+  document.querySelectorAll('#jadwalTimes .jt-item').forEach((i) => i.classList.toggle('next', i.dataset.prayer === next.p));
+}
+
 // ---------- Refresh ----------
 async function refresh() {
   state.all = (await Deeds.all()) || [];
@@ -359,6 +449,7 @@ async function refresh() {
 async function init() {
   initTheme($('themeBtn'));
   await initRamadan();
+  await initJadwal();
   $('deedsList').addEventListener('click', (e) => {
     const b = e.target.closest('.deed-item[data-key]');
     if (b) toggleDeed(b.dataset.key, b);
