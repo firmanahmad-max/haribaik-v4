@@ -8,6 +8,11 @@ export const BACKEND_URL = isLocal
   ? 'http://localhost:3000'
   : 'https://haribaik-v4-production.up.railway.app';
 
+// Supabase (Fase 4). Anon key aman ditaruh di frontend — keamanan data dijaga RLS.
+// Isi setelah membuat project Supabase + menjalankan supabase/schema.sql.
+export const SUPABASE_URL = '';
+export const SUPABASE_ANON_KEY = '';
+
 export const MOODS = ['Senang', 'Sedih', 'Cemas', 'Kesal', 'Bersyukur', 'Lelah'];
 
 // Metadata mood terpusat (emoji, warna, skor valensi 1-5) — dipakai chat & jurnal.
