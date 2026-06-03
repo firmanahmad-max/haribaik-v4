@@ -1,24 +1,18 @@
-// journal.js — halaman Jurnal & Statistik (Fase 2).
+// journal.js — halaman Jurnal & Statistik (Fase 2 + perbaikan).
 
-import { MOODS } from './config.js';
-import { Journal, Meta, dayKey } from './db.js';
+import { MOODS, MOOD_META } from './config.js';
+import { Journal, Meta, Messages, Favorites, dayKey } from './db.js';
 import { postInsight } from './api.js';
 import { initTheme } from './theme.js';
+import { shareCard } from './share.js';
+import { speak, stopSpeak, ttsSupported } from './tts.js';
 
 const $ = (id) => document.getElementById(id);
-
-const MOOD_META = {
-  Senang: { emoji: '😊', color: '#f4c430' },
-  Sedih: { emoji: '😢', color: '#5b8def' },
-  Cemas: { emoji: '😟', color: '#b06bd6' },
-  Kesal: { emoji: '😣', color: '#e0664f' },
-  Bersyukur: { emoji: '🤲', color: '#2d9b6e' },
-  Lelah: { emoji: '😮‍💨', color: '#8a9a92' },
-};
 const colorOf = (m) => MOOD_META[m]?.color || '#8a9a92';
 const emojiOf = (m) => MOOD_META[m]?.emoji || '🙂';
+const scoreOf = (m) => MOOD_META[m]?.score ?? 3;
 
-const state = { selectedMood: null, calMonth: startOfMonth(new Date()), entries: [] };
+const state = { selectedMood: null, calMonth: startOfMonth(new Date()), entries: [], period: 'week', lastInsight: null };
 
 let toastTimer = null;
 function toast(msg) {
@@ -32,6 +26,9 @@ function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+function fmtTime(ts) {
+  try { return new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(new Date(ts)); } catch { return ''; }
+}
 
 // ---------- Mood logger ----------
 function buildMoodSelector() {
@@ -65,65 +62,133 @@ async function saveEntry() {
 }
 
 // ---------- Statistik ----------
+function inPeriod(e) {
+  if (state.period === 'all') return true;
+  if (state.period === 'week') return Date.now() - e.ts < 7 * 86400000;
+  const d = new Date(e.ts);
+  const n = new Date();
+  return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear();
+}
 function computeStreak(daySet) {
-  let streak = 0;
+  let s = 0;
   const d = new Date();
-  for (;;) {
-    if (daySet.has(dayKey(d.getTime()))) { streak++; d.setDate(d.getDate() - 1); } else break;
-  }
-  return streak;
+  for (;;) { if (daySet.has(dayKey(d.getTime()))) { s++; d.setDate(d.getDate() - 1); } else break; }
+  return s;
 }
-
-function renderStats() {
-  const entries = state.entries;
-  const daySet = new Set(entries.map((e) => e.day));
-  const counts = {};
-  entries.forEach((e) => { counts[e.mood] = (counts[e.mood] || 0) + 1; });
-  const total = entries.length;
-  const streak = computeStreak(daySet);
-  const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
-
-  $('jStatsTop').innerHTML = `
-    <div class="jstat"><b>${total}</b><span>catatan</span></div>
-    <div class="jstat"><b>${daySet.size}</b><span>hari</span></div>
-    <div class="jstat"><b>🔥 ${streak}</b><span>streak</span></div>
-    <div class="jstat"><b>${dominant ? emojiOf(dominant) : '–'}</b><span>${dominant || 'belum ada'}</span></div>`;
-
-  // Sebaran mood (bar)
-  const max = Math.max(1, ...Object.values(counts));
-  $('jDist').innerHTML = MOODS.map((m) => {
-    const n = counts[m] || 0;
-    const pct = Math.round((n / max) * 100);
-    return `<div class="jdist-row">
-      <span class="jdist-label">${emojiOf(m)} ${m}</span>
-      <div class="jdist-bar"><i style="width:${pct}%;background:${colorOf(m)}"></i></div>
-      <span class="jdist-n">${n}</span>
-    </div>`;
-  }).join('');
-
-  // 7 hari terakhir
-  const byDay = {};
-  entries.forEach((e) => { (byDay[e.day] ||= []).push(e.mood); });
-  const cells = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const k = dayKey(d.getTime());
-    const moods = byDay[k] || [];
-    const dom = dominantOf(moods);
-    const label = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][d.getDay()];
-    cells.push(`<div class="jtrend-cell" title="${k}${dom ? ': ' + dom : ''}">
-      <i style="background:${dom ? colorOf(dom) : 'transparent'};border:${dom ? 'none' : '1px dashed var(--border)'}"></i>
-      <span>${label}</span>
-    </div>`);
+function longestStreak(daySet) {
+  const days = [...daySet].sort();
+  let best = 0, run = 0, prev = null;
+  for (const k of days) {
+    const cur = new Date(k + 'T00:00:00').getTime();
+    if (prev !== null && cur - prev === 86400000) run++; else run = 1;
+    best = Math.max(best, run);
+    prev = cur;
   }
-  $('jTrend').innerHTML = cells.join('');
+  return best;
 }
-
 function dominantOf(moods) {
   if (!moods.length) return null;
   const c = {};
   moods.forEach((m) => { c[m] = (c[m] || 0) + 1; });
   return Object.entries(c).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+function renderStats() {
+  const all = state.entries;
+  if (!all.length) {
+    $('jStatsTop').innerHTML = '<div class="jempty">Belum ada catatan. Pilih mood di atas untuk memulai 🌱</div>';
+    $('jDist').innerHTML = '';
+    $('jTrend').innerHTML = '';
+    $('jMonthTrend').innerHTML = '';
+    $('jLegend').innerHTML = '';
+    return;
+  }
+  const daySet = new Set(all.map((e) => e.day));
+  const filtered = all.filter(inPeriod);
+  const counts = {};
+  filtered.forEach((e) => { counts[e.mood] = (counts[e.mood] || 0) + 1; });
+  const total = filtered.length;
+  const daysInPeriod = new Set(filtered.map((e) => e.day)).size;
+  const streak = computeStreak(daySet);
+  const best = longestStreak(daySet);
+  const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+  $('jStatsTop').innerHTML = `
+    <div class="jstat"><b>${total}</b><span>catatan</span></div>
+    <div class="jstat"><b>${daysInPeriod}</b><span>hari</span></div>
+    <div class="jstat"><b>🔥 ${streak}</b><span>streak · rekor ${best}</span></div>
+    <div class="jstat"><b>${dominant ? emojiOf(dominant) : '–'}</b><span>${dominant || 'belum ada'}</span></div>`;
+
+  // Sebaran mood
+  if (!total) {
+    $('jDist').innerHTML = '<div class="jempty">Belum ada catatan pada periode ini.</div>';
+  } else {
+    const max = Math.max(1, ...Object.values(counts));
+    $('jDist').innerHTML = MOODS.map((m) => {
+      const n = counts[m] || 0;
+      const pct = Math.round((n / max) * 100);
+      return `<div class="jdist-row">
+        <span class="jdist-label">${emojiOf(m)} ${m}</span>
+        <div class="jdist-bar"><i style="width:${pct}%;background:${colorOf(m)}"></i></div>
+        <span class="jdist-n">${n}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Legenda
+  $('jLegend').innerHTML = MOODS.map((m) => `<span class="jleg"><i style="background:${colorOf(m)}"></i>${m}</span>`).join('');
+
+  // 7 hari terakhir
+  const byDay = {};
+  all.forEach((e) => { (byDay[e.day] ||= []).push(e.mood); });
+  const cells = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const k = dayKey(d.getTime());
+    const dom = dominantOf(byDay[k] || []);
+    const label = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][d.getDay()];
+    cells.push(`<div class="jtrend-cell" title="${k}${dom ? ': ' + dom : ''}">
+      <i style="background:${dom ? colorOf(dom) : 'transparent'};border:${dom ? 'none' : '1px dashed var(--border)'}"></i>
+      <span>${label}</span></div>`);
+  }
+  $('jTrend').innerHTML = cells.join('');
+
+  renderMonthTrend(byDay);
+}
+
+function renderMonthTrend(byDay) {
+  const y = state.calMonth.getFullYear();
+  const m = state.calMonth.getMonth();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const W = 300, H = 60, padX = 6, padY = 6;
+  const pts = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const k = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const moods = byDay[k];
+    if (!moods || !moods.length) { pts.push(null); continue; }
+    const avg = moods.reduce((a, b) => a + scoreOf(b), 0) / moods.length;
+    const x = padX + ((d - 1) / Math.max(1, daysInMonth - 1)) * (W - 2 * padX);
+    const yy = H - padY - ((avg - 1) / 4) * (H - 2 * padY);
+    pts.push({ x, y: yy });
+  }
+  const real = pts.filter(Boolean);
+  if (real.length < 2) {
+    $('jMonthTrend').innerHTML = '<div class="jempty">Belum cukup data bulan ini untuk tren.</div>';
+    return;
+  }
+  // garis menyambung titik yang ada (lewati hari kosong)
+  let path = '';
+  let started = false;
+  pts.forEach((p) => {
+    if (!p) return;
+    path += `${started ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)} `;
+    started = true;
+  });
+  const dots = real.map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="var(--accent-gold)"/>`).join('');
+  $('jMonthTrend').innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Tren suasana hati bulan ini">
+    <path d="${path}" fill="none" stroke="var(--accent-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}
+  </svg>`;
 }
 
 // ---------- Kalender ----------
@@ -140,6 +205,7 @@ function renderCalendar() {
   const firstDow = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const todayKey = dayKey(Date.now());
+  const monthName = new Intl.DateTimeFormat('id-ID', { month: 'long' }).format(month);
   let html = '';
   for (let i = 0; i < firstDow; i++) html += '<div class="jcal-cell empty"></div>';
   for (let d = 1; d <= daysInMonth; d++) {
@@ -147,13 +213,60 @@ function renderCalendar() {
     const moods = byDay[k] || [];
     const dom = dominantOf(moods);
     const isToday = k === todayKey;
-    html += `<div class="jcal-cell${isToday ? ' today' : ''}" title="${moods.length ? moods.join(', ') : ''}">
+    const aria = `${d} ${monthName}${moods.length ? `, ${moods.length} catatan` : ', tidak ada catatan'}`;
+    html += `<button class="jcal-cell${isToday ? ' today' : ''}${moods.length ? ' has' : ''}" data-day="${k}" aria-label="${aria}">
       <span class="jcal-num">${d}</span>
       ${dom ? `<i class="jcal-dot" style="background:${colorOf(dom)}"></i>` : ''}
       ${moods.length > 1 ? `<em class="jcal-count">${moods.length}</em>` : ''}
-    </div>`;
+    </button>`;
   }
   $('jCalBody').innerHTML = html;
+
+  // Nonaktifkan tombol bulan berikutnya bila sudah di bulan berjalan.
+  $('jNext').disabled = startOfMonth(month).getTime() >= startOfMonth(new Date()).getTime();
+}
+
+// ---------- Detail hari (lihat & hapus entri) ----------
+function openDayDetail(k) {
+  const entries = state.entries.filter((e) => e.day === k).sort((a, b) => a.ts - b.ts);
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  const dateLabel = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(k + 'T00:00:00'));
+  overlay.innerHTML = `
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Catatan ${dateLabel}">
+      <div class="sheet-handle"></div>
+      <h2 class="sheet-title">${dateLabel}</h2>
+      <div id="jDayList"></div>
+      <div class="sheet-actions"><span class="spacer"></span><button class="chip-btn" id="jDayClose">Tutup</button></div>
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+  const close = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 250); };
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  overlay.querySelector('#jDayClose').addEventListener('click', close);
+
+  const list = overlay.querySelector('#jDayList');
+  const draw = (items) => {
+    if (!items.length) { list.innerHTML = '<div class="jempty">Tidak ada catatan di hari ini.</div>'; return; }
+    list.innerHTML = items.map((e) => `
+      <div class="jday-entry">
+        <span class="jday-mood">${emojiOf(e.mood)} ${e.mood}</span>
+        <span class="jday-time">${fmtTime(e.ts)}${e.source === 'chat' ? ' · dari chat' : ''}</span>
+        ${e.note ? `<p class="jday-note">${escapeHtml(e.note)}</p>` : ''}
+        <button class="mini-btn danger jday-del" data-id="${e.id}">🗑️ Hapus</button>
+      </div>`).join('');
+    list.querySelectorAll('.jday-del').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await Journal.remove(Number(btn.dataset.id));
+        await refresh();
+        const left = state.entries.filter((x) => x.day === k).sort((a, b) => a.ts - b.ts);
+        draw(left);
+        toast('Entri dihapus');
+      });
+    });
+  };
+  draw(entries);
 }
 
 // ---------- Insight AI ----------
@@ -163,8 +276,10 @@ async function loadCachedInsight() {
 }
 
 function renderInsight(data, day) {
-  $('jInsight').className = '';
-  $('jInsight').innerHTML = `
+  state.lastInsight = data;
+  const el = $('jInsight');
+  el.className = '';
+  el.innerHTML = `
     <div class="jinsight">
       <h3>${escapeHtml(data.judul)}</h3>
       <p>${escapeHtml(data.insight)}</p>
@@ -174,13 +289,63 @@ function renderInsight(data, day) {
         <div class="arabic">${escapeHtml(data.doa_arabic)}</div>
         <div class="translation">${escapeHtml(data.doa_translation)}</div>
       </div>
+      <div class="card-actions">
+        <button class="mini-btn" id="iRefresh">🔄 Perbarui</button>
+        <button class="mini-btn" id="iTts">🔊 Dengar</button>
+        <button class="mini-btn" id="iShare">📤 Bagikan</button>
+        <button class="mini-btn" id="iCopy">📋 Salin</button>
+        <button class="mini-btn" id="iSave">🔖 Simpan doa</button>
+      </div>
       ${day ? `<small class="jinsight-day">Dibuat: ${escapeHtml(day)}</small>` : ''}
     </div>`;
+
+  $('iRefresh').addEventListener('click', () => generateInsight(true));
+
+  const ttsBtn = $('iTts');
+  if (!ttsSupported()) ttsBtn.style.display = 'none';
+  else ttsBtn.addEventListener('click', () => {
+    if (ttsBtn.classList.contains('active')) { stopSpeak(); ttsBtn.classList.remove('active'); ttsBtn.innerHTML = '🔊 Dengar'; return; }
+    speak([
+      { text: data.insight, lang: 'id-ID' },
+      { text: data.saran, lang: 'id-ID' },
+      { text: data.doa_translation, lang: 'id-ID' },
+    ], (sp) => { ttsBtn.classList.toggle('active', sp); ttsBtn.innerHTML = sp ? '⏹ Stop' : '🔊 Dengar'; });
+  });
+
+  $('iShare').addEventListener('click', () => shareCard({ arabic: data.doa_arabic, translation: data.insight, source: data.judul }, toast));
+
+  $('iCopy').addEventListener('click', async () => {
+    const txt = `${data.judul}\n\n${data.insight}\n\n🌱 ${data.saran}\n\n${data.doa_arabic}\n${data.doa_translation}\n\nvia HariBaik`;
+    try { await navigator.clipboard.writeText(txt); toast('Insight disalin'); } catch { toast('Gagal menyalin'); }
+  });
+
+  const saveBtn = $('iSave');
+  saveBtn.addEventListener('click', async () => {
+    if (saveBtn.disabled) return;
+    await Favorites.add({ arabic: data.doa_arabic, translation: data.doa_translation, source: data.judul, source_type: 'doa' });
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '✓ Tersimpan';
+    toast('Doa disimpan ke favorit');
+  });
 }
 
-async function generateInsight() {
+async function gatherTopics() {
+  const msgs = (await Messages.all()) || [];
+  return msgs
+    .filter((m) => m.role === 'user' && Date.now() - m.ts < 8 * 86400000)
+    .slice(-8)
+    .map((m) => String(m.content || '').replace(/^\[[^\]]+\]\s*/, '').slice(0, 120))
+    .filter(Boolean);
+}
+
+async function generateInsight(force = false) {
   const last7 = state.entries.filter((e) => Date.now() - e.ts < 8 * 86400000);
   if (last7.length < 2) return toast('Catat minimal 2 mood dulu untuk membuat insight');
+
+  if (!force) {
+    const cache = await Meta.get('insightCache', null);
+    if (cache?.generatedDay === dayKey(Date.now()) && cache.data) { renderInsight(cache.data, cache.generatedDay); return; }
+  }
 
   const btn = $('jInsightBtn');
   btn.disabled = true;
@@ -191,20 +356,64 @@ async function generateInsight() {
     const data = await postInsight({
       moods: last7.map((e) => ({ day: e.day, mood: e.mood })),
       profile,
+      topics: await gatherTopics(),
     });
     renderInsight(data, dayKey(Date.now()));
     await Meta.set('insightCache', { generatedDay: dayKey(Date.now()), data });
   } catch (err) {
     const msg = !navigator.onLine || err?.status === 0
       ? 'Kamu sedang offline. Coba lagi nanti.'
-      : err?.status === 429
-        ? 'Terlalu banyak permintaan. Coba lagi sebentar.'
-        : 'Gagal membuat insight. Coba lagi.';
+      : err?.status === 429 ? 'Terlalu banyak permintaan. Coba lagi sebentar.' : 'Gagal membuat insight. Coba lagi.';
     toast(msg);
   } finally {
     btn.disabled = false;
     btn.textContent = prev;
   }
+}
+
+// ---------- Export / Import jurnal ----------
+function download(filename, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function initBackup() {
+  $('jExport').addEventListener('click', async () => {
+    const items = (await Journal.all()) || [];
+    if (!items.length) return toast('Belum ada entri jurnal untuk diekspor');
+    const clean = items.map(({ mood, note, ts }) => ({ mood, note, ts }));
+    download('haribaik-jurnal.json', JSON.stringify(clean, null, 2));
+    toast(`${clean.length} entri jurnal diekspor`);
+  });
+  const file = $('jFile');
+  $('jImport').addEventListener('click', () => file.click());
+  file.addEventListener('change', async () => {
+    const f = file.files?.[0];
+    if (!f) return;
+    try {
+      const arr = JSON.parse(await f.text());
+      if (!Array.isArray(arr)) throw new Error('format');
+      const existing = (await Journal.all()) || [];
+      const seen = new Set(existing.map((e) => `${e.ts}|${e.mood}`));
+      let added = 0;
+      for (const it of arr) {
+        const key = `${it?.ts}|${it?.mood}`;
+        if (it && it.mood && it.ts && !seen.has(key)) {
+          await Journal.add({ mood: String(it.mood).slice(0, 20), note: String(it.note || '').slice(0, 300), ts: Number(it.ts) });
+          seen.add(key);
+          added++;
+        }
+      }
+      toast(added ? `${added} entri diimpor` : 'Tidak ada entri baru');
+      await refresh();
+    } catch {
+      toast('File tidak valid');
+    } finally {
+      file.value = '';
+    }
+  });
 }
 
 // ---------- Refresh ----------
@@ -218,9 +427,21 @@ async function init() {
   initTheme($('themeBtn'));
   buildMoodSelector();
   $('jSave').addEventListener('click', saveEntry);
-  $('jInsightBtn').addEventListener('click', generateInsight);
-  $('jPrev').addEventListener('click', () => { state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() - 1, 1); renderCalendar(); });
-  $('jNext').addEventListener('click', () => { state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() + 1, 1); renderCalendar(); });
+  $('jInsightBtn').addEventListener('click', () => generateInsight(false));
+  $('jPrev').addEventListener('click', () => { state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() - 1, 1); renderStats(); renderCalendar(); });
+  $('jNext').addEventListener('click', () => { state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() + 1, 1); renderStats(); renderCalendar(); });
+  $('jCalBody').addEventListener('click', (e) => {
+    const cell = e.target.closest('.jcal-cell[data-day]');
+    if (cell) openDayDetail(cell.dataset.day);
+  });
+  $('jPeriod').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-period]');
+    if (!b) return;
+    state.period = b.dataset.period;
+    $('jPeriod').querySelectorAll('button').forEach((x) => x.classList.toggle('selected', x === b));
+    renderStats();
+  });
+  initBackup();
   await refresh();
   await loadCachedInsight();
 }

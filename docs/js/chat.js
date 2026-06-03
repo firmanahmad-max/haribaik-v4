@@ -3,7 +3,7 @@
 import { Favorites, Reports } from './db.js';
 import { shareCard } from './share.js';
 import { speak, stopSpeak, ttsSupported } from './tts.js';
-import { QUICK_REPLIES } from './config.js';
+import { QUICK_REPLIES, badgeFor } from './config.js';
 
 const chatEl = () => document.getElementById('chat');
 
@@ -80,9 +80,7 @@ export function hideTyping() {
  * @param {(msg:string)=>void} toast
  */
 export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
-  const isQuran = (r.source_type || '').toLowerCase() === 'quran';
-  const badgeClass = isQuran ? 'quran' : 'hadits';
-  const badgeLabel = isQuran ? 'Al-Quran' : 'Hadits';
+  const { cls: badgeClass, label: badgeLabel } = badgeFor(r.source_type);
 
   const wrap = document.createElement('div');
   wrap.className = 'msg ai';

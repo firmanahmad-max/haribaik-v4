@@ -80,6 +80,7 @@ export const Journal = {
     return tx('journal', 'readwrite', (s) => reqValue(s.add({ ...entry, ts, day: dayKey(ts) })));
   },
   all: () => tx('journal', 'readonly', (s) => reqValue(s.getAll())),
+  remove: (id) => tx('journal', 'readwrite', (s) => s.delete(id)),
   clear: () => tx('journal', 'readwrite', (s) => s.clear()),
 };
 

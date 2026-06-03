@@ -54,12 +54,22 @@
 
       <!-- Statistik -->
       <section class="card jcard">
-        <h2 class="jtitle">Statistik</h2>
+        <div class="jhead">
+          <h2 class="jtitle">Statistik</h2>
+          <div class="jperiod" id="jPeriod" role="tablist" aria-label="Periode statistik">
+            <button class="chip-btn selected" data-period="week">Minggu ini</button>
+            <button class="chip-btn" data-period="month">Bulan ini</button>
+            <button class="chip-btn" data-period="all">Semua</button>
+          </div>
+        </div>
         <div class="jstats-top" id="jStatsTop"></div>
+        <h3 class="jsub">Tren bulan ini</h3>
+        <div id="jMonthTrend" class="jmonthtrend"></div>
         <h3 class="jsub">Sebaran mood</h3>
-        <div id="jDist" class="jdist"></div>
+        <div id="jDist" class="jdist" role="img" aria-label="Diagram sebaran mood"></div>
         <h3 class="jsub">7 hari terakhir</h3>
         <div id="jTrend" class="jtrend"></div>
+        <div class="jlegend" id="jLegend"></div>
       </section>
 
       <!-- Kalender -->
@@ -71,6 +81,16 @@
         </div>
         <div class="jcal-grid jcal-head" id="jCalHead"></div>
         <div class="jcal-grid" id="jCalBody"></div>
+        <p class="jcal-hint">Ketuk tanggal untuk melihat catatanmu.</p>
+      </section>
+
+      <!-- Cadangan jurnal -->
+      <section class="card jcard">
+        <div class="fav-toolbar">
+          <button class="mini-btn" id="jExport" title="Ekspor jurnal ke file">⬇️ Export jurnal</button>
+          <button class="mini-btn" id="jImport" title="Impor jurnal dari file">⬆️ Import jurnal</button>
+          <input type="file" id="jFile" accept="application/json" hidden />
+        </div>
       </section>
     </div>
   </div>

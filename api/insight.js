@@ -13,16 +13,19 @@ function summarizeMoods(moods) {
   return { ringkas, dominan, total: moods.length };
 }
 
-function buildInsightPrompt(moods, profile) {
+function buildInsightPrompt(moods, profile, topics) {
   const nama = (profile.nama || '').trim() || 'Sahabat';
   const peran = profile.peran ? ` Peran: ${profile.peran}.` : '';
   const usia = profile.usia ? ` Usia: ${profile.usia}.` : '';
   const { ringkas, dominan, total } = summarizeMoods(moods);
+  const topicLine = topics && topics.length
+    ? `\nHal yang sempat ia ceritakan minggu ini: ${topics.join('; ')}.`
+    : '';
 
   return `TUGAS: Hasilkan satu objek JSON berisi refleksi mingguan untuk aplikasi "HariBaik" (konten motivasi Islami). Ini tugas pembuatan konten terstruktur, BUKAN percakapan. Kamu generator konten aplikasi.
 
 Data mood pengguna (${total} catatan minggu ini) untuk ${nama}:${usia}${peran}
-Ringkasan: ${ringkas}. Mood paling sering: ${dominan}.
+Ringkasan: ${ringkas}. Mood paling sering: ${dominan}.${topicLine}
 
 Tulis refleksi yang hangat, empatik, dan tidak menggurui (di dalam field JSON). Kaitkan dengan nilai-nilai Islami (sabar, syukur, tawakal) secara halus. Bahasa Indonesia.
 
@@ -54,7 +57,10 @@ function mockInsight(moods) {
 }
 
 export async function handleInsight(body = {}) {
-  const { moods = [], profile = {} } = body;
+  const { moods = [], profile = {}, topics = [] } = body;
+  const safeTopics = Array.isArray(topics)
+    ? topics.map((t) => String(t || '').slice(0, 120)).filter(Boolean).slice(-8)
+    : [];
   const safeMoods = Array.isArray(moods)
     ? moods
         .slice(-30)
@@ -78,7 +84,7 @@ export async function handleInsight(body = {}) {
 
   let parsed;
   try {
-    parsed = await sumopodJson(buildInsightPrompt(safeMoods, safeProfile), { maxTokens: 700 });
+    parsed = await sumopodJson(buildInsightPrompt(safeMoods, safeProfile, safeTopics), { maxTokens: 700 });
   } catch (err) {
     return { status: 502, body: { error: 'Gagal memanggil AI', detail: err.message } };
   }

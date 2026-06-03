@@ -2,7 +2,7 @@
 
 import { MOODS } from './config.js';
 import { postChat } from './api.js';
-import { Messages, Meta, nextRequestCount } from './db.js';
+import { Messages, Meta, Journal, nextRequestCount } from './db.js';
 import { buildTemporal, gregorianDate, touchStreak } from './context.js';
 import { initTheme } from './theme.js';
 import { initVoice } from './voice.js';
@@ -114,6 +114,8 @@ async function send(text) {
   state.history.push({ role: 'user', content: displayText });
   await Messages.add({ role: 'user', content: displayText, mood });
   await logMood(mood);
+  // Satukan dengan Jurnal: mood yang dipilih di Chat ikut tercatat di jurnal.
+  if (mood) await Journal.add({ mood, note: (message || '').slice(0, 300), source: 'chat' });
 
   // reset mood setelah dipakai
   state.selectedMood = null;
