@@ -213,7 +213,7 @@ async function maybeShowDisclaimer() {
   const bar = document.createElement('div');
   bar.className = 'disclaimer';
   bar.innerHTML =
-    '<span>ℹ️ Kutipan dipilih oleh AI dan bisa keliru. Mohon verifikasi sumbernya sebelum diamalkan atau dibagikan.</span>' +
+    '<span>ℹ️ Kutipan ayat, hadits dan doa bisa terjadi kekeliruan. Mohon bantu verifikasi sumber sebelum diamalkan dan dibagikan.</span>' +
     '<button class="mini-btn js-ok">Mengerti</button>';
   bar.querySelector('.js-ok').addEventListener('click', async () => {
     bar.remove();
