@@ -13,7 +13,7 @@ const $ = (id) => document.getElementById(id);
 const SALAT = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 const TODAY = dayKey(Date.now());
 
-const state = { today: null, all: [], times: null, loc: null, adzanTimers: [], qiblaBearing: null, heading: 0, displayRot: 0, rafId: null, stopCompass: null };
+const state = { today: null, all: [], times: null, loc: null, selectedPrayer: null, adzanTimers: [], qiblaBearing: null, heading: 0, displayRot: 0, rafId: null, stopCompass: null };
 
 let toastTimer = null;
 function toast(msg) {
@@ -377,6 +377,14 @@ async function initJadwal() {
     const c = CITIES.find((x) => x.name === e.target.value);
     if (c) await loadPrayer({ lat: c.lat, lng: c.lng, label: c.name });
   });
+  // Ketuk waktu untuk memilih target hitung mundur (ketuk lagi = otomatis).
+  $('jadwalTimes').addEventListener('click', (e) => {
+    const cell = e.target.closest('.jt-item[data-prayer]');
+    if (!cell) return;
+    const p = cell.dataset.prayer;
+    state.selectedPrayer = state.selectedPrayer === p ? null : p;
+    updatePrayerNext();
+  });
 
   const saved = await Meta.get('prayerLoc', null);
   if (saved) {
@@ -412,8 +420,9 @@ async function loadPrayer(loc) {
 function renderTimes(times) {
   $('jadwalTimes').innerHTML = PRAYER_ORDER.map((p) => {
     const minor = !FARD.includes(p);
-    return `<div class="jt-item${minor ? ' minor' : ''}" data-prayer="${p}"><span>${p}</span><b>${times[p] || '–'}</b></div>`;
+    return `<button class="jt-item${minor ? ' minor' : ''}" data-prayer="${p}" aria-label="Hitung mundur ke ${p}"><span>${p}</span><b>${times[p] || '–'}</b></button>`;
   }).join('');
+  $('jadwalPick').hidden = false;
 }
 
 function parseToday(hm) {
@@ -428,20 +437,37 @@ function updatePrayerNext() {
   const el = $('jadwalNext');
   if (!el || !state.times) return;
   const now = new Date();
-  let next = null;
-  for (const p of FARD) {
+  let target = null;
+  let manual = false;
+
+  if (state.selectedPrayer && state.times[state.selectedPrayer]) {
+    // Target dipilih manual oleh pengguna.
+    const p = state.selectedPrayer;
     const t = parseToday(state.times[p]);
-    if (t && t > now) { next = { p, t }; break; }
+    if (t) {
+      if (t <= now) t.setDate(t.getDate() + 1); // sudah lewat → besok
+      target = { p, t };
+      manual = true;
+    }
   }
-  if (!next) {
-    const t = parseToday(state.times.Subuh);
-    if (t) { t.setDate(t.getDate() + 1); next = { p: 'Subuh', t }; }
+  if (!target) {
+    // Otomatis: sholat wajib berikutnya.
+    for (const p of FARD) {
+      const t = parseToday(state.times[p]);
+      if (t && t > now) { target = { p, t }; break; }
+    }
+    if (!target) {
+      const t = parseToday(state.times.Subuh);
+      if (t) { t.setDate(t.getDate() + 1); target = { p: 'Subuh', t }; }
+    }
   }
-  if (!next) { el.textContent = ''; return; }
-  const diff = next.t - now;
+  if (!target) { el.textContent = ''; return; }
+
+  const diff = target.t - now;
   const hh = Math.floor(diff / 3600000), mm = Math.floor((diff % 3600000) / 60000), ss = Math.floor((diff % 60000) / 1000);
-  el.innerHTML = `⏳ Menuju <b>${next.p}</b> (${state.times[next.p]}) · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
-  document.querySelectorAll('#jadwalTimes .jt-item').forEach((i) => i.classList.toggle('next', i.dataset.prayer === next.p));
+  const tag = manual ? ' (dipilih)' : ' (berikutnya)';
+  el.innerHTML = `⏳ Menuju <b>${target.p}</b> (${state.times[target.p]})${tag} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+  document.querySelectorAll('#jadwalTimes .jt-item').forEach((i) => i.classList.toggle('next', i.dataset.prayer === target.p));
 }
 
 // ---------- Notifikasi Adzan ----------
