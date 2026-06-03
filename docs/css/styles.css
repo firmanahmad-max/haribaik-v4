@@ -441,7 +441,7 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 
 /* Arah Kiblat (kompas) */
 .qibla-wrap { display: grid; place-items: center; margin: 10px 0; }
-.compass { position: relative; width: 180px; height: 180px; border-radius: 50%; border: 2px solid var(--border); background: radial-gradient(circle at 50% 50%, var(--bg-elevated), var(--bg-secondary)); transition: transform 0.2s ease; }
+.compass { position: relative; width: 180px; height: 180px; border-radius: 50%; border: 2px solid var(--border); background: radial-gradient(circle at 50% 50%, var(--bg-elevated), var(--bg-secondary)); will-change: transform; }
 .compass::after { content: ''; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-gold); transform: translate(-50%, -50%); }
 .cmp { position: absolute; font-size: 12px; font-weight: 700; color: var(--text-muted); }
 .cmp-n { top: 7px; left: 50%; transform: translateX(-50%); color: var(--accent-gold); }

@@ -69,3 +69,16 @@ export async function getTimings(lat, lng, date = new Date()) {
 }
 
 export const PRAYER_ORDER = KEYS.map((k) => k[0]);
+
+// Reverse-geocode koordinat → nama kota (BigDataCloud, gratis tanpa key).
+export async function reverseGeocode(lat, lng) {
+  try {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=id`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const j = await res.json();
+    return j.city || j.locality || j.principalSubdivision || null;
+  } catch {
+    return null;
+  }
+}

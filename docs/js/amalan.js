@@ -5,7 +5,7 @@ import { Deeds, Meta, dayKey } from './db.js';
 import { initTheme, isRamadan, setRamadan } from './theme.js';
 import { hijriMonth, hijriYear } from './context.js';
 import { trapFocus } from './a11y.js';
-import { CITIES, getCurrentCoords, getTimings, PRAYER_ORDER } from './pray.js';
+import { CITIES, getCurrentCoords, getTimings, PRAYER_ORDER, reverseGeocode } from './pray.js';
 import { qiblaBearing, requestOrientationPermission, startCompass, compassSupported } from './qibla.js';
 
 const $ = (id) => document.getElementById(id);
@@ -13,7 +13,7 @@ const $ = (id) => document.getElementById(id);
 const SALAT = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 const TODAY = dayKey(Date.now());
 
-const state = { today: null, all: [], times: null, loc: null, adzanTimers: [], qiblaBearing: null, heading: 0, stopCompass: null };
+const state = { today: null, all: [], times: null, loc: null, adzanTimers: [], qiblaBearing: null, heading: 0, displayRot: 0, rafId: null, stopCompass: null };
 
 let toastTimer = null;
 function toast(msg) {
@@ -364,7 +364,10 @@ async function initJadwal() {
     $('jadwalLoc').textContent = 'Mengambil lokasi…';
     try {
       const { lat, lng } = await getCurrentCoords();
-      await loadPrayer({ lat, lng, label: 'Lokasimu' });
+      $('jadwalLoc').textContent = 'Mengenali kota…';
+      const name = await reverseGeocode(lat, lng);
+      $('citySelect').value = ''; // lokasi GPS, bukan dari daftar kota
+      await loadPrayer({ lat, lng, label: name || 'Lokasimu' });
     } catch {
       $('jadwalLoc').textContent = 'Lokasi ditolak';
       toast('Izin lokasi ditolak. Pilih kota saja ya.');
@@ -522,8 +525,18 @@ function updateQibla(loc) {
 }
 
 function onHeading(h) {
-  state.heading = h;
-  $('compass').style.transform = `rotate(${-h}deg)`;
+  state.heading = h; // hanya simpan target; render dihaluskan di compassLoop
+}
+
+// Loop animasi: putar dial mulus ke -heading dengan easing & jalur sudut terpendek
+// (menghindari lompatan di batas 0°/360° dan meredam jitter sensor).
+function compassLoop() {
+  const target = -state.heading;
+  const delta = ((target - state.displayRot + 540) % 360) - 180;
+  state.displayRot += delta * 0.15;
+  const el = $('compass');
+  if (el) el.style.transform = `rotate(${state.displayRot.toFixed(2)}deg)`;
+  state.rafId = requestAnimationFrame(compassLoop);
 }
 
 function initQibla() {
@@ -533,6 +546,7 @@ function initQibla() {
     if (!ok) return toast('Izin sensor orientasi ditolak');
     if (state.stopCompass) state.stopCompass();
     state.stopCompass = startCompass(onHeading);
+    if (!state.rafId) compassLoop();
     toast('Kompas aktif 🧭');
   });
 }
