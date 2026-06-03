@@ -51,7 +51,9 @@ async function refreshContextBar() {
     hijriEl.textContent = showingHijri ? hijriEl.dataset.greg : hijriEl.dataset.hijri;
   };
   const streak = await touchStreak();
-  $('ctxStreak').textContent = `🔥 ${streak} hari`;
+  const streakEl = $('ctxStreak');
+  streakEl.textContent = `🔥 ${streak} hari`;
+  streakEl.title = 'Hari berturut-turut membuka HariBaik. Streak ibadah ada di halaman Amalan.';
 }
 
 // ---------- Mood selector ----------

@@ -415,7 +415,8 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .deed-item.done .deed-check { background: var(--accent-teal); border-color: var(--accent-teal); color: #fff; }
 
 .deeds-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-.dweek-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dweek-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; background: transparent; border: none; padding: 4px 0; cursor: pointer; font: inherit; border-radius: 8px; }
+.dweek-cell:hover { background: var(--bg-elevated); }
 .dweek-ring { position: relative; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--accent-teal) calc(var(--p) * 1%), rgba(127, 127, 127, 0.18) 0); }
 .dweek-ring::before { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--bg-secondary); }
 .dweek-ring span { position: relative; font-size: 11px; font-weight: 700; color: var(--text-primary); }
@@ -434,7 +435,13 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .ch-bar { height: 8px; background: var(--bg-elevated); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
 .ch-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-teal), var(--accent-gold)); transition: width 0.4s ease; }
 .ch-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-bottom: 12px; }
-.ch-cell { aspect-ratio: 1; border-radius: 7px; background: var(--bg-elevated); border: 1px solid var(--border); display: grid; place-items: center; font-size: 11px; color: var(--text-muted); }
+.ch-cell { aspect-ratio: 1; border-radius: 7px; background: var(--bg-elevated); border: 1px solid var(--border); display: grid; place-items: center; font-size: 11px; color: var(--text-muted); cursor: pointer; font-family: inherit; padding: 0; }
+.ch-cell:disabled { cursor: default; }
+.ch-cell:not(:disabled):hover { border-color: var(--accent-teal); }
+.ch-hist-item { font-size: 13px; padding: 7px 0; border-top: 1px solid var(--border); color: var(--text-muted); }
+.ch-hist-item b { color: var(--text-primary); }
+.rcountdown { margin-top: 12px; font-size: 15px; color: var(--accent-gold); text-align: center; font-weight: 600; }
+.rcountdown:empty { display: none; }
 .ch-cell.done { background: var(--accent-teal); border-color: var(--accent-teal); color: #fff; font-weight: 700; }
 .ch-cell.today { border-color: var(--accent-gold); }
 .ch-cell.future { opacity: 0.5; }

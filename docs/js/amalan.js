@@ -1,8 +1,10 @@
 // amalan.js — halaman Amalan: tracker ibadah harian, statistik, Istiqomah Challenge,
-// dan Mode Ramadan (Fase 3).
+// dan Mode Ramadan (Fase 3 + perbaikan).
 
 import { Deeds, Meta, dayKey } from './db.js';
 import { initTheme, isRamadan, setRamadan } from './theme.js';
+import { hijriMonth, hijriYear } from './context.js';
+import { trapFocus } from './a11y.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -27,37 +29,49 @@ function emptyDeed(day) {
   return { day, salat: {}, tilawah: false, puasa: false };
 }
 function deedComplete(d, ramadan) {
-  const salatDone = SALAT.every((s) => d.salat?.[s]);
-  const base = salatDone && d.tilawah;
+  const base = SALAT.every((s) => d.salat?.[s]) && d.tilawah;
   return ramadan ? base && d.puasa : base;
 }
 function salatCount(d) {
   return SALAT.filter((s) => d.salat?.[s]).length;
 }
-
-// ---------- Checklist hari ini ----------
-function renderToday() {
+function isOn(key, d = state.today) {
+  if (key.startsWith('salat:')) return !!d.salat?.[key.split(':')[1]];
+  return !!d[key];
+}
+function deedItemsHtml(d) {
   const ramadan = isRamadan();
-  const d = state.today;
   const items = [
     ...SALAT.map((s) => ({ key: `salat:${s}`, icon: '🕌', label: `Sholat ${s}`, on: !!d.salat?.[s] })),
     { key: 'tilawah', icon: '📖', label: 'Tilawah Al-Quran', on: !!d.tilawah },
   ];
   if (ramadan) items.push({ key: 'puasa', icon: '🌙', label: 'Puasa', on: !!d.puasa });
-
-  $('deedsList').innerHTML = items.map((it) => `
+  return items.map((it) => `
     <button class="deed-item${it.on ? ' done' : ''}" data-key="${it.key}" aria-pressed="${it.on}">
       <span class="deed-ico">${it.icon}</span>
       <span class="deed-label">${it.label}</span>
       <span class="deed-check">${it.on ? '✓' : ''}</span>
     </button>`).join('');
+}
+function countOf(d) {
+  const ramadan = isRamadan();
+  const total = SALAT.length + 1 + (ramadan ? 1 : 0);
+  const done = salatCount(d) + (d.tilawah ? 1 : 0) + (ramadan && d.puasa ? 1 : 0);
+  return { done, total };
+}
 
-  const total = items.length;
-  const done = items.filter((i) => i.on).length;
+// ---------- Checklist hari ini ----------
+function renderToday() {
+  $('deedsList').innerHTML = deedItemsHtml(state.today);
+  updateCount();
+}
+function updateCount() {
+  const { done, total } = countOf(state.today);
   $('deedsCount').textContent = `${done}/${total}`;
 }
 
-async function toggleDeed(key) {
+// Toggle hari ini secara in-place (menjaga fokus keyboard).
+async function toggleDeed(key, btn) {
   const d = state.today;
   if (key.startsWith('salat:')) {
     const s = key.split(':')[1];
@@ -67,8 +81,15 @@ async function toggleDeed(key) {
     d[key] = !d[key];
   }
   await Deeds.set(TODAY, d);
+  const idx = state.all.findIndex((x) => x.day === TODAY);
+  if (idx >= 0) state.all[idx] = d; else state.all.push(d);
   if (navigator.vibrate) navigator.vibrate(8);
-  await refresh();
+  const on = isOn(key);
+  btn.classList.toggle('done', on);
+  btn.setAttribute('aria-pressed', String(on));
+  btn.querySelector('.deed-check').textContent = on ? '✓' : '';
+  updateCount();
+  renderStats();
 }
 
 // ---------- Statistik ----------
@@ -78,8 +99,7 @@ function computeStreak(predicate) {
   let streak = 0;
   const cur = new Date();
   for (;;) {
-    const k = dayKey(cur.getTime());
-    const d = map[k];
+    const d = map[dayKey(cur.getTime())];
     if (d && predicate(d)) { streak++; cur.setDate(cur.getDate() - 1); } else break;
   }
   return streak;
@@ -98,7 +118,6 @@ function renderStats() {
     <div class="jstat"><b>⭐ ${fullStreak}</b><span>hari sempurna</span></div>
     <div class="jstat"><b>${totalDays}</b><span>hari aktif</span></div>`;
 
-  // 7 hari
   const map = {};
   state.all.forEach((d) => { map[d.day] = d; });
   const cells = [];
@@ -109,20 +128,67 @@ function renderStats() {
     const sc = salatCount(d);
     const label = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][dt.getDay()];
     const pct = Math.round((sc / 5) * 100);
-    cells.push(`<div class="dweek-cell" title="${k}: ${sc}/5 sholat${d.tilawah ? ', tilawah' : ''}">
+    const aria = `${label}, ${sc} dari 5 sholat${d.tilawah ? ', tilawah selesai' : ''}. Ketuk untuk mengedit.`;
+    cells.push(`<button class="dweek-cell" data-day="${k}" aria-label="${aria}" title="${k}: ${sc}/5 sholat${d.tilawah ? ', tilawah' : ''}">
       <div class="dweek-ring" style="--p:${pct}"><span>${sc}<small>/5</small></span></div>
-      <i class="dweek-til ${d.tilawah ? 'on' : ''}" title="tilawah"></i>
+      <i class="dweek-til ${d.tilawah ? 'on' : ''}"></i>
       <span>${label}</span>
-    </div>`);
+    </button>`);
   }
   $('deedsWeek').innerHTML = cells.join('');
+}
+
+// ---------- Editor hari (termasuk hari terlewat) ----------
+async function openDayEditor(day) {
+  let d = (await Deeds.get(day)) || emptyDeed(day);
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  const label = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(day + 'T00:00:00'));
+  overlay.innerHTML = `
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Amalan ${label}">
+      <div class="sheet-handle"></div>
+      <h2 class="sheet-title">${label}</h2>
+      <div class="deeds-list" id="edList"></div>
+      <div class="sheet-actions"><span class="spacer"></span><button class="chip-btn" id="edClose">Tutup</button></div>
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+  const close = async () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 250); await refresh(); };
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  trapFocus(overlay, overlay.querySelector('.sheet'), { onEscape: close });
+  overlay.querySelector('#edClose').addEventListener('click', close);
+
+  const list = overlay.querySelector('#edList');
+  const draw = () => {
+    list.innerHTML = deedItemsHtml(d);
+    list.querySelectorAll('.deed-item').forEach((b) => b.addEventListener('click', async () => {
+      const key = b.dataset.key;
+      if (key.startsWith('salat:')) { const s = key.split(':')[1]; d.salat = d.salat || {}; d.salat[s] = !d.salat[s]; }
+      else d[key] = !d[key];
+      await Deeds.set(day, d);
+      const on = isOn(key, d);
+      b.classList.toggle('done', on);
+      b.setAttribute('aria-pressed', String(on));
+      b.querySelector('.deed-check').textContent = on ? '✓' : '';
+      if (navigator.vibrate) navigator.vibrate(6);
+    }));
+  };
+  draw();
+  overlay.querySelector('#edClose').focus();
 }
 
 // ---------- Istiqomah Challenge ----------
 const PRESET_HABITS = ['Tilawah 1 halaman', 'Sholat tepat waktu', 'Sedekah harian', 'Dzikir pagi & petang', 'Sholat Dhuha'];
 
-async function getChallenge() {
-  return (await Meta.get('challenge', null));
+function getChallenge() { return Meta.get('challenge', null); }
+
+function challengeStreak(ch) {
+  const days = ch.days || {};
+  let streak = 0;
+  const cur = new Date();
+  if (!days[dayKey(cur.getTime())]) cur.setDate(cur.getDate() - 1);
+  for (;;) { if (days[dayKey(cur.getTime())]) { streak++; cur.setDate(cur.getDate() - 1); } else break; }
+  return streak;
 }
 
 function renderChallenge(ch) {
@@ -130,7 +196,7 @@ function renderChallenge(ch) {
   if (!ch) {
     area.innerHTML = `
       <p class="jempty" style="text-align:left">Pilih satu kebiasaan baik dan jaga selama 30 hari. Bismillah 🌱</p>
-      <input id="chHabit" class="ch-input" type="text" maxlength="40" list="chPresets" placeholder="mis. Tilawah 1 halaman" />
+      <input id="chHabit" class="ch-input" type="text" maxlength="40" list="chPresets" placeholder="mis. Tilawah 1 halaman" aria-label="Kebiasaan" />
       <datalist id="chPresets">${PRESET_HABITS.map((h) => `<option value="${escapeHtml(h)}"></option>`).join('')}</datalist>
       <button class="primary-btn" id="chStart">Mulai challenge</button>`;
     $('chStart').addEventListener('click', startChallenge);
@@ -142,16 +208,16 @@ function renderChallenge(ch) {
   const pct = Math.round((doneCount / ch.target) * 100);
   const todayDone = !!days[TODAY];
   const streak = challengeStreak(ch);
+  const complete = doneCount >= ch.target;
 
-  // grid 30
   const start = new Date(ch.startDay + 'T00:00:00');
   let grid = '';
   for (let i = 0; i < ch.target; i++) {
     const d = new Date(start); d.setDate(d.getDate() + i);
     const k = dayKey(d.getTime());
-    const isPast = d.getTime() <= Date.now();
+    const isFuture = d.getTime() > Date.now() && k !== TODAY;
     const done = !!days[k];
-    grid += `<div class="ch-cell${done ? ' done' : ''}${k === TODAY ? ' today' : ''}${!isPast && !done ? ' future' : ''}" title="Hari ${i + 1}">${done ? '✓' : i + 1}</div>`;
+    grid += `<button class="ch-cell${done ? ' done' : ''}${k === TODAY ? ' today' : ''}${isFuture ? ' future' : ''}" data-day="${k}"${isFuture ? ' disabled' : ''} aria-label="Hari ${i + 1}${done ? ', selesai' : ''}" title="Hari ${i + 1}">${done ? '✓' : i + 1}</button>`;
   }
 
   area.innerHTML = `
@@ -161,13 +227,26 @@ function renderChallenge(ch) {
     </div>
     <div class="ch-bar"><i style="width:${pct}%"></i></div>
     <div class="ch-grid">${grid}</div>
+    <p class="field-hint">Ketuk sel hari yang sudah/ belum kamu lakukan untuk menandainya.</p>
     <div class="ch-actions">
-      <button class="primary-btn" id="chCheck"${todayDone ? ' disabled' : ''}>${todayDone ? '✓ Sudah hari ini' : 'Tandai selesai hari ini'}</button>
+      ${complete
+        ? '<button class="primary-btn" id="chFinish">🎉 Selesaikan & arsipkan</button>'
+        : `<button class="primary-btn" id="chCheck"${todayDone ? ' disabled' : ''}>${todayDone ? '✓ Sudah hari ini' : 'Tandai selesai hari ini'}</button>`}
       <button class="mini-btn danger" id="chCancel">Batalkan</button>
-    </div>
-    ${doneCount >= ch.target ? '<p class="ch-done">🎉 Alhamdulillah, challenge selesai! Semoga jadi kebiasaan.</p>' : ''}`;
+    </div>`;
 
-  $('chCheck').addEventListener('click', async () => {
+  $('challengeArea').querySelector('.ch-grid').addEventListener('click', async (e) => {
+    const cell = e.target.closest('.ch-cell[data-day]:not([disabled])');
+    if (!cell) return;
+    const k = cell.dataset.day;
+    ch.days = ch.days || {};
+    if (ch.days[k]) delete ch.days[k]; else ch.days[k] = true;
+    await Meta.set('challenge', ch);
+    if (navigator.vibrate) navigator.vibrate(8);
+    renderChallenge(ch);
+  });
+
+  $('chCheck')?.addEventListener('click', async () => {
     ch.days = ch.days || {};
     ch.days[TODAY] = true;
     await Meta.set('challenge', ch);
@@ -175,23 +254,20 @@ function renderChallenge(ch) {
     toast('Mantap! Satu hari lagi terlewati 🌟');
     renderChallenge(ch);
   });
+  $('chFinish')?.addEventListener('click', async () => {
+    const hist = (await Meta.get('challengeHistory', [])) || [];
+    hist.push({ habit: ch.habit, startDay: ch.startDay, finishedDay: TODAY, daysDone: doneCount, target: ch.target });
+    await Meta.set('challengeHistory', hist.slice(-20));
+    await Meta.set('challenge', null);
+    toast('Alhamdulillah, challenge diarsipkan! 🎉');
+    renderChallenge(null);
+    renderChallengeHistory();
+  });
   $('chCancel').addEventListener('click', async () => {
     if (!confirm('Batalkan challenge ini? Progresnya akan hilang.')) return;
     await Meta.set('challenge', null);
     renderChallenge(null);
   });
-}
-
-function challengeStreak(ch) {
-  const days = ch.days || {};
-  let streak = 0;
-  const cur = new Date();
-  // mulai dari hari ini jika sudah, kalau belum mulai dari kemarin
-  if (!days[dayKey(cur.getTime())]) cur.setDate(cur.getDate() - 1);
-  for (;;) {
-    if (days[dayKey(cur.getTime())]) { streak++; cur.setDate(cur.getDate() - 1); } else break;
-  }
-  return streak;
 }
 
 async function startChallenge() {
@@ -203,30 +279,73 @@ async function startChallenge() {
   renderChallenge(ch);
 }
 
+async function renderChallengeHistory() {
+  const hist = (await Meta.get('challengeHistory', [])) || [];
+  const el = $('challengeHistory');
+  if (!hist.length) { el.innerHTML = ''; return; }
+  el.innerHTML = '<h3 class="jsub">Challenge selesai</h3>' +
+    hist.slice().reverse().map((h) => `<div class="ch-hist-item">✅ <b>${escapeHtml(h.habit)}</b> <small>${h.daysDone}/${h.target} hari · ${escapeHtml(h.finishedDay)}</small></div>`).join('');
+}
+
 // ---------- Ramadan ----------
+let countdownTimer = null;
 async function initRamadan() {
   const on = isRamadan();
   $('ramadanToggle').checked = on;
   applyRamadanUi(on);
-  const imsak = (await Meta.get('imsakTime', '')) || '';
-  const iftar = (await Meta.get('iftarTime', '')) || '';
-  $('imsakTime').value = imsak;
-  $('iftarTime').value = iftar;
+  $('imsakTime').value = (await Meta.get('imsakTime', '')) || '';
+  $('iftarTime').value = (await Meta.get('iftarTime', '')) || '';
 
   $('ramadanToggle').addEventListener('change', async (e) => {
     setRamadan(e.target.checked);
     applyRamadanUi(e.target.checked);
     await refresh();
+    updateCountdown();
     toast(e.target.checked ? 'Mode Ramadan aktif 🌙' : 'Mode Ramadan nonaktif');
   });
-  $('imsakTime').addEventListener('change', (e) => Meta.set('imsakTime', e.target.value));
-  $('iftarTime').addEventListener('change', (e) => Meta.set('iftarTime', e.target.value));
+  $('imsakTime').addEventListener('change', (e) => { Meta.set('imsakTime', e.target.value); updateCountdown(); });
+  $('iftarTime').addEventListener('change', (e) => { Meta.set('iftarTime', e.target.value); updateCountdown(); });
+
+  countdownTimer = setInterval(updateCountdown, 1000);
+  updateCountdown();
 }
 function applyRamadanUi(on) {
   $('ramadanExtra').hidden = !on;
   $('ramadanHint').textContent = on
     ? 'Nuansa Ramadan aktif. Puasa kini bisa ditandai di Amalan hari ini.'
     : 'Aktifkan saat bulan Ramadan untuk fitur puasa & nuansa khusus.';
+}
+function updateCountdown() {
+  const el = $('ramadanCountdown');
+  if (!el) return;
+  if (!isRamadan()) { el.textContent = ''; return; }
+  const mk = (t) => { if (!t) return null; const [h, m] = t.split(':').map(Number); const d = new Date(); d.setHours(h, m, 0, 0); return d; };
+  const now = new Date();
+  const cands = [];
+  const im = mk($('imsakTime').value);
+  const ift = mk($('iftarTime').value);
+  if (im) cands.push({ t: im, label: 'imsak' });
+  if (ift) cands.push({ t: ift, label: 'berbuka' });
+  if (!cands.length) { el.textContent = ''; return; }
+  let next = cands.filter((c) => c.t > now).sort((a, b) => a.t - b.t)[0];
+  if (!next) { const c = cands.sort((a, b) => a.t - b.t)[0]; const t = new Date(c.t); t.setDate(t.getDate() + 1); next = { t, label: c.label }; }
+  const diff = next.t - now;
+  const hh = Math.floor(diff / 3600000), mm = Math.floor((diff % 3600000) / 60000), ss = Math.floor((diff % 60000) / 1000);
+  el.innerHTML = `⏳ Menuju <b>${next.label}</b>: ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+}
+
+async function maybeSuggestRamadan() {
+  if (isRamadan() || hijriMonth() !== 9) return;
+  const y = hijriYear();
+  if (Number(await Meta.get('ramadanSuggestedFor', 0)) === y) return;
+  await Meta.set('ramadanSuggestedFor', y);
+  if (confirm('Bulan Ramadan telah tiba 🌙 Aktifkan Mode Ramadan?')) {
+    setRamadan(true);
+    $('ramadanToggle').checked = true;
+    applyRamadanUi(true);
+    await refresh();
+    updateCountdown();
+  }
 }
 
 // ---------- Refresh ----------
@@ -242,10 +361,16 @@ async function init() {
   await initRamadan();
   $('deedsList').addEventListener('click', (e) => {
     const b = e.target.closest('.deed-item[data-key]');
-    if (b) toggleDeed(b.dataset.key);
+    if (b) toggleDeed(b.dataset.key, b);
+  });
+  $('deedsWeek').addEventListener('click', (e) => {
+    const cell = e.target.closest('.dweek-cell[data-day]');
+    if (cell) openDayEditor(cell.dataset.day);
   });
   await refresh();
   renderChallenge(await getChallenge());
+  await renderChallengeHistory();
+  await maybeSuggestRamadan();
 }
 
 init();

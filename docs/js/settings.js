@@ -1,7 +1,7 @@
 // settings.js — bottom-sheet pengaturan + onboarding pertama kali.
 // Menggantikan window.prompt untuk waktu pengingat, dan menampung nama/goal pengguna.
 
-import { Meta, Messages, Favorites, Journal, resetAll } from './db.js';
+import { Meta, Messages, Favorites, Journal, Deeds, resetAll } from './db.js';
 import { trapFocus } from './a11y.js';
 
 let onSaveCb = null;
@@ -134,8 +134,8 @@ export async function openSettings({ welcome = false } = {}) {
 
   // Backup menyeluruh: favorit + jurnal + meta (profil/pengaturan).
   overlay.querySelector('#setBackup').addEventListener('click', async () => {
-    const [favorites, journal, meta] = await Promise.all([Favorites.all(), Journal.all(), Meta.all()]);
-    const data = { app: 'HariBaik', version: 1, exportedAt: Date.now(), favorites, journal, meta };
+    const [favorites, journal, deeds, meta] = await Promise.all([Favorites.all(), Journal.all(), Deeds.all(), Meta.all()]);
+    const data = { app: 'HariBaik', version: 2, exportedAt: Date.now(), favorites, journal, deeds, meta };
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
     a.download = 'haribaik-backup.json';
@@ -169,6 +169,14 @@ export async function openSettings({ welcome = false } = {}) {
         if (it?.mood && it?.ts && !seenJ.has(`${it.ts}|${it.mood}`)) {
           await Journal.add({ mood: it.mood, note: it.note || '', ts: Number(it.ts) });
           seenJ.add(`${it.ts}|${it.mood}`);
+        }
+      }
+      const existD = await Deeds.all();
+      const seenD = new Set(existD.map((e) => e.day));
+      for (const it of data.deeds || []) {
+        if (it?.day && !seenD.has(it.day)) {
+          await Deeds.set(it.day, it);
+          seenD.add(it.day);
         }
       }
       for (const m of data.meta || []) if (m?.key) await Meta.set(m.key, m.value);

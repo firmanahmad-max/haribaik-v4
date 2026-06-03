@@ -49,6 +49,24 @@ export function hijriDate(d = new Date()) {
   }
 }
 
+// Nomor bulan Hijriyah (1-12; Ramadan = 9) dan tahun Hijriyah.
+export function hijriMonth(d = new Date()) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', { calendar: 'islamic-umalqura', month: 'numeric' }).formatToParts(d);
+    return parseInt(parts.find((p) => p.type === 'month')?.value, 10) || 0;
+  } catch {
+    return 0;
+  }
+}
+export function hijriYear(d = new Date()) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', { calendar: 'islamic-umalqura', year: 'numeric' }).formatToParts(d);
+    return parseInt((parts.find((p) => p.type === 'year')?.value || '').replace(/\D/g, ''), 10) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 // Tanggal Masehi (untuk ditampilkan saat chip Hijriyah diketuk).
 export function gregorianDate(d = new Date()) {
   try {
