@@ -3,7 +3,10 @@
 import { Favorites, Reports } from './db.js';
 import { shareCard } from './share.js';
 import { speak, stopSpeak, ttsSupported, arabicVoiceAvailable } from './tts.js';
-import { QUICK_REPLIES, badgeFor } from './config.js';
+import { badgeFor } from './config.js';
+import { t } from './i18n.js';
+
+const QUICK_REPLY_KEYS = ['qr_more', 'qr_doa', 'qr_how', 'qr_thanks'];
 
 const chatEl = () => document.getElementById('chat');
 
@@ -80,7 +83,8 @@ export function hideTyping() {
  * @param {(msg:string)=>void} toast
  */
 export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
-  const { cls: badgeClass, label: badgeLabel } = badgeFor(r.source_type);
+  const { cls: badgeClass } = badgeFor(r.source_type);
+  const badgeLabel = t('label_' + badgeClass);
 
   const wrap = document.createElement('div');
   wrap.className = 'msg ai';
@@ -95,11 +99,11 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
         <div class="translation">"${escapeHtml(r.translation)}"</div>
         <div class="source">— ${escapeHtml(r.source)}</div>
         <div class="card-actions">
-          <button class="mini-btn js-fav" title="Simpan ke favorit">🔖 Simpan</button>
-          <button class="mini-btn js-copy" title="Salin teks">📋 Salin</button>
-          <button class="mini-btn js-share" title="Bagikan">📤 Bagikan</button>
-          <button class="mini-btn js-tts" title="Dengarkan">🔊 Dengar</button>
-          <button class="mini-btn js-report" title="Laporkan kutipan tidak akurat">🚩 Laporkan</button>
+          <button class="mini-btn js-fav">🔖 ${t('btn_save')}</button>
+          <button class="mini-btn js-copy">📋 ${t('btn_copy')}</button>
+          <button class="mini-btn js-share">📤 ${t('btn_share')}</button>
+          <button class="mini-btn js-tts">🔊 ${t('btn_listen')}</button>
+          <button class="mini-btn js-report">🚩 ${t('btn_report')}</button>
         </div>
       </div>
 
@@ -120,7 +124,8 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
 
   // Quick replies
   const qr = wrap.querySelector('.quick-replies');
-  QUICK_REPLIES.forEach((text) => {
+  QUICK_REPLY_KEYS.forEach((key) => {
+    const text = t(key);
     const b = document.createElement('button');
     b.className = 'chip-btn';
     b.textContent = text;
@@ -139,9 +144,9 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
       source_type: (r.source_type || '').toLowerCase(),
     });
     favBtn.classList.add('active', 'pop');
-    favBtn.innerHTML = '✓ Tersimpan';
+    favBtn.innerHTML = `✓ ${t('saved_done')}`;
     if (navigator.vibrate) navigator.vibrate(12);
-    toast?.('Disimpan ke favorit');
+    toast?.(t('saved_fav'));
   });
 
   // Salin
@@ -149,9 +154,9 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
     const txt = `${r.arabic}\n\n"${r.translation}"\n— ${r.source}\n\nvia HariBaik`;
     try {
       await navigator.clipboard.writeText(txt);
-      toast?.('Teks disalin');
+      toast?.(t('copied'));
     } catch {
-      toast?.('Gagal menyalin');
+      toast?.(t('copy_fail'));
     }
   });
 
@@ -203,7 +208,7 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
     reportBtn.classList.add('active');
     reportBtn.innerHTML = '✓ Dilaporkan';
     reportBtn.disabled = true;
-    toast?.('Terima kasih, laporan tercatat 🙏 Kami akan tinjau.');
+    toast?.(t('report_thanks'));
   });
 
   chatEl().appendChild(wrap);
@@ -222,7 +227,7 @@ export function renderError(msg, onRetry) {
   if (typeof onRetry === 'function') {
     const b = document.createElement('button');
     b.className = 'chip-btn';
-    b.textContent = '🔄 Coba lagi';
+    b.textContent = `🔄 ${t('retry')}`;
     b.addEventListener('click', () => {
       wrap.remove();
       onRetry();

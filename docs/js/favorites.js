@@ -4,6 +4,7 @@ import { Favorites } from './db.js';
 import { initTheme } from './theme.js';
 import { shareCard } from './share.js';
 import { badgeFor } from './config.js';
+import { t, applyI18n } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 let currentFilter = 'all';
@@ -50,7 +51,7 @@ async function render() {
     const card = document.createElement('div');
     card.className = 'card ayat-card';
     card.innerHTML = `
-      <div class="label"><span>Kutipan</span><span class="badge ${badge.cls}">${badge.label}</span></div>
+      <div class="label"><span>Kutipan</span><span class="badge ${badge.cls}">${t('label_' + badge.cls)}</span></div>
       <div class="arabic">${escapeHtml(item.arabic)}</div>
       <div class="translation">"${escapeHtml(item.translation)}"</div>
       <div class="source">— ${escapeHtml(item.source)}</div>
@@ -130,6 +131,7 @@ function initToolbar() {
   });
 }
 
+applyI18n();
 initTheme($('themeBtn'));
 initFilters();
 initToolbar();

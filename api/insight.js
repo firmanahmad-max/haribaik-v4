@@ -13,7 +13,10 @@ function summarizeMoods(moods) {
   return { ringkas, dominan, total: moods.length };
 }
 
-function buildInsightPrompt(moods, profile, topics) {
+function buildInsightPrompt(moods, profile, topics, lang) {
+  const langLine = lang === 'en'
+    ? 'Tulis SEMUA nilai teks (judul, insight, saran, doa_translation) dalam Bahasa Inggris. Pertahankan "doa_arabic" dalam huruf Arab.'
+    : 'Tulis dalam Bahasa Indonesia.';
   const nama = (profile.nama || '').trim() || 'Sahabat';
   const peran = profile.peran ? ` Peran: ${profile.peran}.` : '';
   const usia = profile.usia ? ` Usia: ${profile.usia}.` : '';
@@ -27,7 +30,7 @@ function buildInsightPrompt(moods, profile, topics) {
 Data mood pengguna (${total} catatan minggu ini) untuk ${nama}:${usia}${peran}
 Ringkasan: ${ringkas}. Mood paling sering: ${dominan}.${topicLine}
 
-Tulis refleksi yang hangat, empatik, dan tidak menggurui (di dalam field JSON). Kaitkan dengan nilai-nilai Islami (sabar, syukur, tawakal) secara halus. Bahasa Indonesia.
+Tulis refleksi yang hangat, empatik, dan tidak menggurui (di dalam field JSON). Kaitkan dengan nilai-nilai Islami (sabar, syukur, tawakal) secara halus. ${langLine}
 
 KELUARAN: HANYA satu objek JSON valid, tanpa teks lain, tanpa markdown. Struktur persis:
 {
@@ -57,7 +60,8 @@ function mockInsight(moods) {
 }
 
 export async function handleInsight(body = {}) {
-  const { moods = [], profile = {}, topics = [] } = body;
+  const { moods = [], profile = {}, topics = [], lang = 'id' } = body;
+  const safeLang = lang === 'en' ? 'en' : 'id';
   const safeTopics = Array.isArray(topics)
     ? topics.map((t) => String(t || '').slice(0, 120)).filter(Boolean).slice(-8)
     : [];
@@ -84,7 +88,7 @@ export async function handleInsight(body = {}) {
 
   let parsed;
   try {
-    parsed = await sumopodJson(buildInsightPrompt(safeMoods, safeProfile, safeTopics), { maxTokens: 700 });
+    parsed = await sumopodJson(buildInsightPrompt(safeMoods, safeProfile, safeTopics, safeLang), { maxTokens: 700 });
   } catch (err) {
     return { status: 502, body: { error: 'Gagal memanggil AI', detail: err.message } };
   }

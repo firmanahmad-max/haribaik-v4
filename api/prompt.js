@@ -21,7 +21,10 @@ const RESPONSE_SHAPE = `{
  * @param {string} opts.sourceInstruction instruksi sumber dari rotation.js
  * @param {string[]} [opts.recentMoods] mood 7 hari terakhir (untuk personalisasi)
  */
-export function buildSystemPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [] }) {
+export function buildSystemPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [], lang = 'id' }) {
+  const langLine = lang === 'en'
+    ? 'BAHASA KELUARAN: Tulis SEMUA nilai teks (empati, translation, aksi, doa_translation) dalam Bahasa Inggris yang hangat. Pertahankan field "arabic" dan "doa_arabic" tetap dalam huruf Arab.'
+    : 'BAHASA KELUARAN: Bahasa Indonesia yang hangat.';
   const nama = (profile.nama || '').trim() || 'Sahabat';
   const goalLine = profile.goal ? `Tujuan/harapan user saat ini: ${profile.goal}.` : '';
   const genderLine = profile.gender ? `Jenis kelamin pengguna: ${profile.gender}.` : '';
@@ -50,7 +53,7 @@ Aturan konten:
 1. WAJIB memakai sumber yang ditentukan di atas; jangan menggantinya.
 2. Jika diminta HADITS/ATSAR, DILARANG memakai ayat Al-Quran. Jika diminta AL-QURAN, DILARANG memakai hadits.
 3. Kutipan harus AKURAT. JANGAN mengarang ayat/hadits palsu. Jika ragu nomornya, pilih kutipan shahih yang kamu yakini benar.
-4. Bahasa Indonesia yang hangat dan menyentuh hati. Sapa pengguna dengan namanya bila wajar.
+4. ${langLine} Sapa pengguna dengan namanya bila wajar.
 5. Field "aksi" harus konkret dan kecil (bisa dikerjakan hari ini), bukan nasihat umum.
 
 KELUARAN: keluarkan HANYA satu objek JSON valid, tanpa teks lain sebelum/sesudahnya, tanpa blok kode markdown, tanpa komentar. Struktur persis:

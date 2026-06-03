@@ -9,6 +9,7 @@ import { initVoice } from './voice.js';
 import { initNotify } from './notify.js';
 import { initSettings, openSettings, maybeOnboard } from './settings.js';
 import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar } from './chat.js';
+import { t, getLang, applyI18n } from './i18n.js';
 
 // Avatar pengguna berdasarkan jenis kelamin.
 function avatarFor(gender) {
@@ -62,7 +63,7 @@ function buildMoodSelector() {
   MOODS.forEach((mood) => {
     const b = document.createElement('button');
     b.className = 'mood-pill';
-    b.textContent = `${MOOD_META[mood]?.emoji || ''} ${mood}`.trim();
+    b.textContent = `${MOOD_META[mood]?.emoji || ''} ${t('mood_' + mood, mood)}`.trim();
     b.addEventListener('click', () => {
       const wasSelected = b.classList.contains('selected');
       wrap.querySelectorAll('.mood-pill').forEach((p) => p.classList.remove('selected'));
@@ -138,6 +139,7 @@ async function requestAi(message, mood) {
       temporal: { waktu: t.waktu, hari: t.hari, hijri: t.hijri },
       requestCount,
       recentMoods: await recentMoods(),
+      lang: getLang(),
     });
 
     hideTyping();
@@ -156,13 +158,10 @@ async function requestAi(message, mood) {
 
 // Pesan error yang ramah & spesifik berdasarkan jenis kegagalan.
 function friendlyError(err) {
-  if (!navigator.onLine || err?.status === 0) {
-    return 'Kamu sedang offline. Periksa koneksi internet, lalu coba lagi.';
-  }
-  if (err?.status === 429) return 'Sebentar ya — terlalu banyak permintaan dalam waktu singkat. Coba lagi beberapa saat.';
-  if (err?.status === 502 || err?.status === 503) return 'AI sedang sibuk atau bermasalah sesaat. Coba lagi sebentar.';
-  if (err?.status >= 500) return 'Server sedang bermasalah. Coba lagi sebentar lagi.';
-  return 'Gagal terhubung ke server. Coba lagi.';
+  if (!navigator.onLine || err?.status === 0) return t('err_offline');
+  if (err?.status === 429) return t('err_429');
+  if (err?.status >= 500) return t('err_5xx');
+  return t('err_generic');
 }
 
 // ---------- Textarea auto-grow ----------
@@ -217,8 +216,8 @@ async function maybeShowDisclaimer() {
   const bar = document.createElement('div');
   bar.className = 'disclaimer';
   bar.innerHTML =
-    '<span>ℹ️ Kutipan ayat, hadits dan doa bisa terjadi kekeliruan. Mohon bantu verifikasi sumber sebelum diamalkan dan dibagikan.</span>' +
-    '<button class="mini-btn js-ok">Mengerti</button>';
+    `<span>ℹ️ ${t('disclaimer')}</span>` +
+    `<button class="mini-btn js-ok">${t('understood')}</button>`;
   bar.querySelector('.js-ok').addEventListener('click', async () => {
     bar.remove();
     await Meta.set('disclaimerSeen', DISCLAIMER_VERSION);
@@ -245,6 +244,7 @@ async function restoreConversation() {
 
 // ---------- Init ----------
 async function init() {
+  applyI18n();
   initTheme($('themeBtn'));
   buildMoodSelector();
   initVoice($('voiceBtn'), $('input'), toast);

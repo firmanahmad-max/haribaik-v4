@@ -20,14 +20,14 @@
           <div class="logo">H</div>
           <div>
             <h1>Jurnal</h1>
-            <div class="tagline">Pantau perjalanan hatimu</div>
+            <div class="tagline" data-i18n="tagline_journal">Pantau perjalanan hatimu</div>
           </div>
         </div>
         <nav class="tabs">
-          <a href="index.html">Chat</a>
-          <a href="journal.html" class="active">Jurnal</a>
-          <a href="amalan.html">Amalan</a>
-          <a href="favorites.html">Favorit</a>
+          <a href="index.html" data-i18n="nav_chat">Chat</a>
+          <a href="journal.html" class="active" data-i18n="nav_journal">Jurnal</a>
+          <a href="amalan.html" data-i18n="nav_deeds">Amalan</a>
+          <a href="favorites.html" data-i18n="nav_favorites">Favorit</a>
         </nav>
         <div class="header-actions">
           <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema">🌙</button>
@@ -38,17 +38,17 @@
     <div class="journal-page">
       <!-- Catat mood -->
       <section class="card jcard">
-        <h2 class="jtitle">Bagaimana perasaanmu?</h2>
+        <h2 class="jtitle" data-i18n="j_how">Bagaimana perasaanmu?</h2>
         <div class="mood-selector inline" id="jMoodSelector"></div>
-        <textarea id="jNote" rows="2" placeholder="Tulis catatan singkat (opsional)…" aria-label="Catatan"></textarea>
-        <button class="primary-btn" id="jSave">Simpan ke jurnal</button>
+        <textarea id="jNote" rows="2" placeholder="Tulis catatan singkat (opsional)…" data-i18n-ph="j_note_ph" aria-label="Catatan"></textarea>
+        <button class="primary-btn" id="jSave" data-i18n="j_save">Simpan ke jurnal</button>
       </section>
 
       <!-- Insight AI mingguan -->
       <section class="card jcard">
         <div class="jhead">
-          <h2 class="jtitle">Insight mingguan</h2>
-          <button class="mini-btn" id="jInsightBtn">✨ Buat insight</button>
+          <h2 class="jtitle" data-i18n="j_insight">Insight mingguan</h2>
+          <button class="mini-btn" id="jInsightBtn" data-i18n="j_make_insight">✨ Buat insight</button>
         </div>
         <div id="jInsight" class="jinsight-empty">Catat mood beberapa hari, lalu buat refleksi mingguan dari AI di sini.</div>
         <div id="jInsightHistory" class="jhistory"></div>
@@ -57,20 +57,20 @@
       <!-- Statistik -->
       <section class="card jcard">
         <div class="jhead">
-          <h2 class="jtitle">Statistik</h2>
+          <h2 class="jtitle" data-i18n="j_stats">Statistik</h2>
           <div class="jperiod" id="jPeriod" role="tablist" aria-label="Periode statistik">
-            <button class="chip-btn selected" data-period="week">Minggu ini</button>
-            <button class="chip-btn" data-period="month">Bulan ini</button>
-            <button class="chip-btn" data-period="all">Semua</button>
+            <button class="chip-btn selected" data-period="week" data-i18n="j_period_week">Minggu ini</button>
+            <button class="chip-btn" data-period="month" data-i18n="j_period_month">Bulan ini</button>
+            <button class="chip-btn" data-period="all" data-i18n="j_period_all">Semua</button>
           </div>
         </div>
         <div class="jstats-top" id="jStatsTop"></div>
         <div class="jcompare" id="jCompare"></div>
-        <h3 class="jsub">Tren bulan ini</h3>
+        <h3 class="jsub" data-i18n="j_month_trend">Tren bulan ini</h3>
         <div id="jMonthTrend" class="jmonthtrend"></div>
-        <h3 class="jsub">Sebaran mood</h3>
+        <h3 class="jsub" data-i18n="j_dist">Sebaran mood</h3>
         <div id="jDist" class="jdist" role="img" aria-label="Diagram sebaran mood"></div>
-        <h3 class="jsub">7 hari terakhir</h3>
+        <h3 class="jsub" data-i18n="j_last7">7 hari terakhir</h3>
         <div id="jTrend" class="jtrend"></div>
         <div class="jlegend" id="jLegend"></div>
       </section>
@@ -84,14 +84,14 @@
         </div>
         <div class="jcal-grid jcal-head" id="jCalHead"></div>
         <div class="jcal-grid" id="jCalBody"></div>
-        <p class="jcal-hint">Ketuk tanggal untuk melihat catatanmu.</p>
+        <p class="jcal-hint" data-i18n="j_cal_hint">Ketuk tanggal untuk melihat catatanmu.</p>
       </section>
 
       <!-- Cadangan jurnal -->
       <section class="card jcard">
         <div class="fav-toolbar">
-          <button class="mini-btn" id="jExport" title="Ekspor jurnal ke file">⬇️ Export jurnal</button>
-          <button class="mini-btn" id="jImport" title="Impor jurnal dari file">⬆️ Import jurnal</button>
+          <button class="mini-btn" id="jExport" title="Ekspor jurnal ke file" data-i18n="j_export">⬇️ Export jurnal</button>
+          <button class="mini-btn" id="jImport" title="Impor jurnal dari file" data-i18n="j_import">⬆️ Import jurnal</button>
           <input type="file" id="jFile" accept="application/json" hidden />
         </div>
       </section>

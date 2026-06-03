@@ -7,6 +7,7 @@ import { initTheme } from './theme.js';
 import { shareCard } from './share.js';
 import { speak, stopSpeak, ttsSupported } from './tts.js';
 import { trapFocus } from './a11y.js';
+import { t, getLang, applyI18n } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const colorOf = (m) => MOOD_META[m]?.color || '#8a9a92';
@@ -37,7 +38,7 @@ function buildMoodSelector() {
   MOODS.forEach((mood) => {
     const b = document.createElement('button');
     b.className = 'mood-pill';
-    b.textContent = `${emojiOf(mood)} ${mood}`;
+    b.textContent = `${emojiOf(mood)} ${t('mood_' + mood, mood)}`;
     b.addEventListener('click', () => {
       wrap.querySelectorAll('.mood-pill').forEach((p) => p.classList.remove('selected'));
       if (state.selectedMood === mood) {
@@ -409,6 +410,7 @@ async function generateInsight(force = false) {
       moods: last7.map((e) => ({ day: e.day, mood: e.mood })),
       profile,
       topics: await gatherTopics(),
+      lang: getLang(),
     });
     renderInsight(data, dayKey(Date.now()));
     await Meta.set('insightCache', { generatedDay: dayKey(Date.now()), data });
@@ -480,6 +482,7 @@ async function refresh() {
 }
 
 async function init() {
+  applyI18n();
   initTheme($('themeBtn'));
   buildMoodSelector();
   $('jSave').addEventListener('click', saveEntry);

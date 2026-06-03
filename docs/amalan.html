@@ -20,14 +20,14 @@
           <div class="logo">H</div>
           <div>
             <h1>Amalan</h1>
-            <div class="tagline">Istiqomah dalam kebaikan</div>
+            <div class="tagline" data-i18n="tagline_deeds">Istiqomah dalam kebaikan</div>
           </div>
         </div>
         <nav class="tabs">
-          <a href="index.html">Chat</a>
-          <a href="journal.html">Jurnal</a>
-          <a href="amalan.html" class="active">Amalan</a>
-          <a href="favorites.html">Favorit</a>
+          <a href="index.html" data-i18n="nav_chat">Chat</a>
+          <a href="journal.html" data-i18n="nav_journal">Jurnal</a>
+          <a href="amalan.html" class="active" data-i18n="nav_deeds">Amalan</a>
+          <a href="favorites.html" data-i18n="nav_favorites">Favorit</a>
         </nav>
         <div class="header-actions">
           <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema">🌙</button>
@@ -39,7 +39,7 @@
       <!-- Mode Ramadan -->
       <section class="card jcard ramadan-card">
         <div class="row-between">
-          <div><b id="ramadanLabel">🌙 Mode Ramadan</b><div class="field-hint" id="ramadanHint">Aktifkan saat bulan Ramadan untuk fitur puasa & nuansa khusus.</div></div>
+          <div><b id="ramadanLabel" data-i18n="d_ramadan">🌙 Mode Ramadan</b><div class="field-hint" id="ramadanHint">Aktifkan saat bulan Ramadan untuk fitur puasa & nuansa khusus.</div></div>
           <label class="switch"><input type="checkbox" id="ramadanToggle" /><span class="slider"></span></label>
         </div>
         <div id="ramadanExtra" class="ramadan-extra" hidden>
@@ -54,28 +54,28 @@
       <!-- Jadwal Sholat -->
       <section class="card jcard">
         <div class="jhead">
-          <h2 class="jtitle">🕌 Jadwal Sholat</h2>
-          <span class="field-hint" id="jadwalLoc">Belum diatur</span>
+          <h2 class="jtitle" data-i18n="jadwal">🕌 Jadwal Sholat</h2>
+          <span class="field-hint" id="jadwalLoc" data-i18n="jadwal_loc_unset">Belum diatur</span>
         </div>
         <div class="jadwal-controls" id="jadwalControls">
-          <button class="mini-btn" id="useLocation">📍 Lokasi saya</button>
+          <button class="mini-btn" id="useLocation" data-i18n="use_location">📍 Lokasi saya</button>
           <select id="citySelect" class="ch-input jadwal-city" aria-label="Pilih kota">
-            <option value="">atau pilih kota…</option>
+            <option value="" data-i18n="pick_city">atau pilih kota…</option>
           </select>
         </div>
         <div class="jadwal-times" id="jadwalTimes"></div>
         <div class="jadwal-next" id="jadwalNext"></div>
-        <small class="field-hint jadwal-pick" id="jadwalPick" hidden>Ketuk salah satu waktu untuk memilih hitung mundur · ketuk lagi untuk otomatis.</small>
-        <label class="row-between adzan-row"><span>🔔 Notifikasi adzan</span>
+        <small class="field-hint jadwal-pick" id="jadwalPick" data-i18n="jadwal_pick_hint" hidden>Ketuk salah satu waktu untuk memilih hitung mundur · ketuk lagi untuk otomatis.</small>
+        <label class="row-between adzan-row"><span data-i18n="adzan">🔔 Notifikasi adzan</span>
           <span class="switch"><input type="checkbox" id="adzanToggle" /><span class="slider"></span></span>
         </label>
-        <small class="field-hint">Pengingat muncul saat aplikasi terbuka pada waktu sholat.</small>
+        <small class="field-hint" data-i18n="adzan_hint">Pengingat muncul saat aplikasi terbuka pada waktu sholat.</small>
       </section>
 
       <!-- Arah Kiblat -->
       <section class="card jcard">
         <div class="jhead">
-          <h2 class="jtitle">🧭 Arah Kiblat</h2>
+          <h2 class="jtitle" data-i18n="qibla">🧭 Arah Kiblat</h2>
           <span class="field-hint" id="qiblaDeg">—</span>
         </div>
         <div class="qibla-wrap">
@@ -87,14 +87,14 @@
             <div class="needle" id="qiblaNeedle">🕋</div>
           </div>
         </div>
-        <button class="mini-btn" id="qiblaEnable">🧭 Aktifkan kompas</button>
-        <p class="field-hint" id="qiblaHint">Atur lokasi di Jadwal Sholat untuk menghitung arah kiblat.</p>
+        <button class="mini-btn" id="qiblaEnable" data-i18n="qibla_enable">🧭 Aktifkan kompas</button>
+        <p class="field-hint" id="qiblaHint" data-i18n="qibla_set_loc">Atur lokasi di Jadwal Sholat untuk menghitung arah kiblat.</p>
       </section>
 
       <!-- Amalan hari ini -->
       <section class="card jcard">
         <div class="jhead">
-          <h2 class="jtitle">Amalan hari ini</h2>
+          <h2 class="jtitle" data-i18n="d_today">Amalan hari ini</h2>
           <span class="deeds-count" id="deedsCount">0/6</span>
         </div>
         <div class="deeds-list" id="deedsList"></div>
@@ -102,15 +102,15 @@
 
       <!-- Statistik ibadah -->
       <section class="card jcard">
-        <h2 class="jtitle">Konsistensi</h2>
+        <h2 class="jtitle" data-i18n="d_consistency">Konsistensi</h2>
         <div class="jstats-top" id="deedsStats"></div>
-        <h3 class="jsub">7 hari terakhir</h3>
+        <h3 class="jsub" data-i18n="d_last7">7 hari terakhir</h3>
         <div class="deeds-week" id="deedsWeek"></div>
       </section>
 
       <!-- Istiqomah Challenge -->
       <section class="card jcard">
-        <h2 class="jtitle">Istiqomah Challenge 30 Hari</h2>
+        <h2 class="jtitle" data-i18n="d_challenge">Istiqomah Challenge 30 Hari</h2>
         <div id="challengeArea"></div>
         <div id="challengeHistory"></div>
       </section>

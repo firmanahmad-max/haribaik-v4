@@ -3,6 +3,7 @@
 
 import { Meta, Messages, Favorites, Journal, Deeds, resetAll } from './db.js';
 import { trapFocus } from './a11y.js';
+import { t, getLang, setLang } from './i18n.js';
 
 let onSaveCb = null;
 
@@ -25,32 +26,39 @@ export async function openSettings({ welcome = false } = {}) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
-    <div class="sheet" role="dialog" aria-modal="true" aria-label="Pengaturan">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="${t('set_title')}">
       <div class="sheet-handle"></div>
-      <h2 class="sheet-title">${welcome ? "Assalamu'alaikum 🌿" : 'Pengaturan'}</h2>
-      ${welcome ? '<p class="sheet-sub">Kenalan dulu yuk, biar HariBaik bisa menyapamu lebih hangat.</p>' : ''}
+      <h2 class="sheet-title">${welcome ? t('welcome_title') : t('set_title')}</h2>
+      ${welcome ? `<p class="sheet-sub">${t('welcome_sub')}</p>` : ''}
 
-      <label class="field"><span>Nama panggilan</span>
-        <input id="setNama" type="text" maxlength="30" placeholder="mis. Firman" value="${escAttr(profile.nama)}" />
+      <label class="field"><span>${t('f_name')}</span>
+        <input id="setNama" type="text" maxlength="30" placeholder="Firman" value="${escAttr(profile.nama)}" />
       </label>
 
-      <label class="field"><span>Apa yang sedang kamu usahakan? <em>(opsional)</em></span>
-        <input id="setGoal" type="text" maxlength="80" placeholder="mis. lebih konsisten ibadah" value="${escAttr(profile.goal)}" />
+      <label class="field"><span>${t('f_goal')} <em>${t('f_optional')}</em></span>
+        <input id="setGoal" type="text" maxlength="80" value="${escAttr(profile.goal)}" />
       </label>
 
-      <label class="field"><span>Usia <em>(opsional)</em></span>
-        <input id="setUsia" type="number" min="5" max="120" inputmode="numeric" placeholder="mis. 21" value="${escAttr(profile.usia)}" />
+      <label class="field"><span>${t('f_age')} <em>${t('f_optional')}</em></span>
+        <input id="setUsia" type="number" min="5" max="120" inputmode="numeric" placeholder="21" value="${escAttr(profile.usia)}" />
       </label>
 
-      <label class="field"><span>Jenis kelamin</span>
+      <label class="field"><span>${t('f_gender')}</span>
         <select id="setGender">
-          <option value=""${sel('')}>— Pilih —</option>
-          <option value="Perempuan"${sel('Perempuan')}>Perempuan</option>
-          <option value="Laki-laki"${sel('Laki-laki')}>Laki-laki</option>
+          <option value=""${sel('')}>${t('gender_pick')}</option>
+          <option value="Perempuan"${sel('Perempuan')}>${t('gender_f')}</option>
+          <option value="Laki-laki"${sel('Laki-laki')}>${t('gender_m')}</option>
         </select>
       </label>
 
-      <label class="field"><span>Profesi / peran <em>(opsional)</em></span>
+      <label class="field"><span>${t('f_language')}</span>
+        <select id="setLang">
+          <option value="id"${getLang() === 'id' ? ' selected' : ''}>Bahasa Indonesia</option>
+          <option value="en"${getLang() === 'en' ? ' selected' : ''}>English</option>
+        </select>
+      </label>
+
+      <label class="field"><span>${t('f_role')} <em>${t('f_optional')}</em></span>
         <input id="setPeran" type="text" maxlength="40" list="peranList" placeholder="mis. pelajar, karyawan, ibu rumah tangga" value="${escAttr(profile.peran)}" />
         <datalist id="peranList">
           <option value="Pelajar / Mahasiswa"></option>
@@ -64,26 +72,26 @@ export async function openSettings({ welcome = false } = {}) {
       </label>
 
       <div class="field">
-        <label class="row-between" for="setReminderOn"><span>Pengingat harian</span>
+        <label class="row-between" for="setReminderOn"><span>${t('f_reminder')}</span>
           <input id="setReminderOn" type="checkbox" ${reminderEnabled ? 'checked' : ''} />
         </label>
         <input id="setReminderTime" type="time" value="${reminderTime}" />
-        <small class="field-hint">Pengingat muncul saat kamu membuka aplikasi setelah jam ini.</small>
+        <small class="field-hint">${t('reminder_hint')}</small>
       </div>
 
-      <button class="ghost-btn" id="setNewChat" type="button">🧹 Mulai percakapan baru</button>
+      <button class="ghost-btn" id="setNewChat" type="button">${t('new_chat')}</button>
 
       <div class="fav-toolbar">
-        <button class="mini-btn" id="setBackup" type="button">⬇️ Backup semua data</button>
-        <button class="mini-btn" id="setRestore" type="button">⬆️ Restore</button>
+        <button class="mini-btn" id="setBackup" type="button">${t('backup')}</button>
+        <button class="mini-btn" id="setRestore" type="button">${t('restore')}</button>
         <input type="file" id="setBackupFile" accept="application/json" hidden />
       </div>
 
       <div class="sheet-actions">
-        <button class="mini-btn danger" id="setReset">🗑️ Reset data</button>
+        <button class="mini-btn danger" id="setReset">${t('reset')}</button>
         <span class="spacer"></span>
-        ${welcome ? '' : '<button class="chip-btn" id="setClose">Tutup</button>'}
-        <button class="primary-btn" id="setSave">Simpan</button>
+        ${welcome ? '' : `<button class="chip-btn" id="setClose">${t('close')}</button>`}
+        <button class="primary-btn" id="setSave">${t('save')}</button>
       </div>
     </div>`;
 
@@ -121,6 +129,14 @@ export async function openSettings({ welcome = false } = {}) {
 
     if (on && 'Notification' in window && Notification.permission === 'default') {
       try { await Notification.requestPermission(); } catch { /* abaikan */ }
+    }
+
+    // Ganti bahasa → muat ulang agar seluruh UI ikut berubah.
+    const newLang = overlay.querySelector('#setLang').value;
+    if (newLang !== getLang()) {
+      setLang(newLang);
+      location.reload();
+      return;
     }
     close();
     onSaveCb?.(profileOut);

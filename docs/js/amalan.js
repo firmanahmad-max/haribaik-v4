@@ -7,6 +7,7 @@ import { hijriMonth, hijriYear } from './context.js';
 import { trapFocus } from './a11y.js';
 import { CITIES, getCurrentCoords, getTimings, PRAYER_ORDER, reverseGeocode } from './pray.js';
 import { qiblaBearing, requestOrientationPermission, startCompass, compassSupported } from './qibla.js';
+import { applyI18n } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -586,6 +587,7 @@ async function refresh() {
 }
 
 async function init() {
+  applyI18n();
   initTheme($('themeBtn'));
   await initRamadan();
   await initJadwal();

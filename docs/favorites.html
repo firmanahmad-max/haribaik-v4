@@ -24,10 +24,10 @@
           </div>
         </div>
         <nav class="tabs">
-          <a href="index.html">Chat</a>
-          <a href="journal.html">Jurnal</a>
-          <a href="amalan.html">Amalan</a>
-          <a href="favorites.html" class="active">Favorit</a>
+          <a href="index.html" data-i18n="nav_chat">Chat</a>
+          <a href="journal.html" data-i18n="nav_journal">Jurnal</a>
+          <a href="amalan.html" data-i18n="nav_deeds">Amalan</a>
+          <a href="favorites.html" class="active" data-i18n="nav_favorites">Favorit</a>
         </nav>
         <div class="header-actions">
           <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema">🌙</button>
@@ -37,15 +37,15 @@
 
     <div class="fav-page">
       <div class="fav-toolbar">
-        <button class="mini-btn" id="favExport" title="Ekspor favorit ke file">⬇️ Export</button>
-        <button class="mini-btn" id="favImport" title="Impor favorit dari file">⬆️ Import</button>
+        <button class="mini-btn" id="favExport" title="Ekspor favorit ke file" data-i18n="fav_export">⬇️ Export</button>
+        <button class="mini-btn" id="favImport" title="Impor favorit dari file" data-i18n="fav_import">⬆️ Import</button>
         <input type="file" id="favFile" accept="application/json" hidden />
       </div>
       <div class="fav-filters">
-        <button class="chip-btn selected" data-filter="all">Semua</button>
-        <button class="chip-btn" data-filter="quran">Al-Quran</button>
-        <button class="chip-btn" data-filter="hadits">Hadits</button>
-        <button class="chip-btn" data-filter="doa">Doa</button>
+        <button class="chip-btn selected" data-filter="all" data-i18n="fav_all">Semua</button>
+        <button class="chip-btn" data-filter="quran" data-i18n="label_quran">Al-Quran</button>
+        <button class="chip-btn" data-filter="hadits" data-i18n="label_hadits">Hadits</button>
+        <button class="chip-btn" data-filter="doa" data-i18n="label_doa">Doa</button>
       </div>
       <div class="fav-grid" id="favGrid"></div>
     </div>

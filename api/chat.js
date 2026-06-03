@@ -119,7 +119,9 @@ export async function handleChat(body = {}) {
     temporal = {},
     requestCount = 0,
     recentMoods = [],
+    lang = 'id',
   } = body;
+  const safeLang = lang === 'en' ? 'en' : 'id';
 
   // Batasi panjang input untuk mencegah penyalahgunaan & boros token.
   const clip = (s, n) => (typeof s === 'string' ? s.slice(0, n) : '');
@@ -154,6 +156,7 @@ export async function handleChat(body = {}) {
     temporal,
     recentMoods: safeMoods,
     sourceInstruction: source.instruction,
+    lang: safeLang,
   });
 
   let parsed;
@@ -173,6 +176,7 @@ export async function handleChat(body = {}) {
       temporal,
       recentMoods: safeMoods,
       sourceInstruction: getRetryInstruction(source),
+      lang: safeLang,
     });
     try {
       parsed = await callSumopod({ system, window, message: userText, mockFamily: source.family });
