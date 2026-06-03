@@ -6,13 +6,14 @@ import { initTheme, isRamadan, setRamadan } from './theme.js';
 import { hijriMonth, hijriYear } from './context.js';
 import { trapFocus } from './a11y.js';
 import { CITIES, getCurrentCoords, getTimings, PRAYER_ORDER } from './pray.js';
+import { qiblaBearing, requestOrientationPermission, startCompass, compassSupported } from './qibla.js';
 
 const $ = (id) => document.getElementById(id);
 
 const SALAT = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 const TODAY = dayKey(Date.now());
 
-const state = { today: null, all: [], times: null, loc: null };
+const state = { today: null, all: [], times: null, loc: null, adzanTimers: [], qiblaBearing: null, heading: 0, stopCompass: null };
 
 let toastTimer = null;
 function toast(msg) {
@@ -391,6 +392,8 @@ async function loadPrayer(loc) {
     $('jadwalLoc').textContent = `📍 ${loc.label}`;
     renderTimes(times);
     updatePrayerNext();
+    updateQibla(loc);
+    await scheduleAdzan();
     // Auto-isi Imsak & Berbuka untuk Mode Ramadan.
     if (isRamadan()) {
       if (times.Imsak) { $('imsakTime').value = times.Imsak; await Meta.set('imsakTime', times.Imsak); }
@@ -438,6 +441,102 @@ function updatePrayerNext() {
   document.querySelectorAll('#jadwalTimes .jt-item').forEach((i) => i.classList.toggle('next', i.dataset.prayer === next.p));
 }
 
+// ---------- Notifikasi Adzan ----------
+function showNotif(title, body) {
+  const opts = { body, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: 'haribaik-adzan' };
+  if (navigator.serviceWorker?.ready) {
+    navigator.serviceWorker.ready.then((reg) => reg.showNotification(title, opts)).catch(() => new Notification(title, opts));
+  } else {
+    new Notification(title, opts);
+  }
+}
+
+async function initAdzan() {
+  const enabled = !!(await Meta.get('adzanEnabled', false));
+  $('adzanToggle').checked = enabled;
+  $('adzanToggle').addEventListener('change', async (e) => {
+    if (e.target.checked) {
+      if (!('Notification' in window)) { e.target.checked = false; return toast('Browser tidak mendukung notifikasi'); }
+      let perm = Notification.permission;
+      if (perm === 'default') perm = await Notification.requestPermission();
+      if (perm !== 'granted') { e.target.checked = false; return toast('Izin notifikasi ditolak'); }
+      await Meta.set('adzanEnabled', true);
+      await scheduleAdzan();
+      toast('Notifikasi adzan aktif 🔔');
+    } else {
+      await Meta.set('adzanEnabled', false);
+      clearAdzanTimers();
+      toast('Notifikasi adzan nonaktif');
+    }
+  });
+}
+
+function clearAdzanTimers() {
+  state.adzanTimers.forEach((id) => clearTimeout(id));
+  state.adzanTimers = [];
+}
+
+async function scheduleAdzan() {
+  clearAdzanTimers();
+  if (!state.times) return;
+  if (!(await Meta.get('adzanEnabled', false))) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+  const notified = (await Meta.get('adzanNotified', {})) || {};
+  const todayMap = notified[TODAY] || {};
+  const now = Date.now();
+
+  for (const p of FARD) {
+    const t = parseToday(state.times[p]);
+    if (!t) continue;
+    const delta = t.getTime() - now;
+    if (delta > 0) {
+      const id = setTimeout(() => fireAdzan(p), Math.min(delta, 2147483647));
+      state.adzanTimers.push(id);
+    } else if (delta > -5 * 60000 && !todayMap[p]) {
+      // baru saja lewat (≤5 menit) & belum diberitahu → tampilkan susulan
+      fireAdzan(p);
+    }
+  }
+}
+
+async function fireAdzan(prayer) {
+  const notified = (await Meta.get('adzanNotified', {})) || {};
+  notified[TODAY] = notified[TODAY] || {};
+  if (notified[TODAY][prayer]) return;
+  notified[TODAY][prayer] = true;
+  await Meta.set('adzanNotified', notified);
+  showNotif(`🕌 Waktu ${prayer} telah tiba`, `Mari tunaikan sholat ${prayer}. Semoga Allah menerima.`);
+}
+
+// ---------- Arah Kiblat ----------
+function updateQibla(loc) {
+  if (!loc) return;
+  state.qiblaBearing = qiblaBearing(loc.lat, loc.lng);
+  const deg = Math.round(state.qiblaBearing);
+  $('qiblaDeg').textContent = `${deg}° dari Utara`;
+  $('qiblaNeedle').style.transform = `translateX(-50%) rotate(${state.qiblaBearing}deg)`;
+  $('qiblaHint').textContent = compassSupported()
+    ? 'Aktifkan kompas, lalu putar perangkat hingga 🕋 mengarah ke atas.'
+    : 'Arahkan bagian atas perangkat ke Utara — 🕋 menunjukkan arah kiblat.';
+}
+
+function onHeading(h) {
+  state.heading = h;
+  $('compass').style.transform = `rotate(${-h}deg)`;
+}
+
+function initQibla() {
+  if (!compassSupported()) { $('qiblaEnable').style.display = 'none'; }
+  $('qiblaEnable').addEventListener('click', async () => {
+    const ok = await requestOrientationPermission();
+    if (!ok) return toast('Izin sensor orientasi ditolak');
+    if (state.stopCompass) state.stopCompass();
+    state.stopCompass = startCompass(onHeading);
+    toast('Kompas aktif 🧭');
+  });
+}
+
 // ---------- Refresh ----------
 async function refresh() {
   state.all = (await Deeds.all()) || [];
@@ -450,6 +549,8 @@ async function init() {
   initTheme($('themeBtn'));
   await initRamadan();
   await initJadwal();
+  await initAdzan();
+  initQibla();
   $('deedsList').addEventListener('click', (e) => {
     const b = e.target.closest('.deed-item[data-key]');
     if (b) toggleDeed(b.dataset.key, b);

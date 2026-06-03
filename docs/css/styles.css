@@ -437,6 +437,18 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .jt-item.next b { color: var(--accent-gold); }
 .jadwal-next { margin-top: 12px; text-align: center; font-size: 14px; color: var(--accent-teal); font-weight: 600; }
 .jadwal-next:empty { display: none; }
+.adzan-row { margin-top: 14px; color: var(--text-primary); font-size: 14.5px; }
+
+/* Arah Kiblat (kompas) */
+.qibla-wrap { display: grid; place-items: center; margin: 10px 0; }
+.compass { position: relative; width: 180px; height: 180px; border-radius: 50%; border: 2px solid var(--border); background: radial-gradient(circle at 50% 50%, var(--bg-elevated), var(--bg-secondary)); transition: transform 0.2s ease; }
+.compass::after { content: ''; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-gold); transform: translate(-50%, -50%); }
+.cmp { position: absolute; font-size: 12px; font-weight: 700; color: var(--text-muted); }
+.cmp-n { top: 7px; left: 50%; transform: translateX(-50%); color: var(--accent-gold); }
+.cmp-s { bottom: 7px; left: 50%; transform: translateX(-50%); }
+.cmp-e { right: 9px; top: 50%; transform: translateY(-50%); }
+.cmp-w { left: 9px; top: 50%; transform: translateY(-50%); }
+.needle { position: absolute; left: 50%; bottom: 50%; transform-origin: 50% 100%; font-size: 30px; line-height: 1; transition: transform 0.25s ease; }
 
 /* Istiqomah Challenge */
 .ch-input { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); border-radius: 12px; padding: 11px 13px; font: inherit; font-size: 14.5px; outline: none; margin-bottom: 10px; }
