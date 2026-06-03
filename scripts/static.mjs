@@ -28,7 +28,7 @@ http
     }
     try {
       const data = await readFile(filePath);
-      res.writeHead(200, { 'Content-Type': TYPES[extname(filePath)] || 'application/octet-stream' });
+      res.writeHead(200, { 'Content-Type': TYPES[extname(filePath)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
       res.end(data);
     } catch {
       res.writeHead(404);
