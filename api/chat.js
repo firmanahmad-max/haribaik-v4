@@ -121,7 +121,20 @@ export async function handleChat(body = {}) {
     recentMoods = [],
   } = body;
 
-  const userText = buildUserText(message, mood);
+  // Batasi panjang input untuk mencegah penyalahgunaan & boros token.
+  const clip = (s, n) => (typeof s === 'string' ? s.slice(0, n) : '');
+  const safeMessage = clip(message, 2000);
+  const safeMood = mood ? clip(mood, 20) : null;
+  const safeProfile = {
+    nama: clip(profile.nama, 40),
+    goal: clip(profile.goal, 120),
+    gender: clip(profile.gender, 20),
+    usia: clip(profile.usia, 10),
+    peran: clip(profile.peran, 60),
+  };
+  const safeMoods = Array.isArray(recentMoods) ? recentMoods.slice(-7).map((m) => clip(m, 20)) : [];
+
+  const userText = buildUserText(safeMessage, safeMood);
   if (!userText) {
     return { status: 400, body: { error: 'message atau mood wajib diisi' } };
   }
@@ -130,15 +143,16 @@ export async function handleChat(body = {}) {
     ? history
         .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && m.content)
         .slice(-HISTORY_WINDOW)
+        .map((m) => ({ role: m.role, content: clip(m.content, 1000) }))
     : [];
 
   const source = getSourceInstruction(requestCount);
 
   // Percobaan 1.
   let system = buildSystemPrompt({
-    profile,
+    profile: safeProfile,
     temporal,
-    recentMoods,
+    recentMoods: safeMoods,
     sourceInstruction: source.instruction,
   });
 
@@ -155,9 +169,9 @@ export async function handleChat(body = {}) {
   const familyMismatch = valid.ok && valid.data.source_type !== source.family;
   if (!valid.ok || familyMismatch) {
     system = buildSystemPrompt({
-      profile,
+      profile: safeProfile,
       temporal,
-      recentMoods,
+      recentMoods: safeMoods,
       sourceInstruction: getRetryInstruction(source),
     });
     try {

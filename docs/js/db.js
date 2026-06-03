@@ -64,6 +64,17 @@ export const Favorites = {
   all: () => tx('favorites', 'readonly', (s) => reqValue(s.getAll())),
 };
 
+// ---------- reports (kutipan yang dilaporkan, disimpan lokal) ----------
+export const Reports = {
+  add: async (item) => {
+    const list = (await Meta.get('reports', [])) || [];
+    list.push({ ...item, ts: Date.now() });
+    await Meta.set('reports', list.slice(-100));
+    return list.length;
+  },
+  all: () => Meta.get('reports', []),
+};
+
 // ---------- meta (key/value) ----------
 export const Meta = {
   get: async (key, fallback = null) => {

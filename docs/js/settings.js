@@ -1,7 +1,7 @@
 // settings.js — bottom-sheet pengaturan + onboarding pertama kali.
 // Menggantikan window.prompt untuk waktu pengingat, dan menampung nama/goal pengguna.
 
-import { Meta, resetAll } from './db.js';
+import { Meta, Messages, resetAll } from './db.js';
 
 let onSaveCb = null;
 
@@ -70,6 +70,8 @@ export async function openSettings({ welcome = false } = {}) {
         <small class="field-hint">Pengingat muncul saat kamu membuka aplikasi setelah jam ini.</small>
       </div>
 
+      <button class="ghost-btn" id="setNewChat" type="button">🧹 Mulai percakapan baru</button>
+
       <div class="sheet-actions">
         <button class="mini-btn danger" id="setReset">🗑️ Reset data</button>
         <span class="spacer"></span>
@@ -93,6 +95,28 @@ export async function openSettings({ welcome = false } = {}) {
   });
   overlay.querySelector('#setClose')?.addEventListener('click', close);
 
+  // Aksesibilitas: Escape menutup (kecuali onboarding), Tab terkurung di dalam sheet.
+  const sheet = overlay.querySelector('.sheet');
+  overlay.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !welcome) {
+      e.preventDefault();
+      close();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    const f = sheet.querySelectorAll('input, select, button, a[href], [tabindex]:not([tabindex="-1"])');
+    if (!f.length) return;
+    const first = f[0];
+    const last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
   overlay.querySelector('#setSave').addEventListener('click', async () => {
     const nama = overlay.querySelector('#setNama').value.trim();
     const goal = overlay.querySelector('#setGoal').value.trim();
@@ -112,6 +136,12 @@ export async function openSettings({ welcome = false } = {}) {
     }
     close();
     onSaveCb?.(profileOut);
+  });
+
+  overlay.querySelector('#setNewChat').addEventListener('click', async () => {
+    if (!confirm('Mulai percakapan baru? Riwayat chat akan dikosongkan. Favorit & profil tetap aman.')) return;
+    await Messages.clear();
+    location.reload();
   });
 
   overlay.querySelector('#setReset').addEventListener('click', async () => {

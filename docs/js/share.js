@@ -17,6 +17,14 @@ export async function shareCard(item, toast) {
   mount.appendChild(card);
 
   try {
+    // Pastikan font Amiri sudah dimuat agar teks Arab tidak ter-render dengan font fallback.
+    try {
+      await document.fonts.load('700 40px Amiri');
+      await document.fonts.load('400 40px Amiri');
+      await document.fonts.ready;
+    } catch {
+      /* abaikan bila Font Loading API tak tersedia */
+    }
     const canvas = await html2canvas(card, { backgroundColor: null, scale: 2 });
     const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
     const file = new File([blob], 'haribaik.png', { type: 'image/png' });

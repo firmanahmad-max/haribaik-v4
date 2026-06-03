@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "test": "node scripts/test-parse.mjs && node scripts/test-rotation.mjs",
+    "test:parse": "node scripts/test-parse.mjs",
     "test:rotation": "node scripts/test-rotation.mjs"
   },
   "keywords": ["islamic", "motivation", "quran", "hadits", "ai", "pwa", "haribaik"],

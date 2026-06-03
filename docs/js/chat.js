@@ -1,6 +1,6 @@
 // chat.js — render bubble chat + kartu terstruktur (ayat/aksi/doa) + quick replies.
 
-import { Favorites } from './db.js';
+import { Favorites, Reports } from './db.js';
 import { shareCard } from './share.js';
 import { QUICK_REPLIES } from './config.js';
 
@@ -99,6 +99,7 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
           <button class="mini-btn js-fav" title="Simpan ke favorit">🔖 Simpan</button>
           <button class="mini-btn js-copy" title="Salin teks">📋 Salin</button>
           <button class="mini-btn js-share" title="Bagikan">📤 Bagikan</button>
+          <button class="mini-btn js-report" title="Laporkan kutipan tidak akurat">🚩 Laporkan</button>
         </div>
       </div>
 
@@ -156,6 +157,17 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
 
   // Share
   wrap.querySelector('.js-share').addEventListener('click', () => shareCard(r, toast));
+
+  // Laporkan kutipan tidak akurat
+  const reportBtn = wrap.querySelector('.js-report');
+  reportBtn.addEventListener('click', async () => {
+    if (reportBtn.disabled) return;
+    await Reports.add({ source: r.source, source_type: (r.source_type || '').toLowerCase(), translation: r.translation });
+    reportBtn.classList.add('active');
+    reportBtn.innerHTML = '✓ Dilaporkan';
+    reportBtn.disabled = true;
+    toast?.('Terima kasih, laporan tercatat 🙏 Kami akan tinjau.');
+  });
 
   chatEl().appendChild(wrap);
   scrollDown();

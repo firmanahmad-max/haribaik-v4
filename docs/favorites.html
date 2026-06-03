@@ -34,6 +34,11 @@
     </header>
 
     <div class="fav-page">
+      <div class="fav-toolbar">
+        <button class="mini-btn" id="favExport" title="Ekspor favorit ke file">⬇️ Export</button>
+        <button class="mini-btn" id="favImport" title="Impor favorit dari file">⬆️ Import</button>
+        <input type="file" id="favFile" accept="application/json" hidden />
+      </div>
       <div class="fav-filters">
         <button class="chip-btn selected" data-filter="all">Semua</button>
         <button class="chip-btn" data-filter="quran">Al-Quran</button>

@@ -147,10 +147,21 @@ async function requestAi(message, mood) {
     await Messages.add({ role: 'assistant', content: aiSummary, payload: r });
   } catch (err) {
     hideTyping();
-    renderError(err.message || 'Gagal terhubung ke server.', () => requestAi(message, mood));
+    renderError(friendlyError(err), () => requestAi(message, mood));
   } finally {
     setLoading(false);
   }
+}
+
+// Pesan error yang ramah & spesifik berdasarkan jenis kegagalan.
+function friendlyError(err) {
+  if (!navigator.onLine || err?.status === 0) {
+    return 'Kamu sedang offline. Periksa koneksi internet, lalu coba lagi.';
+  }
+  if (err?.status === 429) return 'Sebentar ya — terlalu banyak permintaan dalam waktu singkat. Coba lagi beberapa saat.';
+  if (err?.status === 502 || err?.status === 503) return 'AI sedang sibuk atau bermasalah sesaat. Coba lagi sebentar.';
+  if (err?.status >= 500) return 'Server sedang bermasalah. Coba lagi sebentar lagi.';
+  return 'Gagal terhubung ke server. Coba lagi.';
 }
 
 // ---------- Textarea auto-grow ----------
@@ -197,6 +208,22 @@ function greeting() {
   );
 }
 
+// ---------- Disclaimer keaslian konten (sekali, bisa ditutup) ----------
+async function maybeShowDisclaimer() {
+  if (await Meta.get('disclaimerSeen', false)) return;
+  const bar = document.createElement('div');
+  bar.className = 'disclaimer';
+  bar.innerHTML =
+    '<span>ℹ️ Kutipan dipilih oleh AI dan bisa keliru. Mohon verifikasi sumbernya sebelum diamalkan atau dibagikan.</span>' +
+    '<button class="mini-btn js-ok">Mengerti</button>';
+  bar.querySelector('.js-ok').addEventListener('click', async () => {
+    bar.remove();
+    await Meta.set('disclaimerSeen', true);
+  });
+  const chat = $('chat');
+  chat.insertBefore(bar, chat.firstChild);
+}
+
 // ---------- Pulihkan percakapan dari IndexedDB ----------
 async function restoreConversation() {
   const msgs = (await Messages.all()) || [];
@@ -231,6 +258,10 @@ async function init() {
 
   const restored = await restoreConversation();
   if (!restored) greeting();
+  await maybeShowDisclaimer();
+
+  window.addEventListener('offline', () => toast('Kamu sedang offline 📴'));
+  window.addEventListener('online', () => toast('Kembali online ✅'));
 
   $('settingsBtn').addEventListener('click', () => openSettings());
   $('sendBtn').addEventListener('click', () => send());

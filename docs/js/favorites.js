@@ -78,6 +78,58 @@ function initFilters() {
   });
 }
 
+function download(filename, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function initToolbar() {
+  $('favExport').addEventListener('click', async () => {
+    const items = await Favorites.all();
+    if (!items.length) return toast('Belum ada favorit untuk diekspor');
+    const clean = items.map(({ arabic, translation, source, source_type, ts }) => ({ arabic, translation, source, source_type, ts }));
+    download('haribaik-favorit.json', JSON.stringify(clean, null, 2));
+    toast(`${clean.length} favorit diekspor`);
+  });
+
+  const file = $('favFile');
+  $('favImport').addEventListener('click', () => file.click());
+  file.addEventListener('change', async () => {
+    const f = file.files?.[0];
+    if (!f) return;
+    try {
+      const arr = JSON.parse(await f.text());
+      if (!Array.isArray(arr)) throw new Error('format');
+      const existing = await Favorites.all();
+      const seen = new Set(existing.map((e) => `${e.source}|${e.translation}`));
+      let added = 0;
+      for (const it of arr) {
+        const key = `${it?.source || ''}|${it?.translation || ''}`;
+        if (it && it.arabic && it.translation && it.source && !seen.has(key)) {
+          await Favorites.add({
+            arabic: it.arabic,
+            translation: it.translation,
+            source: it.source,
+            source_type: (it.source_type || '').toLowerCase(),
+          });
+          seen.add(key);
+          added++;
+        }
+      }
+      toast(added ? `${added} favorit diimpor` : 'Tidak ada favorit baru untuk diimpor');
+      render();
+    } catch {
+      toast('File tidak valid');
+    } finally {
+      file.value = '';
+    }
+  });
+}
+
 initTheme($('themeBtn'));
 initFilters();
+initToolbar();
 render();
