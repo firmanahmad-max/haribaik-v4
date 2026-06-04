@@ -1,6 +1,6 @@
 // sw.js — service worker: offline cache app shell + jalur notifikasi.
 
-const CACHE = 'haribaik-v4-33';
+const CACHE = 'haribaik-v4-34';
 const SHELL = [
   'index.html',
   'favorites.html',
@@ -37,7 +37,7 @@ const SHELL = [
   'icons/icon.svg',
   'icons/icon-192.png',
   'icons/icon-512.png',
-  'icons/splash-bg.svg',
+  'icons/splash.jpg',
   'manifest.json',
 ];
 // Library pihak ketiga (di-cache agar fitur Share tetap jalan offline).
