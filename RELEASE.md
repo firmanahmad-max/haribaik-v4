@@ -24,44 +24,35 @@ dengan ikon 192/512, service worker dgn handler `fetch`). Yang ditambahkan:
 TWA (Trusted Web Activity) membungkus PWA jadi paket Android (.aab) untuk Play Store.
 Pengguna merasa seperti aplikasi native, tanpa address bar.
 
+> ✅ Custom domain sudah aktif: **`https://haribaik.firmanahmad.id/`** (file `docs/CNAME`).
+> Karena app kini di **root origin**, `assetlinks.json` cukup di `docs/.well-known/` — tidak
+> perlu repo terpisah. Jauh lebih simpel.
+
 ### Cara termudah: **PWABuilder** (berbasis web, tanpa setup Android)
 1. Buka <https://www.pwabuilder.com> → masukkan URL:
-   `https://firmanahmad-max.github.io/haribaik-v4/`
+   `https://haribaik.firmanahmad.id/`
 2. Klik **Package for stores → Android → Google Play**.
 3. Atur:
-   - **Package ID**: `io.github.firmanahmad_max.haribaik` (samakan dengan `play-store/assetlinks.json`)
+   - **Package ID**: `id.firmanahmad.haribaik` (samakan dengan `docs/.well-known/assetlinks.json`)
    - **App name**: HariBaik
    - Centang **Signing key**: biarkan PWABuilder membuatkan (simpan file `.keystore` + password baik-baik — wajib untuk update ke depan!).
-4. Download paket `.aab` + file `assetlinks.json` yang dihasilkan PWABuilder
-   (sudah berisi fingerprint SHA-256 yang benar).
+4. Download paket `.aab` + file `assetlinks.json` yang dihasilkan PWABuilder.
 
 ### Alternatif CLI: **Bubblewrap**
 ```bash
 npm i -g @bubblewrap/cli
-bubblewrap init --manifest https://firmanahmad-max.github.io/haribaik-v4/manifest.json
+bubblewrap init --manifest https://haribaik.firmanahmad.id/manifest.json
 bubblewrap build
 ```
 
-### ⚠️ Digital Asset Links — KHUSUS GitHub Pages (penting!)
-Agar TWA tampil full-screen (tanpa address bar), domain harus memverifikasi app lewat
-`assetlinks.json`. File ini **WAJIB di root origin**, bukan subpath proyek:
+### Digital Asset Links (agar TWA full-screen tanpa address bar)
+1. Setelah build, PWABuilder/Play Console memberi **SHA-256 fingerprint** sertifikat.
+2. Salin fingerprint itu ke `docs/.well-known/assetlinks.json` (ganti
+   `GANTI_DENGAN_SHA256_FINGERPRINT_DARI_PLAY_CONSOLE`), commit & deploy.
+3. Verifikasi file live di:
+   `https://haribaik.firmanahmad.id/.well-known/assetlinks.json`
 
-- ✅ Lokasi benar: `https://firmanahmad-max.github.io/.well-known/assetlinks.json`
-- ❌ Bukan: `https://firmanahmad-max.github.io/haribaik-v4/.well-known/assetlinks.json`
-
-Karena HariBaik ada di subpath (`/haribaik-v4/`), kamu punya 2 pilihan:
-
-**Opsi A — taruh di repo user pages.** Buat/gunakan repo `firmanahmad-max.github.io`
-(situs utama GitHub Pages-mu), lalu commit file ke
-`/.well-known/assetlinks.json` di repo itu. Isi pakai fingerprint dari PWABuilder
-(template ada di `play-store/assetlinks.json`).
-
-**Opsi B (disarankan untuk brand) — custom domain.** Beli domain (mis. `haribaik.app`),
-arahkan ke GitHub Pages, set di repo ini Settings → Pages → Custom domain. Maka origin
-jadi `https://haribaik.app/` dan `assetlinks.json` cukup di `docs/.well-known/`.
-Update juga `start_url`/`scope` bila perlu. Lebih bersih & profesional.
-
-> Tanpa verifikasi DAL, TWA tetap bisa rilis tapi memunculkan bilah URL kecil.
+> Tanpa fingerprint yang benar, TWA tetap rilis tapi memunculkan bilah URL kecil.
 
 ### Play Console
 1. Daftar **Google Play Developer** (sekali bayar **$25**): <https://play.google.com/console>
@@ -78,8 +69,12 @@ Update juga `start_url`/`scope` bila perlu. Lebih bersih & profesional.
       `migration_doa_safety.sql`, `migration_errors.sql`.
 - [ ] Env Railway lengkap: `SUMOPOD_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
       `VAPID_SUBJECT`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
-- [ ] Supabase Auth → URL Configuration: tambahkan Site URL + Redirect URLs
-      (`https://firmanahmad-max.github.io/haribaik-v4/**`) agar magic-link email jalan.
+- [ ] Supabase Auth → URL Configuration: Site URL `https://haribaik.firmanahmad.id`
+      + Redirect URLs `https://haribaik.firmanahmad.id/**` agar magic-link email jalan.
+- [ ] Backend CORS sudah memuat `https://haribaik.firmanahmad.id` (server.js) — pastikan
+      Railway sudah redeploy dengan perubahan ini.
+- [ ] GitHub Pages: custom domain `haribaik.firmanahmad.id` aktif + **Enforce HTTPS** dicentang
+      (Settings → Pages), dan DNS (CNAME `haribaik` → `firmanahmad-max.github.io`) sudah propagasi.
 - [ ] **Kebijakan privasi** (halaman publik) — wajib untuk Play Store & etis: jelaskan
       data yang disimpan (mood, jurnal, lokasi untuk sholat, langganan push) & bahwa
       tidak dijual. Bisa halaman statis sederhana.

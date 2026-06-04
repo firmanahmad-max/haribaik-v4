@@ -34,6 +34,7 @@ function isRateLimited(ip) {
 }
 
 const ALLOWED_ORIGINS = new Set([
+  'https://haribaik.firmanahmad.id',
   'https://firmanahmad-max.github.io',
   'http://localhost:3000',
   'http://localhost:5173',

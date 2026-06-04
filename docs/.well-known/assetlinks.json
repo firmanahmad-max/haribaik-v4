@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "io.github.firmanahmad_max.haribaik",
+      "package_name": "id.firmanahmad.haribaik",
       "sha256_cert_fingerprints": [
         "GANTI_DENGAN_SHA256_FINGERPRINT_DARI_PLAY_CONSOLE"
       ]
