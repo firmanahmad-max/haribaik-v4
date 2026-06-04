@@ -112,6 +112,8 @@ export async function openSettings({ welcome = false } = {}) {
 
       <button class="primary-btn" id="setInstall" type="button" ${canInstall() ? '' : 'hidden'} style="width:100%;margin-bottom:10px">${t('inst_btn')}</button>
 
+      <a class="ghost-btn" id="setAbout" href="tentang.html" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px">${t('about_link')}</a>
+
       <button class="ghost-btn" id="setNewChat" type="button">${t('new_chat')}</button>
 
       <div class="fav-toolbar">

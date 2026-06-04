@@ -155,6 +155,7 @@ const DICT = {
     inst_title: '📲 Pasang HariBaik', inst_body: 'Akses cepat dari layar utama + notifikasi adzan & pengingat.',
     inst_ios: 'Ketuk tombol Bagikan ⬆️ di Safari, lalu pilih "Tambahkan ke Layar Utama".',
     inst_yes: 'Pasang', inst_later: 'Nanti', inst_ok: 'Mengerti', inst_btn: '📲 Pasang aplikasi',
+    about_title: 'Tentang', about_sub: 'Cerita & komitmen di balik HariBaik', about_link: 'ℹ️ Tentang & Disclaimer',
     // Reminder (notify)
     rem_title: 'HariBaik 🌿', rem_body: 'Mulai harimu dengan kebaikan. Yuk, sapa hatimu hari ini.',
   },
@@ -297,6 +298,7 @@ const DICT = {
     inst_title: '📲 Install HariBaik', inst_body: 'Quick access from your home screen + adhan & reminder notifications.',
     inst_ios: 'Tap the Share button ⬆️ in Safari, then choose "Add to Home Screen".',
     inst_yes: 'Install', inst_later: 'Later', inst_ok: 'Got it', inst_btn: '📲 Install app',
+    about_title: 'About', about_sub: 'The story & commitment behind HariBaik', about_link: 'ℹ️ About & Disclaimer',
     rem_title: 'HariBaik 🌿', rem_body: 'Start your day with kindness. Take a moment for your heart today.',
   },
 };

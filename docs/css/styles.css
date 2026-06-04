@@ -549,6 +549,43 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .install-banner .ib-actions { display: flex; gap: 8px; align-items: center; margin-left: auto; }
 .install-banner .ib-yes { padding: 9px 16px; }
 
+/* ---------- Halaman Tentang & Disclaimer ---------- */
+.about { max-width: 680px; margin: 0 auto; width: 100%; }
+.about-lead { font-size: 15.5px; line-height: 1.65; color: var(--text-primary); margin: 4px 0 16px; }
+.about-card { margin-bottom: 16px; }
+.about-card h2 { font-size: 17px; margin: 0 0 10px; color: var(--accent-gold); }
+.about-card h3 { font-size: 14px; margin: 16px 0 6px; color: var(--text-primary); }
+.about-card p { font-size: 14px; line-height: 1.7; color: var(--text-secondary, var(--text-primary)); margin: 0 0 10px; }
+.about-card ul { margin: 0 0 6px; padding-left: 20px; }
+.about-card li { font-size: 13.5px; line-height: 1.6; margin-bottom: 6px; color: var(--text-secondary, var(--text-primary)); }
+.about-card blockquote {
+  margin: 12px 0; padding: 10px 14px; border-left: 3px solid var(--accent-teal);
+  background: var(--bg-elevated); border-radius: 0 10px 10px 0;
+  font-style: italic; color: var(--text-primary); line-height: 1.6;
+}
+.about a { color: var(--accent-teal); text-decoration: none; }
+.about a:hover { text-decoration: underline; }
+.about-note { font-size: 12.5px !important; color: var(--text-muted) !important; }
+
+.donate-grid { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+.donate-box {
+  flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 3px;
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+}
+.donate-method { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.donate-num { font-size: 18px; font-weight: 700; color: var(--accent-gold); letter-spacing: 0.5px; }
+.donate-name { font-size: 12.5px; color: var(--text-primary); }
+
+.donor-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+.donor-table th, .donor-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.donor-table th { color: var(--text-muted); font-weight: 600; font-size: 12px; }
+.donor-table td:first-child, .donor-table th:first-child { width: 32px; }
+
+.about-closing { text-align: center; font-size: 15px; line-height: 1.7; margin: 18px 0; color: var(--accent-gold); }
+.about-dev p { margin-bottom: 6px; }
+.about-disclaimer { border: 1px solid var(--accent-gold); }
+.about-foot { text-align: center; font-size: 12px; color: var(--text-muted); margin: 18px 0 8px; line-height: 1.6; }
+
 #doaText { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); border-radius: 12px; padding: 11px 13px; font: inherit; font-size: 14.5px; resize: none; outline: none; }
 #doaText:focus { border-color: var(--accent-teal); }
 .doa-item .doa-content { font-size: 15px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
