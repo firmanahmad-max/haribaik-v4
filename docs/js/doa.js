@@ -44,7 +44,7 @@ function doaCard(d) {
       <button class="mini-btn js-aamiin${done ? ' active' : ''}"${done ? ' disabled' : ''}>🤍 ${t('doa_aamiin')} · <b class="aamiin-n">${d.aamiin_count || 0}</b></button>
       ${mine
         ? `<button class="mini-btn danger js-del">${t('del')}</button>`
-        : `<button class="mini-btn js-report" title="${t('doa_report')}">⚑</button>`}
+        : `<button class="mini-btn js-report" title="${t('doa_report')}" aria-label="${t('doa_report')}">⚑</button>`}
     </div>
   </section>`;
 }

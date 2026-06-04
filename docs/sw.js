@@ -9,6 +9,7 @@ const SHELL = [
   'doa.html',
   'css/styles.css',
   'js/config.js',
+  'js/errlog.js',
   'js/i18n.js',
   'js/api.js',
   'js/db.js',

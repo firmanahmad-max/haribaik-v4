@@ -46,17 +46,24 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* iOS/touch: cegah auto-zoom saat fokus input (font < 16px) & hilangkan flash ketuk */
+html { -webkit-tap-highlight-color: transparent; }
+@media (pointer: coarse) {
+  input, textarea, select { font-size: 16px !important; }
 }
 
 .arabic { font-family: 'Amiri', serif; direction: rtl; line-height: 1.9; }
 
 /* ---------- Layout ---------- */
-.app { display: flex; flex-direction: column; height: 100vh; max-width: 720px; margin: 0 auto; width: 100%; }
+.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 720px; margin: 0 auto; width: 100%; }
 
 header.app-header {
-  padding: 14px 18px 10px;
+  padding: calc(14px + env(safe-area-inset-top)) 18px 10px;
   background: var(--bg-glass);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
@@ -182,7 +189,7 @@ nav.tabs a.active, nav.tabs a:hover { color: var(--text-primary); background: va
 
 /* ---------- Footer input ---------- */
 footer.composer {
-  padding: 10px 14px 14px; border-top: 1px solid var(--border);
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border);
   background: var(--bg-glass); backdrop-filter: blur(14px);
 }
 .input-row { display: flex; align-items: flex-end; gap: 8px; }
@@ -203,7 +210,7 @@ footer.composer {
 .powered { text-align: center; font-size: 10.5px; color: var(--text-muted); margin-top: 8px; }
 
 /* ---------- Favorites page ---------- */
-.fav-page { max-width: 720px; margin: 0 auto; width: 100%; padding: 18px; flex: 1; }
+.fav-page { max-width: 720px; margin: 0 auto; width: 100%; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); flex: 1; }
 .fav-filters { display: flex; gap: 8px; margin: 14px 0; }
 .fav-grid { display: flex; flex-direction: column; gap: 12px; }
 .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; }
@@ -338,7 +345,7 @@ footer.composer {
 .fav-toolbar { display: flex; gap: 8px; margin-bottom: 6px; }
 
 /* ---------- Jurnal & Statistik (Fase 2) ---------- */
-.journal-page { max-width: 720px; margin: 0 auto; width: 100%; padding: 16px; display: flex; flex-direction: column; gap: 14px; flex: 1; overflow-y: auto; }
+.journal-page { max-width: 720px; margin: 0 auto; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; flex: 1; overflow-y: auto; }
 .jcard { display: flex; flex-direction: column; gap: 12px; }
 .jtitle { font-size: 16px; }
 .jsub { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
