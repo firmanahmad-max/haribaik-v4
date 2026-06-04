@@ -533,6 +533,22 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .sync-chip.ok { border-color: var(--accent-teal); }
 .sync-chip.err { border-color: #c0563f; }
 
+/* Banner ajakan pasang aplikasi (PWA install) */
+.install-banner {
+  position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom));
+  max-width: 560px; margin: 0 auto; z-index: 60;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px;
+  padding: 12px 14px; box-shadow: var(--shadow);
+  transform: translateY(140%); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.install-banner.show { transform: translateY(0); opacity: 1; }
+.install-banner .ib-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 180px; }
+.install-banner .ib-text b { font-size: 14px; }
+.install-banner .ib-text span { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+.install-banner .ib-actions { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+.install-banner .ib-yes { padding: 9px 16px; }
+
 #doaText { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); border-radius: 12px; padding: 11px 13px; font: inherit; font-size: 14.5px; resize: none; outline: none; }
 #doaText:focus { border-color: var(--accent-teal); }
 .doa-item .doa-content { font-size: 15px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }

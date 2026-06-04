@@ -151,6 +151,10 @@ const DICT = {
     doa_empty: 'Belum ada doa. Jadilah yang pertama menitip doa 🤲', doa_sent: 'Doa terkirim 🤲',
     doa_aamiin: 'Aamiin', doa_min: 'Tulis doamu dulu ya', doa_deleted: 'Doa dihapus',
     aamiin_count: '{n} aamiin', anon: 'Anonim',
+    // Pasang aplikasi (PWA install)
+    inst_title: '📲 Pasang HariBaik', inst_body: 'Akses cepat dari layar utama + notifikasi adzan & pengingat.',
+    inst_ios: 'Ketuk tombol Bagikan ⬆️ di Safari, lalu pilih "Tambahkan ke Layar Utama".',
+    inst_yes: 'Pasang', inst_later: 'Nanti', inst_ok: 'Mengerti', inst_btn: '📲 Pasang aplikasi',
     // Reminder (notify)
     rem_title: 'HariBaik 🌿', rem_body: 'Mulai harimu dengan kebaikan. Yuk, sapa hatimu hari ini.',
   },
@@ -290,6 +294,9 @@ const DICT = {
     doa_empty: 'No prayers yet. Be the first to share one 🤲', doa_sent: 'Prayer posted 🤲',
     doa_aamiin: 'Amin', doa_min: 'Write your prayer first', doa_deleted: 'Prayer deleted',
     aamiin_count: '{n} amin', anon: 'Anonymous',
+    inst_title: '📲 Install HariBaik', inst_body: 'Quick access from your home screen + adhan & reminder notifications.',
+    inst_ios: 'Tap the Share button ⬆️ in Safari, then choose "Add to Home Screen".',
+    inst_yes: 'Install', inst_later: 'Later', inst_ok: 'Got it', inst_btn: '📲 Install app',
     rem_title: 'HariBaik 🌿', rem_body: 'Start your day with kindness. Take a moment for your heart today.',
   },
 };

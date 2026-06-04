@@ -5,6 +5,7 @@ import { Meta, Messages, Favorites, Journal, Deeds, resetAll } from './db.js';
 import { trapFocus } from './a11y.js';
 import { t, getLang, setLang } from './i18n.js';
 import { cloudEnabled, getUser, signInEmail, signInAnon, signOut, syncNow, linkEmail } from './cloud.js';
+import { canInstall, promptInstall } from './install.js';
 import { pushSupported, pushConfigured, enablePush, disablePush, sendTestPush, isPushSubscribed, syncPushPrefs } from './push.js';
 
 let onSaveCb = null;
@@ -109,6 +110,8 @@ export async function openSettings({ welcome = false } = {}) {
         <small class="field-hint">${t('push_hint')}</small>
       </div>` : ''}
 
+      <button class="primary-btn" id="setInstall" type="button" ${canInstall() ? '' : 'hidden'} style="width:100%;margin-bottom:10px">${t('inst_btn')}</button>
+
       <button class="ghost-btn" id="setNewChat" type="button">${t('new_chat')}</button>
 
       <div class="fav-toolbar">
@@ -130,6 +133,7 @@ export async function openSettings({ welcome = false } = {}) {
   overlay.querySelector('#setNama')?.focus();
 
   const close = () => {
+    overlay.dispatchEvent(new Event('hb:closed'));
     overlay.classList.remove('show');
     setTimeout(() => overlay.remove(), 250);
   };
@@ -246,6 +250,13 @@ export async function openSettings({ welcome = false } = {}) {
     close();
     onSaveCb?.(profileOut);
   });
+
+  // Pasang aplikasi (PWA install) — tampil hanya saat installable.
+  const installBtn = overlay.querySelector('#setInstall');
+  installBtn?.addEventListener('click', () => promptInstall());
+  const onInstallChange = () => { if (installBtn) installBtn.hidden = !canInstall(); };
+  document.addEventListener('haribaik:installchange', onInstallChange);
+  overlay.addEventListener('hb:closed', () => document.removeEventListener('haribaik:installchange', onInstallChange));
 
   overlay.querySelector('#setNewChat').addEventListener('click', async () => {
     if (!confirm(t('cf_newchat'))) return;
