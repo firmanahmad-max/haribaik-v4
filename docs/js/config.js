@@ -18,7 +18,7 @@ export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 export const VAPID_PUBLIC_KEY = 'BHjhKOQQKn6jpbBP3nqlKEYRvUcyAvgcfrfTtgHVG0ha9aIjPzRGxh0x4JvEC0g-FDaSr6-MKR7D-uy28_9TIZ0';
 
 // Versi app (selaras dgn cache Service Worker) — dipakai monitoring error.
-export const APP_VERSION = 'v4-32';
+export const APP_VERSION = 'v4-33';
 
 export const MOODS = ['Senang', 'Sedih', 'Cemas', 'Kesal', 'Bersyukur', 'Lelah'];
 

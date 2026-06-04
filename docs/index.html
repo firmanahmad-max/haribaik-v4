@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script>
+    // Splash hanya sekali per sesi (jangan muncul tiap kembali ke Chat).
+    try {
+      if (sessionStorage.getItem('hb_splash')) document.documentElement.classList.add('no-splash');
+      else sessionStorage.setItem('hb_splash', '1');
+    } catch (e) { /* abaikan */ }
+  </script>
   <title>HariBaik — Mulai harimu dengan kebaikan</title>
   <meta name="description" content="PWA motivasi harian Islami dengan AI companion. Curhat, pilih mood, dan dapatkan empati, ayat/hadits, saran aksi, dan doa." />
   <meta name="theme-color" content="#0c1a13" />
@@ -20,11 +27,7 @@
 </head>
 <body>
   <div id="splash" class="splash" role="status" aria-label="Memuat HariBaik">
-    <div class="splash-inner">
-      <img class="splash-logo" src="icons/icon.svg" alt="" width="104" height="104" />
-      <h1 class="splash-title">HariBaik</h1>
-      <p class="splash-tagline">Mulai harimu dengan kebaikan</p>
-    </div>
+    <img class="splash-bg" src="icons/splash.png" alt="HariBaik — Mulai harimu dengan kebaikan" onerror="document.getElementById('splash')?.remove()" />
   </div>
 
   <div class="app">
