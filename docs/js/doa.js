@@ -18,6 +18,20 @@ let me = null;
 let aaminSet = new Set();
 let unsub = null;
 
+// Cache lokal status "aamiin" per perangkat: hati tetap terisi setelah refresh
+// walau kueri server (myAamiins) sempat balik kosong karena timing sesi/token.
+function localAaminKey(uid) { return 'doaAamiin:' + (uid || 'anon'); }
+function getLocalAamins(uid) {
+  try { return new Set(JSON.parse(localStorage.getItem(localAaminKey(uid)) || '[]')); }
+  catch { return new Set(); }
+}
+function addLocalAamin(uid, id) {
+  try {
+    const s = getLocalAamins(uid); s.add(id);
+    localStorage.setItem(localAaminKey(uid), JSON.stringify([...s]));
+  } catch { /* abaikan */ }
+}
+
 let toastTimer = null;
 function toast(msg) {
   const el = $('toast');
@@ -60,6 +74,7 @@ function wireCard(card) {
       card.querySelector('.aamiin-n').textContent = n;
       btn.classList.add('active');
       aaminSet.add(id);
+      addLocalAamin(me && me.id, id); // ingat di perangkat agar tetap terisi setelah refresh
       if (navigator.vibrate) navigator.vibrate(8);
     } catch { btn.disabled = false; toast(t('cloud_err')); }
   });
@@ -91,7 +106,8 @@ async function loadFeed() {
   const feed = $('doaFeed');
   try {
     const [items, mine] = await Promise.all([listDoa(50), myAamiins()]);
-    aaminSet = mine;
+    // Gabung hasil server dengan cache lokal perangkat (anti race/timing).
+    aaminSet = new Set([...mine, ...getLocalAamins(me && me.id)]);
     if (!items.length) { feed.innerHTML = `<section class="card jcard"><p class="jempty">${t('doa_empty')}</p></section>`; return; }
     feed.innerHTML = items.map(doaCard).join('');
     feed.querySelectorAll('.doa-item').forEach(wireCard);
