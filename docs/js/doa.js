@@ -178,3 +178,5 @@ async function init() {
 }
 
 init();
+
+import('./presence.js').then((m) => m.initPresence(document.getElementById('presenceN')));

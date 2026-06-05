@@ -138,3 +138,5 @@ initFilters();
 initToolbar();
 render();
 initCloudSync(() => render());
+
+import('./presence.js').then((m) => m.initPresence(document.getElementById('presenceN')));

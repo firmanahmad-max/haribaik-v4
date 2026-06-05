@@ -300,3 +300,6 @@ async function init() {
 }
 
 init();
+
+// Indikator pengguna online (Realtime Presence).
+import('./presence.js').then((m) => m.initPresence(document.getElementById('presenceN')));

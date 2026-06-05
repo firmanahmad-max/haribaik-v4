@@ -545,6 +545,27 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .install-banner .ib-actions { display: flex; gap: 8px; align-items: center; margin-left: auto; }
 .install-banner .ib-yes { padding: 9px 16px; }
 
+/* Indikator pengguna online (Realtime Presence) */
+.presence {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px;
+  padding: 5px 10px; font-size: 12px; color: var(--text-primary); line-height: 1;
+}
+.presence b { font-weight: 700; }
+.presence-label { color: var(--text-muted); }
+.presence-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #4caf6d;
+  box-shadow: 0 0 0 0 rgba(76, 175, 109, 0.5);
+  animation: presencePulse 2.4s ease-out infinite;
+}
+@keyframes presencePulse {
+  0% { box-shadow: 0 0 0 0 rgba(76, 175, 109, 0.45); }
+  60% { box-shadow: 0 0 0 7px rgba(76, 175, 109, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(76, 175, 109, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .presence-dot { animation: none; } }
+@media (max-width: 480px) { .presence-label { display: none; } .presence { padding: 5px 9px; } }
+
 /* ---------- Halaman Tentang & Disclaimer ---------- */
 .about { max-width: 680px; margin: 0 auto; width: 100%; }
 .about-lead { font-size: 15.5px; line-height: 1.65; color: var(--text-primary); margin: 4px 0 16px; }
