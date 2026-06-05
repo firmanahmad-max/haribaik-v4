@@ -487,6 +487,12 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .ch-actions { display: flex; gap: 8px; align-items: center; }
 .ch-actions .primary-btn { flex: 1; }
 .ch-done { margin-top: 10px; color: var(--accent-gold); font-size: 14px; text-align: center; }
+/* Multi-challenge: pemisah antar kartu + komposer */
+.ch-list { display: flex; flex-direction: column; gap: 14px; }
+.ch-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
+.ch-card .ch-actions { margin-top: 4px; }
+.ch-composer { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px dashed var(--border); margin-top: 4px; }
+.ch-composer .ch-input { margin-bottom: 4px; }
 
 /* Laporan Spiritual Mingguan */
 .rep-empty { font-size: 13px; color: var(--text-muted); }

@@ -130,7 +130,7 @@ export async function initCloudSync(onSynced) {
 }
 
 // ---------- Sinkron dua arah (gabung lokal ⇄ cloud) ----------
-const SETTINGS_KEYS = ['challenge', 'challengeHistory', 'reminderTime', 'reminderEnabled', 'prayerLoc', 'adzanEnabled', 'imsakTime', 'iftarTime'];
+const SETTINGS_KEYS = ['challenges', 'challenge', 'challengeHistory', 'reminderTime', 'reminderEnabled', 'prayerLoc', 'adzanEnabled', 'imsakTime', 'iftarTime'];
 
 export async function syncNow(user) {
   const c = await getClient();

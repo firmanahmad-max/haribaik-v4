@@ -185,8 +185,27 @@ async function openDayEditor(day) {
   overlay.querySelector('#edClose').focus();
 }
 
-// ---------- Istiqomah Challenge ----------
-function getChallenge() { return Meta.get('challenge', null); }
+// ---------- Istiqomah Challenge (multi) ----------
+// Model: Meta.challenges = [{ id, habit, startDay, target, days:{[dayKey]:true} }, ...]
+// Migrasi otomatis dari format lama (Meta.challenge tunggal) → array.
+const MAX_ACTIVE_CHALLENGES = 5;
+function newChallengeId() {
+  try { return crypto.randomUUID(); } catch { return 'c-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+}
+
+async function getChallenges() {
+  // Migrasi 1x dari kunci lama `challenge` (objek tunggal) → `challenges` (array).
+  const arr = await Meta.get('challenges', null);
+  if (Array.isArray(arr)) return arr;
+  const legacy = await Meta.get('challenge', null);
+  if (legacy && legacy.habit) {
+    const migrated = [{ ...legacy, id: newChallengeId() }];
+    await Meta.set('challenges', migrated);
+    await Meta.set('challenge', null); // bersihkan kunci lama
+    return migrated;
+  }
+  return [];
+}
 
 function challengeStreak(ch) {
   const days = ch.days || {};
@@ -197,18 +216,7 @@ function challengeStreak(ch) {
   return streak;
 }
 
-function renderChallenge(ch) {
-  const area = $('challengeArea');
-  if (!ch) {
-    area.innerHTML = `
-      <p class="jempty" style="text-align:left">${t('ch_pick')}</p>
-      <input id="chHabit" class="ch-input" type="text" maxlength="40" list="chPresets" placeholder="${t('ch_ph')}" aria-label="${t('d_challenge')}" />
-      <datalist id="chPresets">${presetHabits().map((h) => `<option value="${escapeHtml(h)}"></option>`).join('')}</datalist>
-      <button class="primary-btn" id="chStart">${t('ch_start')}</button>`;
-    $('chStart').addEventListener('click', startChallenge);
-    return;
-  }
-
+function challengeCardHtml(ch) {
   const days = ch.days || {};
   const doneCount = Object.keys(days).length;
   const pct = Math.round((doneCount / ch.target) * 100);
@@ -226,63 +234,106 @@ function renderChallenge(ch) {
     grid += `<button class="ch-cell${done ? ' done' : ''}${k === TODAY ? ' today' : ''}${isFuture ? ' future' : ''}" data-day="${k}"${isFuture ? ' disabled' : ''} aria-label="Hari ${i + 1}${done ? ', selesai' : ''}" title="Hari ${i + 1}">${done ? '✓' : i + 1}</button>`;
   }
 
-  area.innerHTML = `
+  return `<section class="ch-card" data-cid="${escapeHtml(ch.id)}">
     <div class="ch-head">
       <div><b>${escapeHtml(ch.habit)}</b><div class="field-hint">${t('ch_started')} ${escapeHtml(ch.startDay)} · 🔥 ${streak} ${t('ch_streak')}</div></div>
       <div class="ch-progress"><b>${doneCount}/${ch.target}</b><span>${pct}%</span></div>
     </div>
     <div class="ch-bar"><i style="width:${pct}%"></i></div>
     <div class="ch-grid">${grid}</div>
-    <p class="field-hint">${t('ch_grid_hint')}</p>
     <div class="ch-actions">
       ${complete
-        ? `<button class="primary-btn" id="chFinish">${t('ch_finish')}</button>`
-        : `<button class="primary-btn" id="chCheck"${todayDone ? ' disabled' : ''}>${todayDone ? t('ch_done_today') : t('ch_mark_today')}</button>`}
-      <button class="mini-btn danger" id="chCancel">${t('ch_cancel')}</button>
+        ? `<button class="primary-btn js-ch-finish" type="button">${t('ch_finish')}</button>`
+        : `<button class="primary-btn js-ch-check" type="button"${todayDone ? ' disabled' : ''}>${todayDone ? t('ch_done_today') : t('ch_mark_today')}</button>`}
+      <button class="mini-btn danger js-ch-cancel" type="button">${t('ch_cancel')}</button>
+    </div>
+  </section>`;
+}
+
+function composerHtml(empty) {
+  return `
+    ${empty ? `<p class="jempty" style="text-align:left">${t('ch_pick')}</p>` : ''}
+    <div class="ch-composer">
+      <input id="chHabit" class="ch-input" type="text" maxlength="40" list="chPresets" placeholder="${t('ch_ph')}" aria-label="${t('d_challenge')}" />
+      <datalist id="chPresets">${presetHabits().map((h) => `<option value="${escapeHtml(h)}"></option>`).join('')}</datalist>
+      <button class="primary-btn" id="chStart" type="button">${empty ? t('ch_start') : t('ch_add')}</button>
     </div>`;
+}
 
-  $('challengeArea').querySelector('.ch-grid').addEventListener('click', async (e) => {
-    const cell = e.target.closest('.ch-cell[data-day]:not([disabled])');
-    if (!cell) return;
-    const k = cell.dataset.day;
-    ch.days = ch.days || {};
-    if (ch.days[k]) delete ch.days[k]; else ch.days[k] = true;
-    await Meta.set('challenge', ch);
-    if (navigator.vibrate) navigator.vibrate(8);
-    renderChallenge(ch);
-  });
+async function saveChallenges(list) {
+  await Meta.set('challenges', list);
+}
 
-  $('chCheck')?.addEventListener('click', async () => {
-    ch.days = ch.days || {};
-    ch.days[TODAY] = true;
-    await Meta.set('challenge', ch);
-    if (navigator.vibrate) navigator.vibrate(12);
-    toast(t('ch_day_toast'));
-    renderChallenge(ch);
-  });
-  $('chFinish')?.addEventListener('click', async () => {
-    const hist = (await Meta.get('challengeHistory', [])) || [];
-    hist.push({ habit: ch.habit, startDay: ch.startDay, finishedDay: TODAY, daysDone: doneCount, target: ch.target });
-    await Meta.set('challengeHistory', hist.slice(-20));
-    await Meta.set('challenge', null);
-    toast(t('ch_archived'));
-    renderChallenge(null);
-    renderChallengeHistory();
-  });
-  $('chCancel').addEventListener('click', async () => {
-    if (!confirm(t('ch_cf_cancel'))) return;
-    await Meta.set('challenge', null);
-    renderChallenge(null);
+async function renderChallenges(list) {
+  const area = $('challengeArea');
+  if (!list.length) {
+    area.innerHTML = composerHtml(true);
+    $('chStart').addEventListener('click', () => addChallenge());
+    return;
+  }
+  const atLimit = list.length >= MAX_ACTIVE_CHALLENGES;
+  area.innerHTML = `
+    <div class="ch-list">${list.map(challengeCardHtml).join('')}</div>
+    <p class="field-hint" style="margin:10px 0 6px">${t('ch_grid_hint')}</p>
+    ${atLimit ? `<p class="field-hint">${t('ch_limit').replace('{n}', MAX_ACTIVE_CHALLENGES)}</p>` : composerHtml(false)}`;
+
+  if (!atLimit) $('chStart').addEventListener('click', () => addChallenge());
+
+  // Delegasi event per kartu (data-cid).
+  area.querySelectorAll('.ch-card').forEach((card) => {
+    const cid = card.dataset.cid;
+    const ch = list.find((x) => x.id === cid);
+    if (!ch) return;
+    card.querySelector('.ch-grid').addEventListener('click', async (e) => {
+      const cell = e.target.closest('.ch-cell[data-day]:not([disabled])');
+      if (!cell) return;
+      const k = cell.dataset.day;
+      ch.days = ch.days || {};
+      if (ch.days[k]) delete ch.days[k]; else ch.days[k] = true;
+      await saveChallenges(list);
+      if (navigator.vibrate) navigator.vibrate(8);
+      renderChallenges(list);
+    });
+    card.querySelector('.js-ch-check')?.addEventListener('click', async () => {
+      ch.days = ch.days || {};
+      ch.days[TODAY] = true;
+      await saveChallenges(list);
+      if (navigator.vibrate) navigator.vibrate(12);
+      toast(t('ch_day_toast'));
+      renderChallenges(list);
+    });
+    card.querySelector('.js-ch-finish')?.addEventListener('click', async () => {
+      const doneCount = Object.keys(ch.days || {}).length;
+      const hist = (await Meta.get('challengeHistory', [])) || [];
+      hist.push({ habit: ch.habit, startDay: ch.startDay, finishedDay: TODAY, daysDone: doneCount, target: ch.target });
+      await Meta.set('challengeHistory', hist.slice(-20));
+      const rest = list.filter((x) => x.id !== cid);
+      await saveChallenges(rest);
+      toast(t('ch_archived'));
+      renderChallenges(rest);
+      renderChallengeHistory();
+    });
+    card.querySelector('.js-ch-cancel').addEventListener('click', async () => {
+      if (!confirm(t('ch_cf_cancel'))) return;
+      const rest = list.filter((x) => x.id !== cid);
+      await saveChallenges(rest);
+      renderChallenges(rest);
+    });
   });
 }
 
-async function startChallenge() {
-  const habit = $('chHabit').value.trim().slice(0, 40);
+async function addChallenge() {
+  const input = $('chHabit');
+  const habit = (input?.value || '').trim().slice(0, 40);
   if (!habit) return toast(t('ch_write_first'));
-  const ch = { habit, startDay: TODAY, target: 30, days: {} };
-  await Meta.set('challenge', ch);
+  const list = (await getChallenges()) || [];
+  if (list.length >= MAX_ACTIVE_CHALLENGES) return toast(t('ch_limit').replace('{n}', MAX_ACTIVE_CHALLENGES));
+  // Cegah duplikat aktif (nama sama persis, abaikan case).
+  if (list.some((x) => x.habit.toLowerCase() === habit.toLowerCase())) return toast(t('ch_dup'));
+  list.push({ id: newChallengeId(), habit, startDay: TODAY, target: 30, days: {} });
+  await saveChallenges(list);
   toast(t('ch_start_toast'));
-  renderChallenge(ch);
+  renderChallenges(list);
 }
 
 async function renderChallengeHistory() {
@@ -712,14 +763,14 @@ async function init() {
     if (cell) openDayEditor(cell.dataset.day);
   });
   await refresh();
-  renderChallenge(await getChallenge());
+  await renderChallenges(await getChallenges());
   await renderChallengeHistory();
   $('repBtn').addEventListener('click', generateReport);
   await loadCachedReport();
   await maybeSuggestRamadan();
   initCloudSync(async () => {
     await refresh();
-    renderChallenge(await getChallenge());
+    await renderChallenges(await getChallenges());
     await renderChallengeHistory();
   });
 }

@@ -118,6 +118,8 @@ const DICT = {
     // Challenge
     ch_pick: 'Pilih satu kebiasaan baik dan jaga selama 30 hari. Bismillah 🌱',
     ch_start: 'Mulai challenge', ch_start_toast: 'Challenge dimulai. Bismillah! 🌱', ch_write_first: 'Tulis dulu kebiasaan yang ingin kamu jaga',
+    ch_add: '➕ Tambah challenge', ch_limit: 'Maksimum {n} challenge aktif. Selesaikan salah satu dulu.',
+    ch_dup: 'Sudah ada challenge dengan kebiasaan yang sama.',
     ch_started: 'Mulai', ch_streak: 'hari beruntun',
     ch_grid_hint: 'Ketuk sel hari yang sudah/belum kamu lakukan untuk menandainya.',
     ch_mark_today: 'Tandai selesai hari ini', ch_done_today: '✓ Sudah hari ini',
@@ -266,6 +268,8 @@ const DICT = {
     f_imsak: 'Imsak', f_iftar: 'Iftar (Maghrib)',
     ch_pick: 'Pick one good habit and keep it for 30 days. Bismillah 🌱',
     ch_start: 'Start challenge', ch_start_toast: 'Challenge started. Bismillah! 🌱', ch_write_first: 'Write the habit you want to keep first',
+    ch_add: '➕ Add challenge', ch_limit: 'Max {n} active challenges. Finish one first.',
+    ch_dup: 'A challenge with that habit is already active.',
     ch_started: 'Started', ch_streak: 'day streak',
     ch_grid_hint: 'Tap a day cell to mark it done/undone.',
     ch_mark_today: 'Mark today done', ch_done_today: '✓ Done today',
