@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firman Ahmad — Creative & Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #0F0F0F;
+    --warm-white: #1A1A1A;
+    --brown-dark: #E5D9CB;
+    --brown-mid: #D4B896;
+    --brown-light: #D99D6C;
+    --terracotta: #FF8A5B;
+    --amber: #FFB75A;
+    --sage: #9BC399;
+    --gold: #D9BB7A;
+    --text-primary: #EBE5D9;
+    --text-secondary: #C4A882;
+    --text-muted: #8A7965;
+    --border: rgba(229, 217, 203, 0.12);
+    --card-bg: rgba(26, 26, 26, 0.95);
+    --shadow: 0 4px 32px rgba(0, 0, 0, 0.7);
+    --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--cream);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom Cursor */
+  .cursor {
+    width: 10px; height: 10px;
+    background: var(--terracotta);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--terracotta);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.25s ease, width 0.3s, height 0.3s;
+    opacity: 0.5;
+  }
+  body:has(a:hover) .cursor, body:has(button:hover) .cursor { width: 18px; height: 18px; }
+
+  /* Noise Texture Overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none; z-index: 1000;
+  }
+
+  /* Navigation */
+  nav {
+    position: fixed; top: 0; width: 100%;
+    padding: 0.6rem 4rem;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    background: rgba(10, 10, 10, 0.92);
+    border-bottom: 1px solid var(--border);
+    transition: var(--transition);
+  }
+  .nav-logo {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    transition: var(--transition);
+    padding: 6px 14px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1a1410 0%, #0d0a08 100%);
+    border: 1px solid rgba(217, 187, 122, 0.25);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  }
+  .nav-logo img {
+    height: 38px;
+    width: auto;
+    display: block;
+    object-fit: contain;
+    transition: var(--transition);
+  }
+  .nav-logo:hover {
+    border-color: rgba(217, 187, 122, 0.5);
+    box-shadow: 0 4px 16px rgba(217, 187, 122, 0.15);
+  }
+  .nav-logo:hover img {
+    transform: scale(1.04);
+  }
+  /* Mobile responsive */
+  @media (max-width: 900px) {
+    .nav-logo { padding: 5px 11px; border-radius: 8px; }
+    .nav-logo img { height: 30px; }
+  }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; align-items: center; }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: var(--transition);
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 1px; background: var(--terracotta);
+    transition: width 0.3s ease;
+  }
+  .nav-links a:hover { color: var(--terracotta); }
+  .nav-links a:hover::after { width: 100%; }
+  .nav-cta {
+    background: var(--terracotta);
+    color: #0D0D0D !important;
+    padding: 0.6rem 1.5rem;
+    border-radius: 100px;
+    font-size: 0.8rem !important;
+    letter-spacing: 0.08em !important;
+  }
+  .nav-cta:hover { background: var(--gold); }
+  .nav-cta::after { display: none !important; }
+
+  /* Page Sections */
+  section { min-height: 100vh; }
+
+  /* ─── HERO ─── */
+  #home {
+    display: flex; align-items: center;
+    padding: 7rem 4rem 4rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .hero-bg-circle:nth-child(1) {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(232, 131, 74, 0.07) 0%, transparent 70%);
+    top: -200px; right: -100px;
+  }
+  .hero-bg-circle:nth-child(2) {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(212, 136, 58, 0.05) 0%, transparent 70%);
+    bottom: 50px; left: -100px;
+  }
+  .hero-content { flex: 1; max-width: 680px; }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--terracotta); margin-bottom: 2rem;
+    border: 1px solid rgba(196, 98, 45, 0.3);
+    padding: 0.4rem 1rem; border-radius: 100px;
+  }
+  .hero-tag::before {
+    content: ''; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--terracotta);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  /* Video card hover effect for play button */
+  .video-card:hover .video-thumb-wrap > div:last-child {
+    transform: scale(1.15);
+  }
+  .video-card:hover .video-thumb-wrap img {
+    transform: scale(1.05);
+    transition: transform 0.4s ease;
+  }
+  .video-thumb-wrap img {
+    transition: transform 0.4s ease;
+  }
+  .hero-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.5rem, 7vw, 6rem);
+    line-height: 1.05;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  .hero-name em { color: var(--terracotta); font-style: italic; }
+  .hero-desc {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    max-width: 500px;
+    margin-bottom: 3rem;
+    font-weight: 300;
+  }
+  .hero-actions { display: flex; gap: 1.25rem; align-items: center; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 0.75rem;
+    background: var(--terracotta); color: #0D0D0D;
+    padding: 0.9rem 2rem; border-radius: 100px;
+    text-decoration: none; font-size: 0.9rem; font-weight: 500;
+    transition: var(--transition); letter-spacing: 0.02em;
+  }
+  .btn-primary:hover { background: var(--gold); transform: translateY(-2px); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    color: var(--text-secondary); text-decoration: none;
+    font-size: 0.9rem; font-weight: 400;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2px; transition: var(--transition);
+  }
+  .btn-secondary:hover { color: var(--terracotta); border-color: var(--terracotta); }
+  .hero-image {
+    flex: 1; display: flex; justify-content: flex-end;
+    align-items: center; position: relative;
+  }
+  .hero-photo-wrap {
+    position: relative; width: 380px; height: 460px;
+  }
+  .hero-photo-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(circle, rgba(255, 138, 91, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: glow-pulse 4s ease-in-out infinite;
+    z-index: 0;
+  }
+  @keyframes glow-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+  }
+  .hero-photo-wrap::after {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    background: radial-gradient(circle, rgba(212, 136, 58, 0.15) 0%, transparent 80%);
+    border-radius: 50%;
+    z-index: -1;
+  }
+  /* Shadow behind the frame */
+  .hero-photo-wrap > .hero-photo-frame {
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 10px 20px rgba(255, 138, 91, 0.2));
+  }
+  .hero-photo-frame {
+    width: 340px; height: 420px;
+    border-radius: 200px 200px 40px 40px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #8B5A3C 0%, #6B4423 100%);
+    position: relative; z-index: 2;
+    box-shadow: 24px 32px 60px rgba(0, 0, 0, 0.5);
+    border: 3px solid var(--gold);
+  }
+  .hero-photo {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+    position: relative;
+    z-index: 1;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+  .hero-photo[src="avatar.jpg"] {
+    background: linear-gradient(135deg, #8B5A3C 0%, #6B4423 100%);
+  }
+  .hero-photo-frame::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255, 138, 91, 0.05) 0%, rgba(212, 136, 58, 0.02) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .hero-photo-frame::after {
+    content: '';
+    position: absolute; inset: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 195px 195px 32px 32px;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .placeholder-art {
+    width: 100%; height: 100%;
+    background: linear-gradient(160deg, #FF8A5B 0%, #A0643A 40%, #6B3F1F 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1rem;
+  }
+  .placeholder-art .monogram {
+    font-family: 'Playfair Display', serif;
+    font-size: 6rem; color: rgba(255,255,255,0.9);
+    line-height: 1; font-style: italic;
+  }
+  .placeholder-art .subtitle {
+    font-size: 0.75rem; letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.6); text-transform: uppercase;
+  }
+  .hero-badge {
+    position: absolute; bottom: 40px; right: -20px;
+    background: var(--warm-white); border-radius: 20px;
+    padding: 1rem 1.25rem; z-index: 3;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .hero-badge .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; color: var(--terracotta);
+    line-height: 1; font-weight: 600;
+  }
+  .hero-badge .label {
+    font-size: 0.7rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .hero-dot-deco {
+    position: absolute; top: 60px; left: -20px;
+    width: 80px; height: 80px; z-index: 1;
+  }
+
+  /* ─── MARQUEE ─── */
+  .marquee-section {
+    padding: 1.5rem 0;
+    background: #0F0F0F;
+    overflow: hidden; min-height: auto;
+  }
+  .marquee-track {
+    display: flex; gap: 3rem; width: max-content;
+    animation: marquee 30s linear infinite;
+  }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-item {
+    display: flex; align-items: center; gap: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.8rem; letter-spacing: 0.1em;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .marquee-item .dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--terracotta);
+    flex-shrink: 0;
+  }
+  body.light .marquee-section {
+    background: #2C1A0E;
+  }
+  body.light .marquee-item {
+    color: rgba(245, 240, 232, 0.7);
+  }
+
+  /* ─── ABOUT ─── */
+  #about {
+    padding: 8rem 4rem;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 6rem; align-items: center;
+    min-height: auto;
+  }
+  .about-label {
+    font-size: 0.72rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--terracotta);
+    margin-bottom: 1.5rem; display: block;
+  }
+  .about-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.2; color: var(--text-primary);
+    margin-bottom: 2rem;
+  }
+  .about-title em { font-style: italic; color: var(--brown-light); }
+  .about-text {
+    color: var(--text-secondary); line-height: 1.85;
+    font-weight: 300; font-size: 1.05rem;
+    margin-bottom: 1.5rem;
+  }
+  .about-skills {
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+    margin-top: 2.5rem;
+  }
+  .skill-chip {
+    padding: 0.4rem 1rem;
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.8rem; color: var(--text-secondary);
+    transition: var(--transition);
+  }
+  .skill-chip:hover {
+    border-color: var(--terracotta);
+    color: var(--terracotta);
+    transform: translateY(-2px);
+  }
+  .about-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .stat-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 2rem;
+    transition: var(--transition);
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: rgba(255, 138, 91, 0.3);
+    background: var(--card-bg);
+  }
+  .stat-card .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem; color: var(--terracotta);
+    line-height: 1; font-weight: 600;
+  }
+  .stat-card .label {
+    font-size: 0.85rem; color: var(--text-muted);
+    margin-top: 0.4rem; line-height: 1.4;
+  }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header {
+    text-align: center; margin-bottom: 4rem;
+  }
+  .section-label {
+    font-size: 0.72rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--terracotta);
+    margin-bottom: 1rem; display: block;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--text-primary); line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  .section-title em { font-style: italic; color: var(--brown-light); }
+
+  /* ─── PROJECTS ─── */
+  #projects { padding: 8rem 4rem; background: var(--warm-white); }
+  .projects-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+  }
+  .project-card {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 24px; overflow: hidden;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+  }
+  .project-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(44, 26, 14, 0.12);
+    border-color: rgba(196, 98, 45, 0.2);
+  }
+  .project-thumb {
+    height: 220px; overflow: hidden; position: relative;
+  }
+  .project-thumb-bg {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 4rem; transition: transform 0.5s ease;
+    position: relative;
+  }
+  .project-card:hover .project-thumb-bg { transform: scale(1.05); }
+  .project-thumb-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(44, 26, 14, 0.3));
+  }
+  .project-body { padding: 1.5rem; }
+  .project-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .project-tag {
+    font-size: 0.7rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--terracotta);
+    background: rgba(196, 98, 45, 0.08);
+    padding: 0.25rem 0.7rem; border-radius: 100px;
+  }
+  .project-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; color: var(--text-primary);
+    margin-bottom: 0.75rem; line-height: 1.3;
+  }
+  .project-desc {
+    font-size: 0.9rem; color: var(--text-muted);
+    line-height: 1.65; margin-bottom: 1.5rem;
+  }
+  .project-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--border); padding-top: 1rem;
+  }
+  .project-link {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    color: var(--terracotta); text-decoration: none;
+    font-size: 0.8rem; font-weight: 500; letter-spacing: 0.05em;
+  }
+  .project-link .arrow {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--terracotta); color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; transition: transform 0.3s;
+  }
+  .project-card:hover .arrow { transform: translate(3px, -3px); }
+  .project-year { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* ─── ARTA ECOSYSTEM ─── */
+  #arta {
+    padding: 8rem 4rem;
+    background: linear-gradient(180deg, var(--cream) 0%, #0a1410 50%, var(--cream) 100%);
+    position: relative;
+  }
+  body.light #arta {
+    background: linear-gradient(180deg, var(--cream) 0%, #e8f0ea 50%, var(--cream) 100%);
+  }
+  .arta-logo-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    padding: 14px 28px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+    border: 1px solid rgba(100, 150, 220, 0.25);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    transition: var(--transition);
+  }
+  .arta-logo-badge img {
+    height: 70px;
+    width: auto;
+    display: block;
+  }
+  .arta-logo-badge:hover {
+    border-color: rgba(100, 150, 220, 0.5);
+    box-shadow: 0 6px 30px rgba(100, 150, 220, 0.18);
+    transform: translateY(-2px);
+  }
+  .arta-intro {
+    max-width: 760px; margin: 2.5rem auto 4rem; text-align: center;
+  }
+  .arta-intro p {
+    font-size: 1.05rem; line-height: 1.8; color: var(--text-secondary);
+    margin-bottom: 1.2rem;
+  }
+  .arta-collab {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.85rem; color: var(--text-muted);
+    padding: 0.5rem 1.2rem; border: 1px solid var(--border);
+    border-radius: 100px; margin-top: 0.5rem;
+  }
+  .arta-collab a { color: var(--gold); text-decoration: none; }
+  .arta-collab a:hover { text-decoration: underline; }
+  .arta-products { display: flex; flex-direction: column; gap: 2.5rem; }
+  .arta-card {
+    display: grid; grid-template-columns: 1fr 1fr;
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 28px; overflow: hidden;
+    transition: var(--transition);
+    min-height: 400px;
+  }
+  .arta-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    border-color: rgba(217, 187, 122, 0.3);
+  }
+  .arta-card.reverse { direction: rtl; }
+  .arta-card.reverse > * { direction: ltr; }
+  .arta-card-img {
+    overflow: hidden; position: relative; min-height: 100%;
+  }
+  .arta-card-img img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover; object-position: center;
+    transition: transform 0.6s ease;
+  }
+  .arta-card:hover .arta-card-img img { transform: scale(1.06); }
+  .arta-card-body {
+    padding: 2.5rem; display: flex; flex-direction: column; justify-content: center;
+  }
+  .arta-card-tag {
+    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--terracotta); margin-bottom: 0.75rem; font-weight: 600;
+  }
+  .arta-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem; color: var(--text-primary);
+    margin-bottom: 0.4rem; line-height: 1.1;
+  }
+  .arta-card-subtitle {
+    font-size: 0.95rem; color: var(--gold); font-style: italic;
+    margin-bottom: 1.2rem;
+  }
+  .arta-card-desc {
+    font-size: 0.95rem; line-height: 1.7; color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+  .arta-features {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1.2rem;
+    list-style: none; margin-bottom: 1.5rem;
+  }
+  .arta-features li {
+    font-size: 0.85rem; color: var(--text-secondary);
+    padding-left: 1.3rem; position: relative;
+  }
+  .arta-features li::before {
+    content: '✦'; position: absolute; left: 0; color: var(--gold);
+    font-size: 0.75rem;
+  }
+  .arta-card-year {
+    font-size: 0.75rem; color: var(--text-muted);
+    display: inline-block; padding: 0.3rem 0.9rem;
+    border: 1px solid var(--border); border-radius: 100px;
+    align-self: flex-start;
+  }
+  .arta-vision {
+    max-width: 820px; margin: 5rem auto 0; text-align: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, rgba(217,187,122,0.08), rgba(255,138,91,0.05));
+    border: 1px solid rgba(217,187,122,0.2); border-radius: 28px;
+  }
+  .arta-vision h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; color: var(--text-primary); margin-bottom: 1rem;
+  }
+  .arta-vision p {
+    font-size: 0.98rem; line-height: 1.8; color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+  .arta-vision-tags {
+    display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .arta-vision-tags span {
+    font-size: 0.78rem; color: var(--text-secondary);
+    padding: 0.4rem 1rem; background: rgba(217,187,122,0.1);
+    border: 1px solid var(--border); border-radius: 100px;
+  }
+  .arta-tagline {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 1.1rem; color: var(--gold);
+  }
+
+  /* ─── BLOG ─── */
+  #blog { padding: 8rem 4rem; }
+  .blog-layout {
+    display: grid; grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
+  .blog-featured {
+    background: var(--warm-white); border: 1px solid var(--border);
+    border-radius: 28px; overflow: hidden; cursor: pointer;
+    transition: var(--transition);
+  }
+  .blog-featured:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-3px);
+  }
+  .blog-featured-thumb {
+    height: 280px; overflow: hidden;
+  }
+  .blog-featured-thumb-bg {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5rem; transition: transform 0.5s;
+  }
+  .blog-featured:hover .blog-featured-thumb-bg { transform: scale(1.04); }
+  .blog-featured-body { padding: 2.5rem; }
+  .blog-cat {
+    font-size: 0.7rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--terracotta);
+    margin-bottom: 1rem; display: block;
+  }
+  .blog-featured-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; color: var(--text-primary);
+    line-height: 1.25; margin-bottom: 1rem;
+  }
+  .blog-meta {
+    display: flex; align-items: center; gap: 1rem;
+    font-size: 0.8rem; color: var(--text-muted);
+    margin-top: 1.5rem;
+  }
+  .blog-meta .sep { opacity: 0.3; }
+  .blog-list { display: flex; flex-direction: column; gap: 1rem; }
+  .blog-item {
+    background: var(--warm-white); border: 1px solid var(--border);
+    border-radius: 20px; padding: 1.5rem; cursor: pointer;
+    transition: var(--transition);
+  }
+  .blog-item:hover {
+    border-color: rgba(196, 98, 45, 0.2);
+    transform: translateX(4px);
+    box-shadow: var(--shadow);
+  }
+  .blog-item-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem; color: var(--text-primary);
+    line-height: 1.35; margin-bottom: 0.6rem;
+  }
+  .blog-item-meta {
+    font-size: 0.75rem; color: var(--text-muted);
+    display: flex; gap: 0.75rem;
+  }
+  .read-more-section {
+    text-align: center; margin-top: 3rem;
+  }
+
+  /* ─── YOUTUBE / VIDEO ─── */
+  #videos { padding: 8rem 4rem; background: var(--warm-white); }
+  .videos-intro {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 3rem;
+  }
+  .yt-channel-badge {
+    display: inline-flex; align-items: center; gap: 0.75rem;
+    background: #FF0000; color: white;
+    padding: 0.6rem 1.25rem; border-radius: 100px;
+    text-decoration: none; font-size: 0.85rem; font-weight: 500;
+    transition: var(--transition);
+  }
+  .yt-channel-badge:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,0,0,0.3); }
+  .yt-channel-badge svg { width: 20px; height: 20px; fill: white; }
+  .videos-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  .video-card {
+    background: var(--cream); border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden; transition: var(--transition);
+  }
+  .video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(44, 26, 14, 0.1);
+  }
+  .video-thumb-wrap {
+    position: relative; padding-bottom: 56.25%; /* 16:9 */
+    height: 0; overflow: hidden;
+  }
+  .video-thumb-wrap iframe {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%; border: none;
+    border-radius: 0;
+  }
+  .video-info { padding: 1.25rem; }
+  .video-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; color: var(--text-primary);
+    line-height: 1.4; margin-bottom: 0.4rem;
+  }
+  .video-date { font-size: 0.78rem; color: var(--text-muted); }
+
+
+
+  /* ─── PEMBICARA ─── */
+  #pembicara { padding: 8rem 4rem; }
+  .speakers-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 2rem; margin-top: 3rem;
+  }
+  .speaker-card {
+    background: var(--warm-white); border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+    transition: var(--transition); display: flex; flex-direction: column;
+  }
+  .speaker-card:hover {
+    transform: translateY(-8px); box-shadow: var(--shadow);
+    border-color: rgba(255, 138, 91, 0.3);
+  }
+  .speaker-image {
+    width: 100%; height: 200px; overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .speaker-content {
+    padding: 1.75rem; flex: 1; display: flex; flex-direction: column;
+  }
+  .speaker-title {
+    font-family: 'Playfair Display', serif; font-size: 1.2rem;
+    color: var(--brown-dark); margin-bottom: 0.75rem;
+    line-height: 1.3; font-weight: 600;
+  }
+  .speaker-desc {
+    font-size: 0.9rem; color: var(--text-muted);
+    line-height: 1.6; margin-bottom: 1.25rem; flex: 1;
+  }
+  .speaker-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 1rem; border-top: 1px solid var(--border);
+  }
+  .speaker-year {
+    font-size: 0.85rem; color: var(--text-secondary);
+    font-weight: 500; letter-spacing: 0.05em;
+  }
+
+  /* ─── CONTACT ─── */
+  #contact { padding: 8rem 4rem; background: var(--warm-white); }
+  .contact-wrap {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 5rem; align-items: start;
+  }
+  .contact-form-card {
+    background: var(--cream); border: 1px solid var(--border);
+    border-radius: 28px; padding: 2.5rem;
+  }
+  .form-group { margin-bottom: 1.25rem; }
+  .form-group label {
+    display: block; font-size: 0.78rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 0.5rem;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 0.85rem 1.1rem;
+    border: 1px solid var(--border); border-radius: 12px;
+    background: #1A1A1A; font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; color: var(--text-primary);
+    transition: var(--transition); outline: none;
+    resize: vertical;
+  }
+  .form-group input::placeholder, .form-group textarea::placeholder {
+    color: var(--text-muted);
+  }
+  .form-group select option {
+    background: #1A1A1A;
+    color: var(--text-primary);
+  }
+  .form-group input:focus, .form-group textarea:focus {
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 3px rgba(255, 138, 91, 0.2);
+  }
+  .form-group textarea { min-height: 130px; }
+  .btn-send {
+    width: 100%; background: var(--terracotta); color: #0F0F0F;
+    border: none; padding: 1rem; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 1rem;
+    cursor: pointer; transition: var(--transition);
+    letter-spacing: 0.03em; font-weight: 500;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  }
+  .btn-send:hover { background: var(--gold); transform: translateY(-2px); }
+  .contact-info { padding-top: 1rem; }
+  .contact-info-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem; color: var(--text-primary);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .contact-info-title em { font-style: italic; color: var(--terracotta); }
+  .contact-info-desc {
+    color: var(--text-secondary); line-height: 1.8;
+    font-weight: 300; margin-bottom: 2.5rem; font-size: 1.05rem;
+  }
+  .contact-links { display: flex; flex-direction: column; gap: 1rem; }
+  .contact-link-item {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--cream); border: 1px solid var(--border);
+    border-radius: 14px; text-decoration: none;
+    color: var(--text-secondary); transition: var(--transition);
+  }
+  .contact-link-item:hover {
+    border-color: rgba(196, 98, 45, 0.3);
+    transform: translateX(4px);
+    color: var(--terracotta);
+  }
+  .contact-link-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: var(--warm-white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .contact-link-label { font-size: 0.75rem; color: var(--text-muted); }
+  .contact-link-val { font-size: 0.9rem; font-weight: 500; color: var(--text-primary); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: #080808; color: var(--text-primary);
+    padding: 3rem 4rem; text-align: center; min-height: auto;
+    border-top: 1px solid var(--border);
+  }
+  .footer-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+    padding: 10px 22px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1a1410 0%, #0d0a08 100%);
+    border: 1px solid rgba(217, 187, 122, 0.25);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    transition: var(--transition);
+  }
+  .footer-logo img {
+    height: 48px;
+    width: auto;
+    display: block;
+    object-fit: contain;
+    transition: var(--transition);
+  }
+  .footer-logo:hover {
+    border-color: rgba(217, 187, 122, 0.5);
+    box-shadow: 0 4px 18px rgba(217, 187, 122, 0.15);
+  }
+  .footer-logo:hover img {
+    transform: scale(1.04);
+  }
+  .footer-links {
+    display: flex; gap: 2rem; justify-content: center;
+    list-style: none; margin-bottom: 2rem;
+  }
+  .footer-links a {
+    color: rgba(245, 240, 232, 0.5); text-decoration: none;
+    font-size: 0.82rem; letter-spacing: 0.07em;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--terracotta); }
+  .footer-copy { font-size: 0.78rem; color: rgba(245, 240, 232, 0.3); }
+
+  /* ─── BACK TO TOP ─── */
+  #back-to-top {
+    position: fixed; bottom: 2rem; right: 2rem;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--terracotta); color: #0F0F0F;
+    border: none; font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); z-index: 50;
+    opacity: 0; transform: translateY(10px);
+    box-shadow: 0 8px 20px rgba(255, 138, 91, 0.3);
+  }
+  #back-to-top.visible { opacity: 1; transform: translateY(0); }
+  #back-to-top:hover { background: var(--gold); transform: translateY(-3px); }
+
+  /* ─── DARK MODE TOGGLE ─── */
+  .theme-toggle {
+    position: fixed; bottom: 2rem; left: 2rem;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--warm-white); border: 1px solid var(--border);
+    cursor: pointer; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); z-index: 50;
+    box-shadow: var(--shadow);
+  }
+  .theme-toggle:hover { transform: scale(1.1) rotate(15deg); }
+
+  /* ─── LIGHT MODE (toggle) ─── */
+  body.light {
+    --cream: #F5F0E8;
+    --warm-white: #FAF7F2;
+    --brown-dark: #2C1A0E;
+    --text-primary: #1E1208;
+    --text-secondary: #5C3D1E;
+    --text-muted: #9B7B5A;
+    --border: rgba(100, 60, 20, 0.12);
+    --shadow: 0 4px 32px rgba(44, 26, 14, 0.08);
+  }
+  body.light { background-color: var(--cream); }
+  body.light nav { background: rgba(245, 240, 232, 0.88); }
+  body.light .nav-cta { background: var(--brown-dark); color: var(--cream) !important; }
+  body.light .btn-primary { background: var(--brown-dark); color: var(--cream); }
+  body.light .btn-send { background: var(--brown-dark); color: var(--cream); }
+  body.light #back-to-top { background: var(--brown-dark); color: var(--cream); box-shadow: 0 8px 20px rgba(44,26,14,0.3); }
+  body.light .cursor { mix-blend-mode: multiply; }
+  body.light .form-group input, body.light .form-group textarea, body.light .form-group select { background: var(--warm-white); }
+
+  /* ─── SCROLL REVEAL ─── */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* ─── MOBILE ─── */
+  @media (max-width: 900px) {
+    nav { padding: 0.75rem 1.5rem; }
+    .nav-links { gap: 1.2rem; }
+    .nav-links li:not(:last-child):not(:nth-last-child(2)) { display: none; }
+    #home { flex-direction: column; padding: 6rem 1.5rem 3rem; gap: 3rem; }
+    .hero-image { justify-content: center; }
+    .hero-photo-wrap { width: 280px; height: 340px; }
+    .hero-photo-frame { width: 250px; height: 310px; }
+    #about { grid-template-columns: 1fr; padding: 5rem 1.5rem; gap: 3rem; }
+    #projects, #blog, #videos, #contact { padding: 5rem 1.5rem; }
+    #arta { padding: 5rem 1.5rem; }
+    .arta-logo-badge { padding: 10px 20px; border-radius: 12px; }
+    .arta-logo-badge img { height: 50px; }
+    .arta-card { grid-template-columns: 1fr; }
+    .arta-card.reverse { direction: ltr; }
+    .arta-card-img { min-height: 220px; }
+    .arta-card-body { padding: 1.8rem; }
+    .arta-features { grid-template-columns: 1fr; }
+    .blog-layout { grid-template-columns: 1fr; }
+    .contact-wrap { grid-template-columns: 1fr; gap: 3rem; }
+    .videos-grid { grid-template-columns: 1fr; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .speakers-grid { grid-template-columns: 1fr; }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- Navigation -->
+<nav id="navbar">
+  <a href="#home" class="nav-logo" aria-label="Firman Ahmad - Home">
+    <img src="logo-firman.png" alt="Firman Ahmad" />
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">Tentang</a></li>
+    <li><a href="#projects">Proyek</a></li>
+    <li><a href="#arta">Arta</a></li>
+    <li><a href="#blog">Blog</a></li>
+    <li><a href="#videos">Video</a></li>
+    <li><a href="#pembicara">Pembicara</a></li>
+    <li><a href="#contact" class="nav-cta">Kontak</a></li>
+  </ul>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section id="home">
+  <div class="hero-bg-circle"></div>
+  <div class="hero-bg-circle"></div>
+
+  <div class="hero-content">
+    <div class="hero-tag">✦ Tersedia untuk Kolaborasi</div>
+    <h1 class="hero-name">
+      Firman<br><em>Ahmad</em>
+    </h1>
+    <p class="hero-desc">
+      Berusaha kritis menganalisis kehidupan dari berbagai dimensi. Berdagang dengan perspektif sufistik, pecinta kopi yang filosofis dan content creator yang percaya bahwa setiap pemikiran harus logis, konsisten sekaligus membawa manfaat. Di sini saya berbagi refleksi mendalam tentang kehidupan, bisnis dan makna sejati.
+    </p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn-primary">
+        Lihat Karya <span>→</span>
+      </a>
+      <a href="#contact" class="btn-secondary">
+        Hubungi Saya ↗
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-image">
+    <div class="hero-photo-wrap">
+      <svg class="hero-dot-deco" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="30" cy="10" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="50" cy="10" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="70" cy="10" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="10" cy="30" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="30" cy="30" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="50" cy="30" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="70" cy="30" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="10" cy="50" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="30" cy="50" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="50" cy="50" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="70" cy="50" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="10" cy="70" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="30" cy="70" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="50" cy="70" r="3" fill="#FF8A5B" opacity="0.4"/>
+        <circle cx="70" cy="70" r="3" fill="#FF8A5B" opacity="0.4"/>
+      </svg>
+      <div class="hero-photo-frame">
+        <img 
+          src="avatar.jpg" 
+          alt="Firman Ahmad" 
+          class="hero-photo" 
+          loading="eager"
+          decoding="auto"
+          onerror="console.log('Avatar load error - check if avatar.jpg is in same folder as index.html'); this.parentElement.style.background='linear-gradient(135deg, #8B5A3C 0%, #6B4423 100%)';">
+      </div>
+      <div class="hero-badge">
+        <div class="num">20+</div>
+        <div class="label">Tahun<br>Pengalaman</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marquee">
+    <div class="marquee-item"><span class="dot"></span>Web Development</div>
+    <div class="marquee-item"><span class="dot"></span>UI/UX Design</div>
+    <div class="marquee-item"><span class="dot"></span>Content Creator</div>
+    <div class="marquee-item"><span class="dot"></span>Fotografi</div>
+    <div class="marquee-item"><span class="dot"></span>Videografi</div>
+    <div class="marquee-item"><span class="dot"></span>Storytelling</div>
+    <div class="marquee-item"><span class="dot"></span>Digital Art</div>
+    <div class="marquee-item"><span class="dot"></span>Open Source</div>
+    <!-- Duplicate for seamless loop -->
+    <div class="marquee-item"><span class="dot"></span>Web Development</div>
+    <div class="marquee-item"><span class="dot"></span>UI/UX Design</div>
+    <div class="marquee-item"><span class="dot"></span>Content Creator</div>
+    <div class="marquee-item"><span class="dot"></span>Fotografi</div>
+    <div class="marquee-item"><span class="dot"></span>Videografi</div>
+    <div class="marquee-item"><span class="dot"></span>Storytelling</div>
+    <div class="marquee-item"><span class="dot"></span>Digital Art</div>
+    <div class="marquee-item"><span class="dot"></span>Open Source</div>
+  </div>
+</div>
+
+<!-- ─── ABOUT ─── -->
+<section id="about">
+  <div class="reveal">
+    <span class="about-label">✦ Tentang Saya</span>
+    <h2 class="about-title">Seorang pedagang yang<br>hidup di antara <em>kode dan cerita</em></h2>
+    <p class="about-text">
+      Assalamualaikum, saya Firman Ahmad - seorang pedagang dari Samarinda, Kalimantan Timur. Penikmat novel dan gemar menulis. Tak bisa lepas dari tegukan kopi di mana kadang saya menemukan ruang untuk refleksi dan intropeksi di dalamnya tentang banyak hal dalam keseharian.
+    </p>
+    <p class="about-text">
+      Keseharian bersama <a href="https://maxcomputer.id" target="_blank" style="color: var(--terracotta); text-decoration: none; border-bottom: 1px solid rgba(255, 138, 91, 0.5); transition: all 0.3s;">Max Computer</a>, menerima amanah sekaligus berbagi manfaat di dalamnya. Mulai dari teknisi, aplikasi hingga konsultasi. Content creator dan gamer yang menuju veteran. Di YouTube @boysnocry, saya berbagi konten yang menggabungkan hasrat untuk terus belajar, semangat berbagi, luapan aspirasi dan inspirasi serta perspektif praktis tentang kehidupan. Melalui tulisan dan video ingin hidup abadi dalam pesan dan kesan terbaik.
+    </p>
+    <div class="about-skills">
+      <span class="skill-chip">Pemikiran Kritis</span>
+      <span class="skill-chip">Content Creator</span>
+      <span class="skill-chip">Analisis Bisnis</span>
+      <span class="skill-chip">Sufisme</span>
+      <span class="skill-chip">Videografi</span>
+      <span class="skill-chip">Fotografi</span>
+      <span class="skill-chip">Filosofi</span>
+      <span class="skill-chip">Storytelling</span>
+      <span class="skill-chip">Refleksi Mendalam</span>
+      <span class="skill-chip">Web Development</span>
+    </div>
+  </div>
+  <div class="about-stats reveal reveal-delay-2">
+    <div class="stat-card" style="cursor: pointer;" onclick="window.open('https://boysnocry.blogspot.com/', '_blank')">
+      <div class="num">100+</div>
+      <div class="label">Artikel mendalam tentang pemikiran kritis & kehidupan di Blog Boysnocry <span style="font-size: 0.7rem; display: block; margin-top: 0.5rem; opacity: 0.7;">→ Kunjungi Blog</span></div>
+    </div>
+    <div class="stat-card" style="cursor: pointer;" onclick="window.open('https://www.youtube.com/@boysnocry', '_blank')">
+      <div class="num">1.8K+</div>
+      <div class="label">Komunitas penonton di YouTube @boysnocry <span style="font-size: 0.7rem; display: block; margin-top: 0.5rem; opacity: 0.7;">→ Tonton Channel</span></div>
+    </div>
+    <div class="stat-card" style="cursor: pointer;" onclick="window.open('https://maxcomputer.id', '_blank')">
+      <div class="num">20+</div>
+      <div class="label">Tahun berpengalaman dalam bisnis & analisis <span style="font-size: 0.7rem; display: block; margin-top: 0.5rem; opacity: 0.7;">→ Max Computer</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="num">∞</div>
+      <div class="label">Refleksi dan inspirasi dalam setiap pesan</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PROJECTS ─── -->
+<section id="projects">
+  <div class="section-header reveal">
+    <span class="section-label">✦ Proyek Pilihan</span>
+    <h2 class="section-title">Karya yang saya<br><em>kerjakan</em></h2>
+  </div>
+  <div class="projects-grid">
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <div class="project-thumb-bg" style="background: linear-gradient(135deg, #1e3a5f 0%, #0a1628 100%); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <img src="artapos.jpeg" alt="ArtaPOS" style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="project-tag">POS System</span>
+          <span class="project-tag">Store Management</span>
+          <span class="project-tag">Multi-Tenant</span>
+        </div>
+        <h3 class="project-title">ArtaPOS</h3>
+        <p class="project-desc">Platform Manajemen Toko Komputer. Aplikasi manajemen toko komputer yang dirancang khusus untuk kebutuhan bisnis teknologi di Indonesia. Dibangun dengan pendekatan modern dan scalable, menghadirkan modul yang saling terintegrasi dalam satu platform.</p>
+        <div class="project-footer">
+          <a href="#arta" class="project-link">
+            Lihat Detail <span class="arrow">↗</span>
+          </a>
+          <span class="project-year">2026</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card reveal reveal-delay-1">
+      <div class="project-thumb">
+        <div class="project-thumb-bg" style="background: linear-gradient(135deg, #1e4030 0%, #0d2818 100%); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <img src="haribaik-splash.png" alt="HariBaik V4" style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="project-tag">Islamic App</span>
+          <span class="project-tag">AI Companion</span>
+          <span class="project-tag">PWA</span>
+        </div>
+        <h3 class="project-title">HariBaik V4</h3>
+        <p class="project-desc">Mulai harimu dengan kebaikan. HariBaik adalah aplikasi motivasi harian islami yang menghadirkan ayat Al-Quran & Hadits pilihan, motivasi islami setiap hari, serta AI companion untuk berbincang dan merefleksikan keseharian. Dirancang untuk membantu diri menjadi pribadi yang lebih baik, kapan saja dan di mana saja.</p>
+        <div class="project-footer">
+          <a href="https://haribaik.firmanahmad.id" target="_blank" class="project-link">
+            Lihat Proyek <span class="arrow">↗</span>
+          </a>
+          <span class="project-year">2026</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card reveal reveal-delay-1">
+      <div class="project-thumb">
+        <div class="project-thumb-bg" style="background: linear-gradient(135deg, #FF8A5B 0%, #D99D6C 100%); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <img src="goodday-v3.jpeg" alt="GoodDay App v3" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="project-tag">Islamic App</span>
+          <span class="project-tag">Daily Motivation</span>
+          <span class="project-tag">Web App</span>
+        </div>
+        <h3 class="project-title">GoodDay App v3</h3>
+        <p class="project-desc">Islamic Daily Self Affirmation. Aplikasi motivasi harian islami dengan tujuan mendapatkan ayat Al-Quran & Hadits beserta motivasi yang "relate" dengan kondisi pengguna. Dengannya diharapkan kita selalu mendapatkan affirmasi positif islami kapan saja dan di mana saja.</p>
+        <div class="project-footer">
+          <a href="https://firmanahmad-max.github.io/goodday-app-V3/" target="_blank" class="project-link">
+            Lihat Proyek <span class="arrow">↗</span>
+          </a>
+          <span class="project-year">2026</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card reveal reveal-delay-1">
+      <div class="project-thumb">
+        <div class="project-thumb-bg" style="background: linear-gradient(135deg, #7A8C6E 0%, #5a8c4a 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 20px;">
+          <img src="cgpu-max.png" alt="CGPU-MAX v3.5" style="width: auto; height: 100%; max-height: 200px; object-fit: contain;">
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="project-tag">Hardware Database</span>
+          <span class="project-tag">Bottleneck Calculator</span>
+          <span class="project-tag">Web App</span>
+        </div>
+        <h3 class="project-title">CGPU-MAX v3.5</h3>
+        <p class="project-desc">Aplikasi database CPU & GPU, komparasi, bottleneck kalkulator dan peringkat CPU & GPU. Cocok digunakan toko komputer untuk melayani user dan keperluan build PC optimal.</p>
+        <div class="project-footer">
+          <a href="https://app-bv1hxyu5gcg1.appmedo.com/login" target="_blank" class="project-link">
+            Lihat Proyek <span class="arrow">↗</span>
+          </a>
+          <span class="project-year">2026</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card reveal reveal-delay-2">
+      <div class="project-thumb">
+        <div class="project-thumb-bg" style="background: linear-gradient(135deg, #D4883A 0%, #b8975a 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 20px;">
+          <img src="maxcom-website.png" alt="Max Computer Website" style="width: auto; height: 100%; max-height: 200px; object-fit: contain;">
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="project-tag">Corporate Website</span>
+          <span class="project-tag">Professional</span>
+          <span class="project-tag">Branding</span>
+        </div>
+        <h3 class="project-title">Max Computer Website</h3>
+        <p class="project-desc">Professional website Max Computer. Semangat dan komitmen baru ditandai dengan logo baru toko yang dimasukkan pada website ini, sekaligus informasi layanan dan capaian Max Computer selama 20 tahun terakhir.</p>
+        <div class="project-footer">
+          <a href="https://maxcomputer.id/" target="_blank" class="project-link">
+            Lihat Proyek <span class="arrow">↗</span>
+          </a>
+          <span class="project-year">2026</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <div class="project-thumb-bg" style="background: linear-gradient(135deg, #4A6B8A 0%, #2a5a7a 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 20px;">
+          <img src="metastock-buku1.png" alt="Buku Analisis Teknikal - Buku 1" style="width: auto; height: 100%; max-height: 200px; object-fit: contain;">
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="project-tag">Published Book</span>
+          <span class="project-tag">Technical Analysis</span>
+          <span class="project-tag">First Edition</span>
+        </div>
+        <h3 class="project-title">Analisis Teknikal Saham dengan Metastock - Buku 1</h3>
+        <p class="project-desc">Buku ini adalah buku pertama di Indonesia yang membahas analisis teknikal saham. Pada buku ini dikenalkan dengan alat bantu yaitu Metastock, dasar-dasar analisis teknikal saham, garis tren, support & resistance, moving average dan Relative Strength Index, dst.</p>
+        <div class="project-footer">
+          <a href="#" class="project-link">
+            Lihat Proyek <span class="arrow">↗</span>
+          </a>
+          <span class="project-year">2001</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card reveal reveal-delay-1">
+      <div class="project-thumb">
+        <div class="project-thumb-bg" style="background: linear-gradient(135deg, #5a7a8a 0%, #2a4a6a 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 20px;">
+          <img src="metastock-buku2.png" alt="Buku Analisis Teknikal - Buku 2" style="width: auto; height: 100%; max-height: 200px; object-fit: contain;">
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="project-tag">Published Book</span>
+          <span class="project-tag">Technical Analysis</span>
+          <span class="project-tag">Second Edition</span>
+        </div>
+        <h3 class="project-title">Analisis Teknikal Saham dengan Metastock - Buku 2</h3>
+        <p class="project-desc">Melanjutkan materi dari Buku 1, dari classic charting hingga modern technical analysis. Buku ini memperdalam pemahaman tentang penggunaan Metastock untuk analisis teknikal saham yang lebih advanced.</p>
+        <div class="project-footer">
+          <a href="#" class="project-link">
+            Lihat Proyek <span class="arrow">↗</span>
+          </a>
+          <span class="project-year">2003</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card reveal reveal-delay-2">
+      <div class="project-thumb">
+        <div class="project-thumb-bg" style="background: linear-gradient(135deg, #B8975A 0%, #8a6a3a 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 20px;">
+          <img src="buku-frontpage-xp.png" alt="Design Web Cepat dan Praktis - FrontPage XP" style="width: auto; height: 100%; max-height: 200px; object-fit: contain;">
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="project-tag">Published Book</span>
+          <span class="project-tag">Web Design</span>
+          <span class="project-tag">FrontPage XP</span>
+        </div>
+        <h3 class="project-title">Design Web Cepat dan Praktis - Microsoft FrontPage XP</h3>
+        <p class="project-desc">Panduan praktis bagi pemula untuk membuat situs web secara instan tanpa harus menguasai tag HTML. Buku ini menjelaskan penggunaan FrontPage XP secara mudah, mulai dari pengenalan fitur, pembuatan situs, penggunaan tema, hingga publikasi situs.</p>
+        <div class="project-footer">
+          <a href="#" class="project-link">
+            Lihat Proyek <span class="arrow">↗</span>
+          </a>
+          <span class="project-year">2002</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── ARTA ECOSYSTEM ─── -->
+<section id="arta">
+  <div class="section-header reveal">
+    <div class="arta-logo-badge">
+      <img src="arta-logo.png" alt="Arta Ecosystem">
+    </div>
+    <h2 class="section-title">Membangun solusi<br><em>digital berdampak</em></h2>
+  </div>
+
+  <div class="arta-intro reveal">
+    <p>Arta Ecosystem adalah inisiatif pengembangan produk digital yang lahir dari semangat inovasi Max Computer. Berawal dari pengalaman bertahun-tahun dalam industri komputer dan teknologi informasi, Arta hadir sebagai wadah menciptakan aplikasi, platform, dan solusi digital yang menjawab kebutuhan nyata masyarakat, bisnis, dan komunitas di era modern.</p>
+    <p>Fokus utama Arta adalah membangun produk yang sederhana digunakan, kuat secara teknologi, dan memberikan manfaat nyata — mencakup POS, ERP, CRM, Productivity Tools, AI Companion, hingga solusi berbasis Artificial Intelligence.</p>
+    <span class="arta-collab">🤝 Berkolaborasi dengan <a href="https://mshadianto.id" target="_blank">mshadianto.id</a></span>
+  </div>
+
+  <div class="arta-products">
+
+    <!-- ArtaPOS -->
+    <div class="arta-card reveal">
+      <div class="arta-card-img">
+        <img src="artapos.jpeg" alt="ArtaPOS Dashboard">
+      </div>
+      <div class="arta-card-body">
+        <div class="arta-card-tag">Computer Store Management</div>
+        <h3 class="arta-card-title">ArtaPOS</h3>
+        <div class="arta-card-subtitle">Platform Manajemen Toko Komputer</div>
+        <p class="arta-card-desc">Aplikasi manajemen toko komputer yang dirancang khusus untuk kebutuhan bisnis teknologi di Indonesia. Dibangun dengan pendekatan modern dan scalable, menghadirkan modul yang saling terintegrasi dalam satu platform.</p>
+        <ul class="arta-features">
+          <li>Point of Sale (POS)</li>
+          <li>Inventory & Stock</li>
+          <li>Pembelian & Supplier</li>
+          <li>Utang & Piutang</li>
+          <li>Manajemen Jasa Servis</li>
+          <li>Modul Rakit PC</li>
+          <li>Laporan & Analitik</li>
+          <li>Scan Barcode</li>
+          <li>Cetak Struk Bluetooth</li>
+          <li>Laporan via WhatsApp</li>
+          <li>Multi-Tenant</li>
+          <li>Responsive Multi-Device</li>
+        </ul>
+        <span class="arta-card-year">2026</span>
+      </div>
+    </div>
+
+    <!-- CGPU-MAX -->
+    <div class="arta-card reverse reveal">
+      <div class="arta-card-img">
+        <img src="cgpu-arta.png" alt="CGPU-MAX Platform">
+      </div>
+      <div class="arta-card-body">
+        <div class="arta-card-tag">CPU & GPU Intelligence</div>
+        <h3 class="arta-card-title">CGPU-MAX</h3>
+        <div class="arta-card-subtitle">Platform Referensi Hardware Komputer</div>
+        <p class="arta-card-desc">Platform referensi perangkat keras yang menyediakan database lengkap CPU dan GPU dari Intel, AMD, serta NVIDIA. Membantu pengguna, gamer, content creator, hingga teknisi mengambil keputusan hardware secara tepat dan berbasis data.</p>
+        <ul class="arta-features">
+          <li>Database CPU & GPU lengkap</li>
+          <li>Perbandingan side-by-side</li>
+          <li>Analisis performa mendalam</li>
+          <li>Kalkulator Bottleneck</li>
+          <li>Rekomendasi hardware optimal</li>
+          <li>Ranking Top 10 CPU & GPU</li>
+        </ul>
+        <span class="arta-card-year">2026</span>
+      </div>
+    </div>
+
+    <!-- GoodDay V3 -->
+    <div class="arta-card reveal">
+      <div class="arta-card-img">
+        <img src="goodday-arta.jpeg" alt="GoodDay V3 App">
+      </div>
+      <div class="arta-card-body">
+        <div class="arta-card-tag">Islamic Daily Self Affirmation</div>
+        <h3 class="arta-card-title">GoodDay V3</h3>
+        <div class="arta-card-subtitle">Afirmasi & Refleksi Diri Islami</div>
+        <p class="arta-card-desc">Aplikasi afirmasi dan refleksi diri berbasis nilai-nilai Islam yang dirancang untuk menemani perjalanan spiritual dan emosional penggunanya setiap hari. Menjadi fondasi awal pengembangan teknologi AI yang lebih humanis.</p>
+        <ul class="arta-features">
+          <li>Motivasi harian berbasis Al-Qur'an</li>
+          <li>Ayat relevan dengan kondisi</li>
+          <li>Refleksi diri lebih mendalam</li>
+          <li>Pengalaman spiritual personal</li>
+        </ul>
+        <span class="arta-card-year">2026</span>
+      </div>
+    </div>
+
+    <!-- HariBaik V4 -->
+    <div class="arta-card reverse reveal">
+      <div class="arta-card-img">
+        <img src="haribaik-splash.jpeg" alt="HariBaik V4 App">
+      </div>
+      <div class="arta-card-body">
+        <div class="arta-card-tag">Islamic AI Companion</div>
+        <h3 class="arta-card-title">HariBaik V4</h3>
+        <div class="arta-card-subtitle">Mulai harimu dengan kebaikan</div>
+        <p class="arta-card-desc">Evolusi besar dari GoodDay yang menghadirkan pengalaman pendamping digital berbasis kecerdasan buatan dengan pendekatan Islami. Bukan sekadar aplikasi, tetapi ruang pendampingan digital yang mendukung perjalanan hidup penggunanya.</p>
+        <ul class="arta-features">
+          <li>AI natural, hangat, kontekstual</li>
+          <li>Personalisasi preferensi</li>
+          <li>Tracking & refleksi diri</li>
+          <li>Aksesibilitas & kenyamanan</li>
+          <li>Komunitas & engagement</li>
+          <li>Ayat & Hadits pilihan</li>
+        </ul>
+        <a href="https://haribaik.firmanahmad.id" target="_blank" class="project-link" style="margin-bottom: 1rem;">
+          Kunjungi HariBaik <span class="arrow">↗</span>
+        </a>
+        <span class="arta-card-year">2026</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Vision -->
+  <div class="arta-vision reveal">
+    <h3>Visi Ke Depan</h3>
+    <p>Arta Ecosystem dibangun dengan keyakinan bahwa teknologi terbaik adalah teknologi yang mampu menyelesaikan masalah nyata dan memberikan manfaat jangka panjang.</p>
+    <div class="arta-vision-tags">
+      <span>Artificial Intelligence</span>
+      <span>Business Management</span>
+      <span>Productivity Tools</span>
+      <span>Digital Utilities</span>
+      <span>Education Technology</span>
+      <span>Personal Development</span>
+      <span>Intelligent Assistant</span>
+    </div>
+    <p class="arta-tagline">"Building technology with purpose. Creating solutions that matter."</p>
+  </div>
+</section>
+
+<!-- ─── BLOG ─── -->
+<section id="blog">
+  <div class="section-header reveal">
+    <span class="section-label">✦ Tulisan</span>
+    <h2 class="section-title">Pikiran yang saya<br><em>tuangkan</em></h2>
+  </div>
+  <div class="blog-layout">
+    <div class="blog-featured reveal">
+      <div class="blog-featured-thumb">
+        <img src="wisuda-lila.jpeg" alt="Wisuda dan Kalimat Tak Terucap" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div class="blog-featured-body">
+        <span class="blog-cat">✦ Featured · Refleksi</span>
+        <h3 class="blog-featured-title"><a href="https://boysnocry.blogspot.com/2026/05/wisuda-dan-kalimat-tak-terucap.html" target="_blank" style="color: inherit; text-decoration: none;">Wisuda dan Kalimat Tak Terucap</a></h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.7;">
+          Perjalanan pendidikan adalah tentang lebih dari sekadar gelar. Di balik jubah wisuda dan ucapan selamat, ada kalimat-kalimat yang tak terucap, pelajaran yang melampaui kurikulum, dan transformasi yang tidak bisa diukur dengan nilai.
+        </p>
+        <div class="blog-meta">
+          <span>Firman Ahmad</span>
+          <span class="sep">·</span>
+          <span>20 May 2026</span>
+          <span class="sep">·</span>
+          <span>10 menit baca</span>
+        </div>
+      </div>
+    </div>
+    <div class="blog-list">
+      <div class="blog-item reveal reveal-delay-1">
+        <span class="blog-cat">Refleksi</span>
+        <h4 class="blog-item-title"><a href="https://boysnocry.blogspot.com/2024/02/kolaborasi-jahat.html" target="_blank" style="color: inherit; text-decoration: none;">Kolaborasi Jahat</a></h4>
+        <div class="blog-item-meta"><span>15 Feb 2024</span><span>·</span><span>7 min baca</span></div>
+      </div>
+      <div class="blog-item reveal reveal-delay-2">
+        <span class="blog-cat">Perjalanan</span>
+        <h4 class="blog-item-title"><a href="https://boysnocry.blogspot.com/2022/10/berkemah.html" target="_blank" style="color: inherit; text-decoration: none;">Berkemah</a></h4>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0.5rem 0;">Petualangan di alam bebas dan makna persahabatan di bawah bintang.</p>
+        <div class="blog-item-meta"><span>Oct 2022</span><span>·</span><span>8 min baca</span></div>
+      </div>
+      <div class="blog-item reveal reveal-delay-3">
+        <span class="blog-cat">Refleksi</span>
+        <h4 class="blog-item-title"><a href="https://boysnocry.blogspot.com/2022/03/kuman.html" target="_blank" style="color: inherit; text-decoration: none;">Kuman</a></h4>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0.5rem 0;">Hal-hal kecil yang sering terlewatkan namun memiliki dampak besar dalam hidup.</p>
+        <div class="blog-item-meta"><span>Mar 2022</span><span>·</span><span>6 min baca</span></div>
+      </div>
+      <div class="blog-item reveal">
+        <span class="blog-cat">Refleksi</span>
+        <h4 class="blog-item-title"><a href="https://boysnocry.blogspot.com/2022/03/kkn-sebuah-kisah-klasik-untuk-masa-depan.html" target="_blank" style="color: inherit; text-decoration: none;">KKN: Sebuah Kisah Klasik untuk Masa Depan</a></h4>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0.5rem 0;">Pengalaman terlibat dalam masyarakat dan pembelajaran nyata di lapangan.</p>
+        <div class="blog-item-meta"><span>Mar 2022</span><span>·</span><span>10 min baca</span></div>
+      </div>
+      <div class="blog-item reveal reveal-delay-1">
+        <span class="blog-cat">Refleksi</span>
+        <h4 class="blog-item-title"><a href="https://boysnocry.blogspot.com/2016/06/memanusiakan-manusia.html" target="_blank" style="color: inherit; text-decoration: none;">Memanusiakan Manusia</a></h4>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0.5rem 0;">Tentang kemanusiaan sejati dan bagaimana kita memperlakukan sesama dengan penuh empati.</p>
+        <div class="blog-item-meta"><span>Jun 2016</span><span>·</span><span>9 min baca</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="read-more-section reveal">
+    <a href="https://boysnocry.blogspot.com/" target="_blank" class="btn-primary" style="display: inline-flex; width: auto;">
+      Semua Tulisan →
+    </a>
+  </div>
+</section>
+
+<!-- ─── YOUTUBE / VIDEO ─── -->
+<section id="videos">
+  <div class="videos-intro reveal">
+    <div>
+      <span class="section-label">✦ Video</span>
+      <h2 class="section-title" style="text-align:left; font-size: clamp(1.8rem, 3vw, 2.5rem);">Dari channel<br><em>boysnocry</em></h2>
+    </div>
+    <a href="https://www.youtube.com/@boysnocry" target="_blank" class="yt-channel-badge">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      Kunjungi Channel
+    </a>
+  </div>
+  <div class="videos-grid" id="videosGrid">
+    <!-- Dynamic Video Cards - Loaded via JavaScript -->
+    <a href="https://www.youtube.com/@boysnocry/videos" target="_blank" class="video-card reveal" id="videoCard1" style="text-decoration: none; color: inherit;">
+      <div class="video-thumb-wrap" id="videoThumb1" style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+        <div class="video-loading-spinner" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; color: var(--text-secondary);">
+          <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--terracotta); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <div style="font-size: 0.85rem;">Memuat video...</div>
+        </div>
+      </div>
+      <div class="video-info">
+        <div class="video-title" id="videoTitle1">Video Terbaru dari Channel boysnocry</div>
+        <div class="video-date" id="videoDate1">Memuat... ↗</div>
+      </div>
+    </a>
+
+    <a href="https://www.youtube.com/@boysnocry/videos" target="_blank" class="video-card reveal reveal-delay-1" id="videoCard2" style="text-decoration: none; color: inherit;">
+      <div class="video-thumb-wrap" id="videoThumb2" style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+        <div class="video-loading-spinner" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; color: var(--text-secondary);">
+          <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--amber); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <div style="font-size: 0.85rem;">Memuat video...</div>
+        </div>
+      </div>
+      <div class="video-info">
+        <div class="video-title" id="videoTitle2">Video dari Channel boysnocry</div>
+        <div class="video-date" id="videoDate2">Memuat... ↗</div>
+      </div>
+    </a>
+
+    <a href="https://www.youtube.com/@boysnocry/videos" target="_blank" class="video-card reveal reveal-delay-2" id="videoCard3" style="text-decoration: none; color: inherit;">
+      <div class="video-thumb-wrap" id="videoThumb3" style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+        <div class="video-loading-spinner" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; color: var(--text-secondary);">
+          <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <div style="font-size: 0.85rem;">Memuat video...</div>
+        </div>
+      </div>
+      <div class="video-info">
+        <div class="video-title" id="videoTitle3">Video dari Channel boysnocry</div>
+        <div class="video-date" id="videoDate3">Memuat... ↗</div>
+      </div>
+    </a>
+  </div>
+  <p style="text-align:center; margin-top: 2rem; padding: 1.5rem; background: rgba(255,68,68,0.1); border-radius: 10px; font-size: 0.9rem; color: var(--text-secondary);">
+    💡 Klik salah satu card di atas untuk melihat video terbaru, unggulan, dan live streaming dari channel @boysnocry. Semua konten otomatis update dari YouTube.
+  </p>
+</section>
+
+<!-- ─── PEMBICARA ─── -->
+<section id="pembicara">
+  <div class="section-header reveal">
+    <span class="section-label">✦ Pengalaman</span>
+    <h2 class="section-title">Perjalanan sebagai<br><em>pembicara</em></h2>
+  </div>
+  <div class="speakers-grid">
+    <div class="speaker-card reveal">
+      <div class="speaker-image">
+        <img src="pekan-it-unmul.jpg" alt="Pekan IT Universitas Mulawarman" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div class="speaker-content">
+        <h3 class="speaker-title">Pekan IT Universitas Mulawarman</h3>
+        <p class="speaker-desc">Berbagi insight dan pengalaman di acara Pekan IT, salah satu event teknologi terbesar di Universitas Mulawarman yang menghadirkan pembicara dan kompetisi IT berkelas nasional.</p>
+        <div class="speaker-footer">
+          <span class="speaker-year">2017</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="speaker-card reveal reveal-delay-1">
+      <div class="speaker-image">
+        <img src="gama-diksi-upgrading.jpg" alt="Upgrading & Raker Gama Diksi Universitas Mulawarman" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div class="speaker-content">
+        <h3 class="speaker-title">Upgrading & Raker Gama Diksi Universitas Mulawarman</h3>
+        <p class="speaker-desc">Narasumber dalam kegiatan upgrading dan rapat kerja organisasi mahasiswa untuk meningkatkan kualitas SDM dan strategi pengembangan organisasi.</p>
+        <div class="speaker-footer">
+          <span class="speaker-year">2013</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="speaker-card reveal reveal-delay-2">
+      <div class="speaker-image">
+        <img src="gogreen-computing.jpg" alt="Seminar IT Go Green Computing Technology" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div class="speaker-content">
+        <h3 class="speaker-title">Seminar IT "Go Green Computing Technology" & "Menjadi Mahasiswa Luar Biasa III"</h3>
+        <p class="speaker-desc">Pembicara di seminar nasional yang membahas teknologi ramah lingkungan dan motivasi pengembangan diri untuk mahasiswa berprestasi.</p>
+        <div class="speaker-footer">
+          <span class="speaker-year">2013</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="speaker-card reveal">
+      <div class="speaker-image">
+        <img src="unmul-fisip.jpg" alt="Seminar Motivasi FISIP" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div class="speaker-content">
+        <h3 class="speaker-title">Seminar Motivasi Fakultas Ilmu Sosial Politik - "Menjadi Mahasiswa Luar Biasa II"</h3>
+        <p class="speaker-desc">Membagikan motivasi dan inspirasi kepada mahasiswa Jurusan Ilmu Komunikasi tentang mengembangkan potensi diri secara maksimal.</p>
+        <div class="speaker-footer">
+          <span class="speaker-year">2013</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="speaker-card reveal reveal-delay-1">
+      <div class="speaker-image">
+        <img src="wicida-hima.jpg" alt="Seminar Motivasi STIMIK Widya Cipta Dharma" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div class="speaker-content">
+        <h3 class="speaker-title">Seminar Motivasi STIMIK Widya Cipta Dharma - "Menjadi Mahasiswa Luar Biasa"</h3>
+        <p class="speaker-desc">Narasumber seminar motivasi dengan topik pengembangan diri dan achievement mahasiswa, membangkitkan semangat meraih prestasi.</p>
+        <div class="speaker-footer">
+          <span class="speaker-year">2012</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="speaker-card reveal reveal-delay-2">
+      <div class="speaker-image">
+        <img src="amd-gigabyte-roadshow.jpg" alt="Roadshow AMD-GIGABYTE Technology Update" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div class="speaker-content">
+        <h3 class="speaker-title">Roadshow AMD-GIGABYTE Technology Update - Universitas Mulawarman & STIMIK Balikpapan</h3>
+        <p class="speaker-desc">Pembicara dalam roadshow teknologi hardware terkemuka, memberikan informasi terbaru tentang inovasi hardware dan computing solutions.</p>
+        <div class="speaker-footer">
+          <span class="speaker-year">2010</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section id="contact">
+  <div class="section-header reveal">
+    <span class="section-label">✦ Kontak</span>
+    <h2 class="section-title">Yuk, ngobrol<br><em>bareng</em></h2>
+  </div>
+  <div class="contact-wrap">
+    <div class="contact-form-card reveal">
+      <h3 style="font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--brown-dark); margin-bottom:1.5rem;">Kirim Pesan</h3>
+      <div class="form-group">
+        <label>Nama</label>
+        <input type="text" placeholder="Siapa nama Anda?">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" placeholder="email@anda.com">
+      </div>
+      <div class="form-group">
+        <label>Topik</label>
+        <select>
+          <option>Kolaborasi Proyek</option>
+          <option>Pertanyaan Umum</option>
+          <option>Sponsorship</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Pesan</label>
+        <textarea placeholder="Ceritakan lebih lanjut..."></textarea>
+      </div>
+      <button class="btn-send" onclick="handleSend()">
+        Kirim Pesan ✦
+      </button>
+      <div id="form-success" style="display:none; margin-top:1rem; padding:1rem; background:rgba(122,140,110,0.15); border-radius:10px; color:var(--sage); font-size:0.9rem; text-align:center;">
+        ✓ Pesan berhasil dikirim! Saya akan membalas segera.
+      </div>
+    </div>
+    <div class="contact-info reveal reveal-delay-2">
+      <h3 class="contact-info-title">Mari berkolaborasi<br>dan ciptakan sesuatu yang <em>luar biasa</em></h3>
+      <p class="contact-info-desc">
+        Saya terbuka untuk proyek freelance, kolaborasi kreatif, undangan berbicara, atau sekadar ngobrol tentang ide-ide menarik.
+      </p>
+      <div class="contact-links">
+        <a href="https://www.youtube.com/@boysnocry" target="_blank" class="contact-link-item">
+          <div class="contact-link-icon">📺</div>
+          <div>
+            <div class="contact-link-label">YouTube</div>
+            <div class="contact-link-val">@boysnocry</div>
+          </div>
+        </a>
+        <a href="https://www.facebook.com/boysnocry" target="_blank" class="contact-link-item">
+          <div class="contact-link-icon">f</div>
+          <div>
+            <div class="contact-link-label">Facebook</div>
+            <div class="contact-link-val">@boysnocry</div>
+          </div>
+        </a>
+        <a href="https://www.instagram.com/boysnocry" target="_blank" class="contact-link-item">
+          <div class="contact-link-icon">📸</div>
+          <div>
+            <div class="contact-link-label">Instagram</div>
+            <div class="contact-link-val">@boysnocry</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <a href="#home" class="footer-logo" aria-label="Firman Ahmad - Back to top">
+    <img src="logo-firman.png" alt="Firman Ahmad" />
+  </a>
+  <ul class="footer-links">
+    <li><a href="#about">Tentang</a></li>
+    <li><a href="#projects">Proyek</a></li>
+    <li><a href="#arta">Arta</a></li>
+    <li><a href="#blog">Blog</a></li>
+    <li><a href="#videos">Video</a></li>
+    <li><a href="#pembicara">Pembicara</a></li>
+    <li><a href="#contact">Kontak</a></li>
+  </ul>
+  <p class="footer-copy">© 2025 Firman Ahmad · Dibuat dengan ♥ dari Samarinda, Kalimantan Timur</p>
+</footer>
+
+<!-- Back to Top & Theme Toggle -->
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<button class="theme-toggle" id="theme-toggle" title="Toggle Light Mode">☀️</button>
+
+<script>
+// ─── Cursor ───
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  setTimeout(() => {
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  }, 80);
+});
+
+// ─── Scroll Reveal ───
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+reveals.forEach(r => observer.observe(r));
+
+// ─── Back to Top ───
+const btt = document.getElementById('back-to-top');
+window.addEventListener('scroll', () => {
+  btt.classList.toggle('visible', window.scrollY > 400);
+});
+
+// ─── Dark Mode (Default) ───
+const toggle = document.getElementById('theme-toggle');
+const savedTheme = localStorage.getItem('theme') || 'dark';
+if(savedTheme === 'light') document.body.classList.add('light');
+toggle.textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+
+toggle.addEventListener('click', () => {
+  document.body.classList.toggle('light');
+  const newTheme = document.body.classList.contains('light') ? 'light' : 'dark';
+  localStorage.setItem('theme', newTheme);
+  toggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+});
+
+// ─── Contact Form ───
+function handleSend() {
+  const inputs = document.querySelectorAll('.contact-form-card input, .contact-form-card textarea, .contact-form-card select');
+  let valid = true;
+  inputs.forEach(i => { if(!i.value.trim()) { valid = false; i.style.borderColor='#FF8A5B'; } else { i.style.borderColor=''; } });
+  if(valid) {
+    // Get form values
+    const nama = document.querySelectorAll('.contact-form-card input')[0].value;
+    const email = document.querySelectorAll('.contact-form-card input')[1].value;
+    const topik = document.querySelectorAll('.contact-form-card select')[0].value;
+    const pesan = document.querySelectorAll('.contact-form-card textarea')[0].value;
+    
+    // Create WhatsApp message
+    const message = encodeURIComponent(
+      `Halo Firman,\n\nNama: ${nama}\nEmail: ${email}\nTopik: ${topik}\n\nPesan:\n${pesan}`
+    );
+    
+    // Send to WhatsApp
+    const whatsappUrl = `https://wa.me/6285257001416?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+    
+    // Show success message
+    document.getElementById('form-success').style.display = 'block';
+    inputs.forEach(i => i.value = '');
+    setTimeout(() => document.getElementById('form-success').style.display = 'none', 4000);
+  }
+}
+
+// ─── Active Nav on scroll ───
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  nav.style.boxShadow = window.scrollY > 50 ? '0 2px 20px rgba(44,26,14,0.1)' : 'none';
+});
+
+// ─── Load Latest YouTube Videos from @boysnocry ───
+(async function loadYouTubeVideos() {
+  const CHANNEL_ID = 'UCvXBb55-NxB9N1mUjOafjRg'; // @boysnocry channel ID
+  const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
+  
+  // List of CORS proxies to try in order
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(RSS_URL)}`,
+    `https://corsproxy.io/?${encodeURIComponent(RSS_URL)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(RSS_URL)}`
+  ];
+  
+  let xmlText = null;
+  
+  // Try each proxy until one works
+  for (const proxyUrl of proxies) {
+    try {
+      const response = await fetch(proxyUrl, { 
+        method: 'GET',
+        headers: { 'Accept': 'application/xml, text/xml, */*' }
+      });
+      if (response.ok) {
+        xmlText = await response.text();
+        if (xmlText && xmlText.includes('<entry')) {
+          break;
+        }
+      }
+    } catch (err) {
+      console.log(`Proxy failed: ${proxyUrl}`, err.message);
+      continue;
+    }
+  }
+  
+  if (!xmlText) {
+    console.warn('Could not fetch YouTube videos, showing fallback');
+    showFallbackVideos();
+    return;
+  }
+  
+  try {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(xmlText, 'application/xml');
+    const entries = xml.querySelectorAll('entry');
+    
+    if (entries.length === 0) {
+      showFallbackVideos();
+      return;
+    }
+    
+    const videos = [];
+    for (let i = 0; i < Math.min(3, entries.length); i++) {
+      const entry = entries[i];
+      // YouTube RSS uses namespaces, handle both cases
+      const videoIdEl = entry.querySelector('videoId') || 
+                        entry.getElementsByTagNameNS('http://www.youtube.com/xml/schemas/2015', 'videoId')[0];
+      const titleEl = entry.querySelector('title');
+      const publishedEl = entry.querySelector('published');
+      
+      const videoId = videoIdEl?.textContent;
+      const title = titleEl?.textContent || 'Video boysnocry';
+      const published = publishedEl?.textContent;
+      
+      if (videoId) {
+        videos.push({ videoId, title, published });
+      }
+    }
+    
+    if (videos.length === 0) {
+      showFallbackVideos();
+      return;
+    }
+    
+    displayVideos(videos);
+  } catch (err) {
+    console.error('Error parsing RSS:', err);
+    showFallbackVideos();
+  }
+})();
+
+function displayVideos(videos) {
+  videos.forEach((video, index) => {
+    const cardNum = index + 1;
+    const card = document.getElementById(`videoCard${cardNum}`);
+    const thumb = document.getElementById(`videoThumb${cardNum}`);
+    const titleEl = document.getElementById(`videoTitle${cardNum}`);
+    const dateEl = document.getElementById(`videoDate${cardNum}`);
+    
+    if (!card || !thumb) return;
+    
+    // Update link to video
+    card.href = `https://www.youtube.com/watch?v=${video.videoId}`;
+    
+    // Get YouTube thumbnail (try maxresdefault, fallback to hqdefault)
+    const maxResThumb = `https://i.ytimg.com/vi/${video.videoId}/maxresdefault.jpg`;
+    const hqThumb = `https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`;
+    
+    // Replace thumb content with image + play overlay
+    thumb.innerHTML = `
+      <img src="${maxResThumb}" 
+           alt="${video.title}" 
+           onerror="this.src='${hqThumb}'; this.onerror=null;"
+           style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%); z-index: 1;"></div>
+      <div style="position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: rgba(255,0,0,0.9); border-radius: 50%; box-shadow: 0 4px 20px rgba(0,0,0,0.5); transition: transform 0.3s ease;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white" style="margin-left: 4px;"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+    `;
+    
+    // Update title
+    if (titleEl) {
+      titleEl.textContent = video.title;
+    }
+    
+    // Update date
+    if (dateEl && video.published) {
+      const date = new Date(video.published);
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      const formatted = date.toLocaleDateString('id-ID', options);
+      dateEl.textContent = `${formatted} · Tonton di YouTube ↗`;
+    } else if (dateEl) {
+      dateEl.textContent = 'Tonton di YouTube ↗';
+    }
+  });
+}
+
+function showFallbackVideos() {
+  // If fetching fails, show nice fallback cards with channel links
+  const fallbacks = [
+    {
+      gradient: 'linear-gradient(135deg, #FF0000 0%, #CC0000 100%)',
+      icon: '🎬',
+      label: 'VIDEO TERBARU',
+      title: 'Video Terbaru dari Channel',
+      cta: 'Lihat di YouTube ↗',
+      href: 'https://www.youtube.com/@boysnocry/videos'
+    },
+    {
+      gradient: 'linear-gradient(135deg, #FF6B35 0%, #D84315 100%)',
+      icon: '⭐',
+      label: 'PILIHAN EDITOR',
+      title: 'Video Pilihan & Unggulan',
+      cta: 'Lihat di YouTube ↗',
+      href: 'https://www.youtube.com/@boysnocry/featured'
+    },
+    {
+      gradient: 'linear-gradient(135deg, #DD0000 0%, #AA0000 100%)',
+      icon: '🔴',
+      label: 'LIVE STREAM',
+      title: 'Live Streaming & Recording',
+      cta: 'Lihat di YouTube ↗',
+      href: 'https://www.youtube.com/@boysnocry/streams'
+    }
+  ];
+  
+  fallbacks.forEach((fb, index) => {
+    const cardNum = index + 1;
+    const card = document.getElementById(`videoCard${cardNum}`);
+    const thumb = document.getElementById(`videoThumb${cardNum}`);
+    const titleEl = document.getElementById(`videoTitle${cardNum}`);
+    const dateEl = document.getElementById(`videoDate${cardNum}`);
+    
+    if (!card || !thumb) return;
+    
+    card.href = fb.href;
+    thumb.style.background = fb.gradient;
+    thumb.innerHTML = `
+      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%);"></div>
+      <div style="text-align: center; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; color: white;">
+        <div style="font-size: 3rem;">${fb.icon}</div>
+        <div style="font-size: 1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">${fb.label}</div>
+      </div>
+    `;
+    if (titleEl) titleEl.textContent = fb.title;
+    if (dateEl) dateEl.textContent = fb.cta;
+  });
+}
+</script>
+</body>
+</html>
