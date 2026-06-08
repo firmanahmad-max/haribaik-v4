@@ -15,10 +15,10 @@ const HISTORY_WINDOW = 6; // sliding window pesan terakhir
  * Panggil Sumopod sekali dengan assistant-prefill "{" untuk memaksa keluaran JSON.
  * Mengembalikan objek JSON ter-parse.
  */
-async function callSumopod({ system, window, message, mockFamily }) {
+async function callSumopod({ system, window, message, mockFamily, turn = 'first' }) {
   // Mode mock untuk menguji rotasi tanpa API key.
   if (process.env.MOCK_AI === '1' || !process.env.SUMOPOD_API_KEY) {
-    return mockResponse({ message, family: mockFamily });
+    return mockResponse({ message, family: mockFamily, turn });
   }
 
   // Sumopod mengabaikan field `system` (memakai persona default-nya), jadi instruksi
@@ -81,7 +81,35 @@ function parseAiText(text) {
  * Respons tiruan deterministik untuk mode mock — menghormati family sumber yang
  * diminta agar logika rotasi & validasi tetap bisa diuji offline.
  */
-function mockResponse({ message, family }) {
+function mockResponse({ message, family, turn = 'first' }) {
+  if (turn === 'followup') {
+    const msg = String(message).toLowerCase();
+    const wantAyat = /(ayat|hadits|hadis|qur|firman)/.test(msg);
+    const wantDoa = /\bdoa\b|berdoa|doakan/.test(msg);
+    const wantAksi = /(saran|aksi|langkah|tips|nasihat|nasehat|lakukan)/.test(msg);
+    const r = {
+      mode: 'conversational',
+      reply: `Aku di sini menemanimu, dan aku dengar ceritamu. (mock untuk: "${msg.slice(0, 40)}")`,
+      offer: null,
+      source_type: null, arabic: null, translation: null, source: null,
+      aksi: null, doa_arabic: null, doa_translation: null,
+    };
+    if (wantAyat) {
+      r.source_type = 'quran';
+      r.arabic = 'فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا';
+      r.translation = 'Sesungguhnya bersama kesulitan ada kemudahan.';
+      r.source = 'Asy-Syarh:5';
+    }
+    if (wantAksi) r.aksi = 'Coba tuliskan satu hal kecil yang bisa kamu syukuri sekarang.';
+    if (wantDoa) {
+      r.doa_arabic = 'رَبِّ اشْرَحْ لِي صَدْرِي';
+      r.doa_translation = 'Ya Tuhanku, lapangkanlah dadaku.';
+    }
+    if (!wantAyat && !wantAksi && !wantDoa) {
+      r.offer = 'Kalau kamu mau, aku bisa temani dengan ayat, satu saran kecil, atau doa yang pas — sebut saja ya.';
+    }
+    return r;
+  }
   if (family === 'hadits') {
     return {
       empati: `Aku mendengarmu. Tidak apa-apa merasa seperti itu — kamu sudah berusaha. (mock untuk: "${String(message).slice(0, 40)}")`,
@@ -148,6 +176,11 @@ export async function handleChat(body = {}) {
         .map((m) => ({ role: m.role, content: clip(m.content, 1000) }))
     : [];
 
+  // Giliran pertama (belum ada respons AI di konteks) → struktural penuh.
+  // Giliran lanjutan → percakapan natural (ayat/saran/doa hanya bila diminta).
+  const turn = window.some((m) => m.role === 'assistant') ? 'followup' : 'first';
+  const vmode = turn === 'first' ? 'structured' : 'conversational';
+
   const source = getSourceInstruction(requestCount);
 
   // Percobaan 1.
@@ -157,38 +190,63 @@ export async function handleChat(body = {}) {
     recentMoods: safeMoods,
     sourceInstruction: source.instruction,
     lang: safeLang,
+    turn,
   });
 
   let parsed;
   try {
-    parsed = await callSumopod({ system, window, message: userText, mockFamily: source.family });
+    parsed = await callSumopod({ system, window, message: userText, mockFamily: source.family, turn });
   } catch (err) {
     return { status: 502, body: { error: 'Gagal memanggil AI', detail: err.message } };
   }
 
-  let valid = validateResponse(parsed);
+  let valid = validateResponse(parsed, vmode);
 
-  // Lapis 3: bila family salah atau struktur invalid, retry sekali dengan instruksi keras.
-  const familyMismatch = valid.ok && valid.data.source_type !== source.family;
-  if (!valid.ok || familyMismatch) {
-    system = buildSystemPrompt({
-      profile: safeProfile,
-      temporal,
-      recentMoods: safeMoods,
-      sourceInstruction: getRetryInstruction(source),
-      lang: safeLang,
-    });
-    try {
-      parsed = await callSumopod({ system, window, message: userText, mockFamily: source.family });
-      valid = validateResponse(parsed);
-    } catch (err) {
-      // Pertahankan hasil pertama jika retry gagal total.
-      if (!valid.ok) return { status: 502, body: { error: 'Gagal memanggil AI', detail: err.message } };
+  if (turn === 'first') {
+    // Lapis 3: bila family salah atau struktur invalid, retry sekali dengan instruksi keras.
+    const familyMismatch = valid.ok && valid.data.source_type !== source.family;
+    if (!valid.ok || familyMismatch) {
+      system = buildSystemPrompt({
+        profile: safeProfile, temporal, recentMoods: safeMoods,
+        sourceInstruction: getRetryInstruction(source), lang: safeLang, turn,
+      });
+      try {
+        parsed = await callSumopod({ system, window, message: userText, mockFamily: source.family, turn });
+        valid = validateResponse(parsed, vmode);
+      } catch (err) {
+        if (!valid.ok) return { status: 502, body: { error: 'Gagal memanggil AI', detail: err.message } };
+      }
     }
-  }
-
-  if (!valid.ok) {
-    return { status: 502, body: { error: 'Respons AI tidak valid', missing: valid.missing } };
+    if (!valid.ok) {
+      return { status: 502, body: { error: 'Respons AI tidak valid', missing: valid.missing } };
+    }
+  } else {
+    // Percakapan: bila tak valid (mis. "reply" kosong), retry sekali; lalu fallback halus.
+    if (!valid.ok) {
+      try {
+        parsed = await callSumopod({ system, window, message: userText, mockFamily: source.family, turn });
+        valid = validateResponse(parsed, vmode);
+      } catch { /* abaikan, pakai fallback */ }
+    }
+    if (!valid.ok) {
+      return {
+        status: 200,
+        body: {
+          mode: 'conversational',
+          reply: safeLang === 'en'
+            ? "I'm here with you. Tell me more whenever you're ready."
+            : 'Aku di sini menemanimu. Ceritakan lagi kapan pun kamu siap, ya.',
+          offer: safeLang === 'en'
+            ? 'If you like, I can share a relevant verse, a small tip, or a prayer — just say the word.'
+            : 'Kalau mau, aku bisa temani dengan ayat, satu saran kecil, atau doa yang relevan — sebut saja.',
+          meta: { turn, request_count: requestCount },
+        },
+      };
+    }
+    // Bila ada kutipan tapi family tak terbaca, pakai family yang diminta rotasi.
+    if (valid.data.arabic && valid.data.source_type !== 'quran' && valid.data.source_type !== 'hadits') {
+      valid.data.source_type = source.family;
+    }
   }
 
   return {
@@ -196,6 +254,7 @@ export async function handleChat(body = {}) {
     body: {
       ...valid.data,
       meta: {
+        turn,
         requested_source: source.key,
         requested_family: source.family,
         family_matched: valid.data.source_type === source.family,

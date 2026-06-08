@@ -146,7 +146,10 @@ async function requestAi(message, mood) {
     hideTyping();
     renderAI(r, (reply) => send(reply), toast);
 
-    const aiSummary = `${r.empati} (${r.source}: ${r.translation})`;
+    // Ringkasan untuk konteks AI berikutnya (mode-aware).
+    const base = r.mode === 'conversational' ? (r.reply || '') : (r.empati || '');
+    const quote = r.source && r.translation ? ` (${r.source}: ${r.translation})` : '';
+    const aiSummary = (base + quote).trim() || '(respons)';
     state.history.push({ role: 'assistant', content: aiSummary });
     await Messages.add({ role: 'assistant', content: aiSummary, payload: r });
   } catch (err) {

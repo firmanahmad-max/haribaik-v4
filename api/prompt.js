@@ -14,14 +14,32 @@ const RESPONSE_SHAPE = `{
   "doa_translation": "terjemahan doa dalam Bahasa Indonesia"
 }`;
 
+const CONVO_SHAPE = `{
+  "mode": "conversational",
+  "reply": "balasan natural, bijak, hangat (1-4 kalimat)",
+  "offer": "kalimat tawaran ramah & BERVARIASI, atau null",
+  "source_type": "quran ATAU hadits, atau null",
+  "arabic": "teks Arab ayat/hadits, atau null",
+  "translation": "terjemahan kutipan, atau null",
+  "source": "sumber tepat, atau null",
+  "aksi": "satu saran konkret kecil, atau null",
+  "doa_arabic": "doa pendek Arab, atau null",
+  "doa_translation": "terjemahan doa, atau null"
+}`;
+
 /**
  * @param {object} opts
  * @param {{nama?: string, goal?: string}} [opts.profile]
  * @param {{waktu?: string, hijri?: string, hari?: string}} [opts.temporal]
  * @param {string} opts.sourceInstruction instruksi sumber dari rotation.js
  * @param {string[]} [opts.recentMoods] mood 7 hari terakhir (untuk personalisasi)
+ * @param {'first'|'followup'} [opts.turn] tipe giliran: 'first' = struktural penuh,
+ *        'followup' = percakapan natural (ayat/saran/doa hanya bila diminta).
  */
-export function buildSystemPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [], lang = 'id' }) {
+export function buildSystemPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [], lang = 'id', turn = 'first' }) {
+  if (turn === 'followup') {
+    return buildConversationalPrompt({ profile, temporal, sourceInstruction, recentMoods, lang });
+  }
   const langLine = lang === 'en'
     ? 'BAHASA KELUARAN: Tulis SEMUA nilai teks (empati, translation, aksi, doa_translation) dalam Bahasa Inggris yang hangat. Pertahankan field "arabic" dan "doa_arabic" tetap dalam huruf Arab.'
     : 'BAHASA KELUARAN: Bahasa Indonesia yang hangat.';
@@ -58,4 +76,44 @@ Aturan konten:
 
 KELUARAN: keluarkan HANYA satu objek JSON valid, tanpa teks lain sebelum/sesudahnya, tanpa blok kode markdown, tanpa komentar. Struktur persis:
 ${RESPONSE_SHAPE}`;
+}
+
+/**
+ * Prompt giliran lanjutan: balasan percakapan yang natural & dinamis.
+ * Ayat/saran/doa HANYA disertakan bila pesan pengguna memintanya/menyetujuinya.
+ */
+function buildConversationalPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [], lang = 'id' }) {
+  const langLine = lang === 'en'
+    ? 'BAHASA KELUARAN: Tulis "reply", "offer", "translation", "aksi", dan "doa_translation" dalam Bahasa Inggris yang hangat. Pertahankan "arabic" dan "doa_arabic" dalam huruf Arab.'
+    : 'BAHASA KELUARAN: Bahasa Indonesia yang hangat dan luwes.';
+  const nama = (profile.nama || '').trim() || 'Sahabat';
+  const goalLine = profile.goal ? `Tujuan/harapan user: ${profile.goal}.` : '';
+  const genderLine = profile.gender ? `Jenis kelamin: ${profile.gender}.` : '';
+  const usiaLine = profile.usia ? `Usia: ${profile.usia} tahun.` : '';
+  const peranLine = profile.peran ? `Profesi/peran: ${profile.peran}.` : '';
+  const waktuLine = temporal.waktu ? `Waktu ${temporal.waktu}.` : '';
+  const hariLine = temporal.hari ? `Hari ${temporal.hari}.` : '';
+  const hijriLine = temporal.hijri ? `Hijriyah: ${temporal.hijri}.` : '';
+  const moodLine = recentMoods.length ? `Mood beberapa hari terakhir: ${recentMoods.join(', ')}.` : '';
+
+  return `TUGAS: Hasilkan satu objek data JSON untuk aplikasi "HariBaik". Ini LANJUTAN percakapan — pengguna sudah menerima respons sebelumnya. Susun BALASAN yang natural, bijak, hangat, dan bersahabat — seperti sahabat Muslim yang menemani ngobrol. JANGAN memaksakan ayat, saran, atau doa di setiap balasan; biarkan percakapan mengalir agar tidak monoton dan membosankan.
+
+Pengguna bernama ${nama}.
+${[goalLine, genderLine, usiaLine, peranLine].filter(Boolean).join('\n')}
+Konteks: ${[waktuLine, hariLine, hijriLine].filter(Boolean).join(' ')}
+${moodLine}
+Pesan terbaru pengguna ada di bawah penanda "=== PESAN USER ===". Pertimbangkan juga riwayat percakapan sebelumnya.
+
+CARA MERESPONS:
+1. "reply": 1-4 kalimat menanggapi pesan pengguna dengan tulus, mengalir, dan personal. Boleh bertanya balik bila wajar. Jangan kaku/template.
+2. DETEKSI KEINGINAN dari pesan pengguna:
+   - Bila ia MEMINTA atau MENYETUJUI ayat/hadits → isi: source_type, arabic, translation, source. SUMBER KALI INI: ${sourceInstruction} Patuhi bila menyertakan kutipan. Kutipan harus AKURAT — jangan mengarang.
+   - Bila ia meminta saran/langkah/tips → isi: aksi (konkret, kecil, bisa hari ini).
+   - Bila ia meminta doa → isi: doa_arabic, doa_translation.
+   - Bila TIDAK ada yang diminta → biarkan semua field itu null.
+3. "offer": Bila kamu TIDAK menyertakan ayat/saran/doa, tulis satu kalimat ramah & BERVARIASI yang menawarkan apakah ia ingin ditemani ayat, satu saran kecil, atau doa yang relevan (ganti-ganti susunan kata agar tidak berulang). Bila kamu SUDAH menyertakan salah satunya, "offer" boleh null atau menawarkan yang lain secara halus.
+4. ${langLine} Sapa dengan nama bila wajar.
+
+KELUARAN: HANYA satu objek JSON valid, tanpa teks lain, tanpa markdown. Field yang tidak dipakai diisi null. Struktur persis:
+${CONVO_SHAPE}`;
 }

@@ -62,10 +62,15 @@ const REQUIRED_FIELDS = [
 /**
  * Normalisasi + validasi struktur respons AI.
  * @param {object} obj
+ * @param {'structured'|'conversational'} [mode] 'structured' = giliran pertama (wajib
+ *        lengkap); 'conversational' = giliran lanjutan (hanya "reply" yang wajib,
+ *        ayat/saran/doa opsional).
  * @returns {{ ok: boolean, data?: object, missing?: string[] }}
  */
-export function validateResponse(obj) {
+export function validateResponse(obj, mode = 'structured') {
   if (!obj || typeof obj !== 'object') return { ok: false, missing: ['(bukan objek)'] };
+
+  if (mode === 'conversational') return validateConversational(obj);
 
   const missing = REQUIRED_FIELDS.filter(
     (f) => obj[f] === undefined || obj[f] === null || String(obj[f]).trim() === ''
@@ -76,6 +81,35 @@ export function validateResponse(obj) {
   data.source_type = String(obj.source_type).toLowerCase().trim();
   if (data.source_type !== 'quran' && data.source_type !== 'hadits') {
     return { ok: false, missing: ['source_type (nilai tidak valid)'] };
+  }
+  return { ok: true, data };
+}
+
+const isFilled = (v) => v !== undefined && v !== null && String(v).trim() !== '';
+
+/** Validasi longgar untuk giliran lanjutan (percakapan). */
+function validateConversational(obj) {
+  const reply = isFilled(obj.reply) ? String(obj.reply).trim() : (isFilled(obj.empati) ? String(obj.empati).trim() : '');
+  if (!reply) return { ok: false, missing: ['reply'] };
+
+  const data = { ...obj, mode: 'conversational', reply };
+  data.offer = isFilled(obj.offer) ? String(obj.offer).trim() : null;
+
+  const hasAyat = isFilled(obj.arabic) && isFilled(obj.translation);
+  if (hasAyat) {
+    const st = String(obj.source_type || '').toLowerCase().trim();
+    data.source_type = (st === 'quran' || st === 'hadits') ? st : null; // diisi family yang diminta di handler bila null
+  } else {
+    // Bersihkan field kutipan agar tidak setengah-setengah.
+    data.source_type = null;
+    data.arabic = null;
+    data.translation = null;
+    data.source = null;
+  }
+  if (!isFilled(obj.aksi)) data.aksi = null;
+  if (!(isFilled(obj.doa_arabic) || isFilled(obj.doa_translation))) {
+    data.doa_arabic = null;
+    data.doa_translation = null;
   }
   return { ok: true, data };
 }

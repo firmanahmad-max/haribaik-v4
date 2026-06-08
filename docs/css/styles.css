@@ -164,6 +164,9 @@ nav.tabs a.active, nav.tabs a:hover { color: var(--text-primary); background: va
 .mini-btn:hover { color: var(--text-primary); border-color: var(--accent-gold); }
 .mini-btn.active { color: var(--accent-gold); border-color: var(--accent-gold); }
 
+/* Tawaran lembut di mode percakapan */
+.offer { font-size: 13px; color: var(--text-muted); font-style: italic; line-height: 1.55; margin: 2px 2px 2px; }
+
 /* Quick replies */
 .quick-replies { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .chip-btn {
