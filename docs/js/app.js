@@ -9,7 +9,7 @@ import { initVoice } from './voice.js';
 import { initNotify } from './notify.js';
 import { initSettings, openSettings, maybeOnboard } from './settings.js';
 import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar } from './chat.js';
-import { t as tr, getLang, applyI18n } from './i18n.js';
+import { t as tr, getLang, applyI18n, composerPlaceholders } from './i18n.js';
 import { initCloudSync } from './cloud.js';
 
 // Avatar pengguna berdasarkan jenis kelamin.
@@ -168,6 +168,22 @@ function friendlyError(err) {
   return tr('err_generic');
 }
 
+// ---------- Placeholder kolom chat: bergulir, santai & dekat ----------
+function initComposerPlaceholder() {
+  const input = $('input');
+  const list = composerPlaceholders();
+  if (!input || !list.length) return;
+  let i = Math.floor(Math.random() * list.length);
+  const apply = () => { input.placeholder = list[i % list.length]; };
+  apply();
+  setInterval(() => {
+    // Jangan ganggu saat pengguna sedang mengetik/fokus.
+    if (document.activeElement === input || input.value.trim()) return;
+    input.classList.add('ph-fade');
+    setTimeout(() => { i++; apply(); input.classList.remove('ph-fade'); }, 320);
+  }, 5000);
+}
+
 // ---------- Textarea auto-grow ----------
 function autoGrow() {
   const ta = $('input');
@@ -277,6 +293,7 @@ async function init() {
 
   $('settingsBtn').addEventListener('click', () => openSettings());
   $('sendBtn').addEventListener('click', () => send());
+  initComposerPlaceholder();
   $('input').addEventListener('input', autoGrow);
   $('input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {

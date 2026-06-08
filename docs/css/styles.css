@@ -201,9 +201,12 @@ footer.composer {
 .input-row textarea {
   flex: 1; resize: none; max-height: 120px; min-height: 44px;
   background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary);
-  border-radius: 14px; padding: 12px 14px; font: inherit; font-size: 14.5px; outline: none;
+  border-radius: 14px; padding: 11px 14px; font: inherit; font-size: 14.5px; line-height: 1.4; outline: none;
 }
 .input-row textarea:focus { border-color: var(--accent-teal); }
+/* Placeholder bergulir — fade halus saat berganti */
+.input-row textarea::placeholder { color: var(--text-muted); opacity: 1; transition: opacity 0.3s ease; }
+.input-row textarea.ph-fade::placeholder { opacity: 0; }
 .send-btn, .voice-btn {
   width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; flex-shrink: 0;
   display: grid; place-items: center; font-size: 18px;

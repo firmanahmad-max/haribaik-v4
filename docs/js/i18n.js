@@ -14,7 +14,7 @@ const DICT = {
     powered: 'Powered by Max Computer - Arta Ecosystem',
     close: 'Tutup', save: 'Simpan', cancel: 'Batalkan', deleted: 'Dihapus', invalid_file: 'File tidak valid',
     // Chat
-    composer_ph: 'Ceritakan apa yang kamu rasakan…',
+    composer_ph: 'Cerita yuk, lagi gimana?',
     disclaimer: 'Kutipan ayat, hadits dan doa bisa terjadi kekeliruan. Mohon bantu verifikasi sumber sebelum diamalkan dan dibagikan.',
     understood: 'Mengerti',
     btn_save: 'Simpan', btn_copy: 'Salin', btn_share: 'Bagikan', btn_listen: 'Dengar', btn_report: 'Laporkan',
@@ -171,7 +171,7 @@ const DICT = {
     tagline_favorites: 'Quotes you saved',
     powered: 'Powered by Max Computer - Arta Ecosystem',
     close: 'Close', save: 'Save', cancel: 'Cancel', deleted: 'Deleted', invalid_file: 'Invalid file',
-    composer_ph: 'Tell me how you feel…',
+    composer_ph: 'How are you, really?',
     disclaimer: 'AI-selected verses, hadith and prayers may contain mistakes. Please verify the source before practicing or sharing.',
     understood: 'Got it',
     btn_save: 'Save', btn_copy: 'Copy', btn_share: 'Share', btn_listen: 'Listen', btn_report: 'Report',
@@ -322,6 +322,29 @@ const ARRAYS = {
     id: ['Tilawah 1 halaman', 'Sholat tepat waktu', 'Sedekah harian', 'Dzikir pagi & petang', 'Sholat Dhuha'],
     en: ['Read 1 page of Quran', 'Pray on time', 'Daily charity', 'Morning & evening dhikr', 'Dhuha prayer'],
   },
+  // Placeholder kolom chat — pendek (muat 1 baris), santai & dekat. Dirotasi.
+  composer_rotation: {
+    id: [
+      'Cerita yuk, lagi gimana?',
+      'Apa yang kamu rasakan?',
+      'Lagi mikirin apa nih?',
+      'Cerita aja, aku dengerin…',
+      'Sapa hatimu hari ini…',
+      'Ada yang mengganjal?',
+      'Hai, apa kabarmu?',
+      'Bagi cerita, yuk…',
+    ],
+    en: [
+      'How are you, really?',
+      'What’s on your mind?',
+      'Tell me, what’s up?',
+      'Talk to me, I’m listening…',
+      'How’s your heart today?',
+      'Anything weighing on you?',
+      'Hey, how are you?',
+      'Share with me…',
+    ],
+  },
 };
 
 let lang = localStorage.getItem(KEY) || 'id';
@@ -340,6 +363,7 @@ export function arr(name) { return ARRAYS[name]?.[lang] || ARRAYS[name]?.id || [
 export function weekdaysShort() { return arr('weekdays_short'); }
 export function hijriMonths() { return arr('hijri_months'); }
 export function presetHabits() { return arr('preset_habits'); }
+export function composerPlaceholders() { return arr('composer_rotation'); }
 export function applyI18n(root = document) {
   document.documentElement.lang = lang;
   root.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
