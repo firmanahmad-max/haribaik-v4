@@ -618,6 +618,19 @@ button.jcal-cell.has:hover { border-color: var(--accent-teal); }
 .doa-meta { display: flex; justify-content: space-between; gap: 10px; font-size: 11.5px; color: var(--text-muted); margin: 8px 0 4px; }
 .mini-btn.js-aamiin.active { color: var(--accent-gold); border-color: var(--accent-gold); }
 
+/* Skeleton dinding doa (placeholder saat memuat) */
+.doa-skel { pointer-events: none; }
+.doa-skel .sk-line, .doa-skel .sk-meta {
+  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--border) 37%, var(--bg-elevated) 63%);
+  background-size: 400% 100%; border-radius: 7px; animation: skShimmer 1.3s ease-in-out infinite;
+}
+.doa-skel .sk-line { height: 13px; margin-bottom: 9px; }
+.doa-skel .sk-line.w80 { width: 80%; }
+.doa-skel .sk-line.w95 { width: 95%; }
+.doa-skel .sk-meta { height: 11px; width: 45%; margin-top: 12px; }
+@keyframes skShimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .doa-skel .sk-line, .doa-skel .sk-meta { animation: none; } }
+
 /* ---------- Hormati prefers-reduced-motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -32,6 +32,23 @@ function addLocalAamin(uid, id) {
   } catch { /* abaikan */ }
 }
 
+// Cache feed terakhir agar dinding doa tampil INSTAN saat dibuka lagi,
+// lalu disegarkan dari server di belakang layar.
+const FEED_CACHE_KEY = 'doaFeedCache';
+function getCachedFeed() {
+  try { return JSON.parse(localStorage.getItem(FEED_CACHE_KEY) || '[]'); } catch { return []; }
+}
+function setCachedFeed(items) {
+  try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify((items || []).slice(0, 50))); } catch { /* abaikan */ }
+}
+function skeletonHtml(n = 3) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    s += `<section class="card jcard doa-skel" aria-hidden="true"><div class="sk-line w80"></div><div class="sk-line w95"></div><div class="sk-meta"></div></section>`;
+  }
+  return s;
+}
+
 let toastTimer = null;
 function toast(msg) {
   const el = $('toast');
@@ -104,15 +121,26 @@ function prependDoa(row) {
 
 async function loadFeed() {
   const feed = $('doaFeed');
+  // 1) INSTAN: tampilkan cache lokal (atau skeleton) tanpa menunggu jaringan.
+  aaminSet = getLocalAamins(me && me.id);
+  const cached = getCachedFeed();
+  if (cached.length) {
+    feed.innerHTML = cached.map(doaCard).join('');
+    feed.querySelectorAll('.doa-item').forEach(wireCard);
+  } else {
+    feed.innerHTML = skeletonHtml();
+  }
+  // 2) Segarkan dari server di belakang layar.
   try {
     const [items, mine] = await Promise.all([listDoa(50), myAamiins()]);
-    // Gabung hasil server dengan cache lokal perangkat (anti race/timing).
     aaminSet = new Set([...mine, ...getLocalAamins(me && me.id)]);
+    setCachedFeed(items);
     if (!items.length) { feed.innerHTML = `<section class="card jcard"><p class="jempty">${t('doa_empty')}</p></section>`; return; }
     feed.innerHTML = items.map(doaCard).join('');
     feed.querySelectorAll('.doa-item').forEach(wireCard);
   } catch (e) {
-    feed.innerHTML = `<section class="card jcard"><p class="jempty">${escapeHtml(e.message)}</p></section>`;
+    // Bila ada cache, biarkan tetap tampil; jika tidak, tampilkan pesan error.
+    if (!cached.length) feed.innerHTML = `<section class="card jcard"><p class="jempty">${escapeHtml(e.message)}</p></section>`;
   }
 }
 

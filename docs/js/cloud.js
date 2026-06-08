@@ -13,11 +13,27 @@ export function cloudEnabled() {
   return !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 }
 
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('gagal memuat ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+// Muat supabase-js dari bundel UMD SATU FILE (same-origin → di-cache SW, tanpa
+// waterfall esm.sh yang lambat). Fallback ke CDN bila berkas lokal gagal.
 async function ensureLib() {
-  if (!createClientFn) {
-    const mod = await import('https://esm.sh/@supabase/supabase-js@2.45.4');
-    createClientFn = mod.createClient;
+  if (createClientFn) return createClientFn;
+  if (!window.supabase) {
+    try { await loadScript('vendor/supabase.js'); }
+    catch { await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js'); }
   }
+  if (!window.supabase || !window.supabase.createClient) throw new Error('Pustaka cloud gagal dimuat');
+  createClientFn = window.supabase.createClient;
   return createClientFn;
 }
 
