@@ -87,9 +87,14 @@ function mockResponse({ message, family, turn = 'first' }) {
     const wantAyat = /(ayat|hadits|hadis|qur|firman)/.test(msg);
     const wantDoa = /\bdoa\b|berdoa|doakan/.test(msg);
     const wantAksi = /(saran|aksi|langkah|tips|nasihat|nasehat|lakukan)/.test(msg);
+    // Pertanyaan ringan/santai → balasan jenaka halus (sesekali, untuk cairkan suasana).
+    const isCasual = /(halo|hai|haii|hei|kabar|gimana kabar|kamu siapa|kamu apa|lagi ngapain|sedang apa|jokes?|lucu|hobimu|main|ngopi)/.test(msg);
+    const heavy = /(sedih|cemas|takut|marah|lelah|capek|kesal|patah hati|gagal|sakit|kehilangan|stres|stress)/.test(msg);
     const r = {
       mode: 'conversational',
-      reply: `Aku di sini menemanimu, dan aku dengar ceritamu. (mock untuk: "${msg.slice(0, 40)}")`,
+      reply: (isCasual && !heavy)
+        ? `Halo! Aku Haribaik, sahabat digitalmu. Status hari ini: belum tidur, tidak butuh kopi, dan masih semangat menemani 😄`
+        : `Aku di sini menemanimu, dan aku dengar ceritamu. (mock untuk: "${msg.slice(0, 40)}")`,
       offer: null,
       source_type: null, arabic: null, translation: null, source: null,
       aksi: null, doa_arabic: null, doa_translation: null,
