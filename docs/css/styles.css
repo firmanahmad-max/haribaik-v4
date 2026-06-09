@@ -153,6 +153,9 @@ nav.tabs a.active, nav.tabs a:hover { color: var(--text-primary); background: va
 
 .aksi-card { background: var(--bg-elevated); border-left: 3px solid var(--accent-teal); }
 .aksi-card .body { font-size: 14px; }
+/* Kartu ajakan dukungan/sedekah (sesekali muncul di chat) */
+.support-card { border: 1px solid var(--accent-gold); background: rgba(196, 175, 120, 0.06); }
+.support-card .support-msg { font-size: 13px; line-height: 1.6; color: var(--text-primary); margin: 10px 0 4px; }
 
 .doa-card { background: var(--bg-elevated); border-left: 3px solid var(--accent-purple); }
 .doa-card .arabic { font-size: 18px; color: var(--text-primary); text-align: right; margin: 4px 0 8px; }

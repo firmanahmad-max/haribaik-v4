@@ -234,6 +234,70 @@ export function renderAI(r, onQuickReply, toast, ts = Date.now()) {
   scrollDown();
 }
 
+// Kutipan TERKURASI (sahih) tentang keutamaan sedekah/infaq — dipakai kartu dukungan.
+const SUPPORT_ITEMS = [
+  {
+    source_type: 'quran', source: 'Al-Baqarah:261',
+    arabic: 'مَّثَلُ ٱلَّذِينَ يُنفِقُونَ أَمْوَٰلَهُمْ فِى سَبِيلِ ٱللَّهِ كَمَثَلِ حَبَّةٍ أَنۢبَتَتْ سَبْعَ سَنَابِلَ فِى كُلِّ سُنۢبُلَةٍ مِّا۟ئَةُ حَبَّةٍ',
+    id: 'Perumpamaan orang yang menginfakkan hartanya di jalan Allah seperti sebutir biji yang menumbuhkan tujuh tangkai, pada tiap tangkai seratus biji. Allah melipatgandakan bagi siapa yang Dia kehendaki.',
+    en: 'The example of those who spend their wealth in the way of Allah is like a seed that grows seven spikes; in each spike a hundred grains. And Allah multiplies for whom He wills.',
+  },
+  {
+    source_type: 'quran', source: "Saba':39",
+    arabic: 'وَمَآ أَنفَقْتُم مِّن شَىْءٍ فَهُوَ يُخْلِفُهُۥ ۖ وَهُوَ خَيْرُ ٱلرَّٰزِقِينَ',
+    id: 'Dan apa saja yang kamu infakkan, Allah pasti menggantinya. Dialah sebaik-baik pemberi rezeki.',
+    en: 'And whatever you spend, He will replace it; and He is the best of providers.',
+  },
+  {
+    source_type: 'hadits', source: 'HR. Muslim:1631',
+    arabic: 'إِذَا مَاتَ الإِنْسَانُ انْقَطَعَ عَنْهُ عَمَلُهُ إِلَّا مِنْ ثَلَاثَةٍ: صَدَقَةٍ جَارِيَةٍ، أَوْ عِلْمٍ يُنْتَفَعُ بِهِ، أَوْ وَلَدٍ صَالِحٍ يَدْعُو لَهُ',
+    id: 'Apabila manusia meninggal, terputuslah amalnya kecuali tiga: sedekah jariyah, ilmu yang bermanfaat, atau anak saleh yang mendoakannya.',
+    en: 'When a person dies, their deeds end except three: ongoing charity, beneficial knowledge, or a righteous child who prays for them.',
+  },
+  {
+    source_type: 'hadits', source: 'HR. Muslim:2588',
+    arabic: 'مَا نَقَصَتْ صَدَقَةٌ مِّنْ مَالٍ',
+    id: 'Sedekah tidak akan mengurangi harta.',
+    en: 'Charity does not decrease wealth.',
+  },
+];
+
+/**
+ * Kartu ajakan halus: keutamaan sedekah + tautan ke Tentang & cara berdonasi.
+ * @param {()=>void} onAbout  buka halaman Tentang
+ * @param {()=>void} onDonate buka bagian donasi
+ */
+export function renderSupportCard(onAbout, onDonate, ts = Date.now()) {
+  const lng = getLang();
+  const item = SUPPORT_ITEMS[Math.floor(Math.random() * SUPPORT_ITEMS.length)];
+  const { cls: badgeClass } = badgeFor(item.source_type);
+  const badgeLabel = t('label_' + badgeClass);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ai';
+  wrap.innerHTML = `
+    <div class="avatar">H</div>
+    <div class="stack">
+      <div class="bubble">${escapeHtml(t('sup_intro'))}</div>
+      <div class="card support-card">
+        <div class="label"><span>💝 ${t('sup_title')}</span><span class="badge ${badgeClass}">${badgeLabel}</span></div>
+        <div class="arabic">${escapeHtml(item.arabic)}</div>
+        <div class="translation">"${escapeHtml(item[lng] || item.id)}"</div>
+        <div class="source">— ${escapeHtml(item.source)}</div>
+        <p class="support-msg">${escapeHtml(t('sup_msg'))}</p>
+        <div class="card-actions">
+          <button class="mini-btn js-about">📖 ${t('sup_about')}</button>
+          <button class="mini-btn js-donate">${t('sup_donate')}</button>
+        </div>
+      </div>
+      <time class="msg-time">${fmtTime(ts)}</time>
+    </div>`;
+  wrap.querySelector('.js-about').addEventListener('click', onAbout);
+  wrap.querySelector('.js-donate').addEventListener('click', onDonate);
+  chatEl().appendChild(wrap);
+  scrollDown();
+}
+
 export function renderError(msg, onRetry) {
   const wrap = document.createElement('div');
   wrap.className = 'msg ai';

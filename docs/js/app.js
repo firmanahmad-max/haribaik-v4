@@ -8,7 +8,7 @@ import { initTheme } from './theme.js';
 import { initVoice } from './voice.js';
 import { initNotify } from './notify.js';
 import { initSettings, openSettings, maybeOnboard } from './settings.js';
-import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar } from './chat.js';
+import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar, renderSupportCard } from './chat.js';
 import { t as tr, getLang, applyI18n, composerPlaceholders } from './i18n.js';
 import { initCloudSync } from './cloud.js';
 
@@ -152,12 +152,30 @@ async function requestAi(message, mood) {
     const aiSummary = (base + quote).trim() || '(respons)';
     state.history.push({ role: 'assistant', content: aiSummary });
     await Messages.add({ role: 'assistant', content: aiSummary, payload: r });
+
+    await maybeShowSupport();
   } catch (err) {
     hideTyping();
     renderError(friendlyError(err), () => requestAi(message, mood));
   } finally {
     setLoading(false);
   }
+}
+
+// Ajakan halus melihat Tentang & berdonasi — sesekali (maks 1×/hari, setelah
+// beberapa interaksi agar tidak mengganggu).
+async function maybeShowSupport() {
+  const today = new Date().toDateString();
+  if ((await Meta.get('supportShownDay', null)) === today) return;
+  const aiTurns = state.history.filter((m) => m.role === 'assistant').length;
+  if (aiTurns < 2) return;
+  await Meta.set('supportShownDay', today);
+  setTimeout(() => {
+    renderSupportCard(
+      () => { location.href = 'tentang.html'; },
+      () => { location.href = 'tentang.html#dukungan'; }
+    );
+  }, 900);
 }
 
 // Pesan error yang ramah & spesifik berdasarkan jenis kegagalan.
