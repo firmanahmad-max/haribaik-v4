@@ -1,6 +1,6 @@
 // sw.js — service worker: offline cache app shell + jalur notifikasi.
 
-const CACHE = 'haribaik-v4-41';
+const CACHE = 'haribaik-v4-43';
 const SHELL = [
   'index.html',
   'favorites.html',
@@ -64,12 +64,23 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+// Host statik pihak ketiga yang AMAN di-cache (aset jarang berubah).
+const CACHEABLE_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net'];
+
 self.addEventListener('fetch', (e) => {
   const { request } = e;
   if (request.method !== 'GET') return;
 
-  // Jangan cache panggilan API.
-  if (request.url.includes('/api/')) return;
+  const url = new URL(request.url);
+
+  // Jangan cache panggilan API backend.
+  if (url.pathname.includes('/api/')) return;
+
+  // PENTING: jangan cache API dinamis lintas-origin (Supabase REST/Auth/Realtime,
+  // Aladhan, reverse-geocode, dll). Cache-first di sini menyebabkan BACAAN BASI →
+  // sinkron antar-perangkat & dinding doa tampak tidak ter-update. Biarkan jaringan.
+  const sameOrigin = url.origin === location.origin;
+  if (!sameOrigin && !CACHEABLE_HOSTS.includes(url.host)) return;
 
   // Network-first untuk navigasi, cache-first untuk aset shell.
   if (request.mode === 'navigate') {
