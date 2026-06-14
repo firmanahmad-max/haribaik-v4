@@ -26,6 +26,7 @@ const state = {
   selectedMood: null,
   profile: { nama: '', goal: '' },
   busy: false,
+  sessionAiTurns: 0, // hitung respons AI BARU di sesi ini (tidak termasuk restore)
 };
 
 // ---------- Toast ----------
@@ -152,6 +153,7 @@ async function requestAi(message, mood) {
     const aiSummary = (base + quote).trim() || '(respons)';
     state.history.push({ role: 'assistant', content: aiSummary });
     await Messages.add({ role: 'assistant', content: aiSummary, payload: r });
+    state.sessionAiTurns++;
 
     await maybeShowSupport();
   } catch (err) {
@@ -167,8 +169,9 @@ async function requestAi(message, mood) {
 async function maybeShowSupport() {
   const today = new Date().toDateString();
   if ((await Meta.get('supportShownDay', null)) === today) return;
-  const aiTurns = state.history.filter((m) => m.role === 'assistant').length;
-  if (aiTurns < 2) return;
+  // Hitung HANYA respons AI baru di sesi ini, agar tidak langsung muncul
+  // tepat setelah reload (restore mengisi history dengan respons lama).
+  if (state.sessionAiTurns < 2) return;
   await Meta.set('supportShownDay', today);
   setTimeout(() => {
     renderSupportCard(

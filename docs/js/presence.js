@@ -57,9 +57,14 @@ export async function initPresence(numEl) {
   };
   const sayBye = () => { try { channel.send({ type: 'broadcast', event: 'bye', payload: { id: me } }); } catch { /* abaikan */ } };
 
+  // Pasang interval hanya SEKALI, walau status SUBSCRIBED dipicu ulang saat
+  // websocket reconnect (cegah heartbeat ganda & memory leak interval).
+  let intervalsSet = false;
   channel.subscribe(async (status) => {
     if (status !== 'SUBSCRIBED') return;
     await sayHi();
+    if (intervalsSet) return;
+    intervalsSet = true;
     setInterval(sayHi, HEARTBEAT_MS);
     setInterval(() => tickUI(numEl), 5_000);
   });
