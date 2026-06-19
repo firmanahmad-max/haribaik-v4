@@ -298,6 +298,32 @@ export function renderSupportCard(onAbout, onDonate, ts = Date.now()) {
   scrollDown();
 }
 
+/**
+ * Render bubble penolakan halus saat pesan di luar lingkup (TIDAK memanggil AI).
+ * Memberi chip cepat untuk mengarahkan pengguna kembali ke fitur HariBaik.
+ */
+export function renderOutOfScope(onQuickReply, ts = Date.now()) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ai';
+  wrap.innerHTML = `
+    <div class="avatar">H</div>
+    <div class="stack">
+      <div class="bubble">${escapeHtml(t('oos_msg'))}</div>
+      <div class="quick-replies"></div>
+      <time class="msg-time">${fmtTime(ts)}</time>
+    </div>`;
+  const qr = wrap.querySelector('.quick-replies');
+  ['oos_chip_mood', 'oos_chip_ayat', 'oos_chip_doa'].forEach((k) => {
+    const b = document.createElement('button');
+    b.className = 'chip-btn';
+    b.textContent = t(k);
+    b.addEventListener('click', () => onQuickReply(t(k)));
+    qr.appendChild(b);
+  });
+  chatEl().appendChild(wrap);
+  scrollDown();
+}
+
 export function renderError(msg, onRetry) {
   const wrap = document.createElement('div');
   wrap.className = 'msg ai';

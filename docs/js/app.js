@@ -8,7 +8,8 @@ import { initTheme } from './theme.js';
 import { initVoice } from './voice.js';
 import { initNotify } from './notify.js';
 import { initSettings, openSettings, maybeOnboard } from './settings.js';
-import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar, renderSupportCard } from './chat.js';
+import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar, renderSupportCard, renderOutOfScope } from './chat.js';
+import { isOffScope } from './scope.js';
 import { t as tr, getLang, applyI18n, composerPlaceholders } from './i18n.js';
 import { initCloudSync } from './cloud.js';
 
@@ -122,6 +123,13 @@ async function send(text) {
   // reset mood setelah dipakai
   state.selectedMood = null;
   document.querySelectorAll('.mood-pill').forEach((p) => p.classList.remove('selected'));
+
+  // Guardrail: pesan yang JELAS di luar lingkup HariBaik (mis. minta dibuatkan PRD,
+  // kode, esai panjang) → tolak halus DI KLIEN tanpa memanggil AI (hemat token).
+  if (message && isOffScope(message)) {
+    renderOutOfScope((reply) => send(reply), toast);
+    return;
+  }
 
   await requestAi(message, mood);
 }
