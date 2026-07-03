@@ -127,7 +127,12 @@ async function send(text) {
   // Guardrail: pesan yang JELAS di luar lingkup HariBaik (mis. minta dibuatkan PRD,
   // kode, esai panjang) → tolak halus DI KLIEN tanpa memanggil AI (hemat token).
   if (message && isOffScope(message)) {
-    renderOutOfScope((reply) => send(reply), toast);
+    renderOutOfScope((reply) => send(reply));
+    // Simpan penolakan agar percakapan tetap utuh setelah reload
+    // (tanpa ini, pesan user tampak menggantung tanpa balasan).
+    const refusal = tr('oos_msg');
+    state.history.push({ role: 'assistant', content: refusal });
+    await Messages.add({ role: 'assistant', content: refusal, payload: { mode: 'oos' } });
     return;
   }
 
@@ -289,7 +294,8 @@ async function restoreConversation() {
       renderUser(m.content, m.ts);
       state.history.push({ role: 'user', content: m.content });
     } else if (m.role === 'assistant' && m.payload) {
-      renderAI(m.payload, (reply) => send(reply), toast, m.ts);
+      if (m.payload.mode === 'oos') renderOutOfScope((reply) => send(reply), m.ts);
+      else renderAI(m.payload, (reply) => send(reply), toast, m.ts);
       state.history.push({ role: 'assistant', content: m.content });
     }
   }
