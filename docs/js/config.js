@@ -4,9 +4,9 @@
 
 const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
 
-export const BACKEND_URL = isLocal
-  ? 'http://localhost:3000'
-  : 'https://haribaik-v4-production.up.railway.app';
+// Produksi VPS: frontend & API dilayani di domain yang sama (Caddy → backend),
+// jadi BACKEND_URL relatif ('') → panggilan ke /api/* same-origin, tanpa CORS.
+export const BACKEND_URL = isLocal ? 'http://localhost:3000' : '';
 
 // Supabase (Fase 4). Anon key aman ditaruh di frontend — keamanan data dijaga RLS.
 // Isi setelah membuat project Supabase + menjalankan supabase/schema.sql.
