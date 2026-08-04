@@ -6,7 +6,14 @@ const KEY = 'haribaik-lang';
 const DICT = {
   id: {
     // Nav & umum
-    nav_chat: 'Chat', nav_journal: 'Jurnal', nav_deeds: 'Amalan', nav_favorites: 'Favorit',
+    nav_chat: 'Chat', nav_journal: 'Jurnal', nav_deeds: 'Amalan', nav_favorites: 'Favorit', nav_ibadah: 'Ibadah',
+    ibadah_sub: 'Dzikir, tasbih, Asmaul Husna & doa',
+    ib_tab_dzikir: '🌅 Dzikir', ib_tab_tasbih: '📿 Tasbih', ib_tab_asma: '🕌 Asmaul Husna', ib_tab_doa: '🤲 Doa Harian',
+    ib_pagi: '🌅 Dzikir Pagi', ib_petang: '🌇 Dzikir Petang',
+    ib_dzikir_hint: 'Ketuk lingkaran hitungan tiap kali membaca. Selesai satu hari, tersimpan otomatis.',
+    ib_dzikir_done: 'Alhamdulillah, selesai 🌿', ib_total: 'Total', ib_reset: '↺ Reset',
+    ib_tasbih_done: 'Masya Allah, genap {n}x 🤲', ib_asma_search: 'Cari nama (mis. Rahman, Pengasih)…',
+    ib_asma_hint: '99 nama indah milik Allah ﷻ. Ketik untuk mencari.',
     tagline_app: 'Mulai harimu dengan kebaikan',
     tagline_journal: 'Pantau perjalanan hatimu',
     tagline_deeds: 'Istiqomah dalam kebaikan',
@@ -170,7 +177,14 @@ const DICT = {
     rem_title: 'HariBaik 🌿', rem_body: 'Mulai harimu dengan kebaikan. Yuk, sapa hatimu hari ini.',
   },
   en: {
-    nav_chat: 'Chat', nav_journal: 'Journal', nav_deeds: 'Deeds', nav_favorites: 'Favorites',
+    nav_chat: 'Chat', nav_journal: 'Journal', nav_deeds: 'Deeds', nav_favorites: 'Favorites', nav_ibadah: 'Worship',
+    ibadah_sub: 'Dhikr, tasbih, Names of Allah & duas',
+    ib_tab_dzikir: '🌅 Dhikr', ib_tab_tasbih: '📿 Tasbih', ib_tab_asma: '🕌 Names of Allah', ib_tab_doa: '🤲 Daily Duas',
+    ib_pagi: '🌅 Morning Dhikr', ib_petang: '🌇 Evening Dhikr',
+    ib_dzikir_hint: 'Tap the counter each time you recite. Your progress is saved for the day.',
+    ib_dzikir_done: 'Alhamdulillah, complete 🌿', ib_total: 'Total', ib_reset: '↺ Reset',
+    ib_tasbih_done: 'Masha Allah, {n}x complete 🤲', ib_asma_search: 'Search a name (e.g. Rahman, Merciful)…',
+    ib_asma_hint: 'The 99 beautiful names of Allah ﷻ. Type to search.',
     tagline_app: 'Start your day with kindness',
     tagline_journal: 'Track your heart’s journey',
     tagline_deeds: 'Stay steadfast in goodness',

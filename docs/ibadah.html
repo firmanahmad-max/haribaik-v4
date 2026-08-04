@@ -5,48 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://syiqxvnsvvzmhcumyzed.supabase.co wss://syiqxvnsvvzmhcumyzed.supabase.co https://haribaik-v4-production.up.railway.app https://api.aladhan.com https://api.bigdatacloud.net; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
-  <script>
-    // Splash hanya sekali per sesi (jangan muncul tiap kembali ke Chat).
-    try {
-      if (sessionStorage.getItem('hb_splash')) document.documentElement.classList.add('no-splash');
-      else sessionStorage.setItem('hb_splash', '1');
-    } catch (e) { /* abaikan */ }
-  </script>
-  <title>HariBaik — Mulai harimu dengan kebaikan</title>
-  <meta name="description" content="PWA motivasi harian Islami dengan AI companion. Curhat, pilih mood, dan dapatkan empati, ayat/hadits, saran aksi, dan doa." />
+  <title>Ibadah — HariBaik</title>
+  <meta name="description" content="Dzikir pagi & petang, tasbih digital, Asmaul Husna, dan kumpulan doa harian terkurasi." />
   <meta name="theme-color" content="#0c1a13" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="HariBaik" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <div id="splash" class="splash" role="status" aria-label="Memuat HariBaik">
-    <img class="splash-bg" src="icons/splash.jpg" alt="HariBaik — Mulai harimu dengan kebaikan" onerror="document.getElementById('splash')?.remove()" />
-  </div>
-
   <div class="app">
     <header class="app-header">
       <div class="header-row">
         <div class="brand">
           <div class="logo">H</div>
           <div>
-            <h1>HariBaik</h1>
-            <div class="tagline" data-i18n="tagline_app">Mulai harimu dengan kebaikan</div>
+            <h1 data-i18n="nav_ibadah">Ibadah</h1>
+            <div class="tagline" data-i18n="ibadah_sub">Dzikir, tasbih, Asmaul Husna & doa</div>
           </div>
         </div>
         <nav class="tabs">
-          <a href="index.html" class="active" data-i18n="nav_chat">Chat</a>
+          <a href="index.html" data-i18n="nav_chat">Chat</a>
           <a href="journal.html" data-i18n="nav_journal">Jurnal</a>
           <a href="amalan.html" data-i18n="nav_deeds">Amalan</a>
-          <a href="ibadah.html" data-i18n="nav_ibadah">Ibadah</a>
+          <a href="ibadah.html" class="active" data-i18n="nav_ibadah">Ibadah</a>
           <a href="doa.html" data-i18n="nav_doa">Doa</a>
           <a href="favorites.html" data-i18n="nav_favorites">Favorit</a>
         </nav>
@@ -54,41 +43,26 @@
           <div class="presence" id="presence" hidden aria-live="polite" title="Pengguna online sekarang">
             <span class="presence-dot"></span><b id="presenceN">0</b><span class="presence-label" data-i18n="online">online</span>
           </div>
-          <button class="icon-btn" id="settingsBtn" title="Pengaturan" aria-label="Pengaturan">⚙️</button>
           <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema">🌙</button>
         </div>
       </div>
-      <div class="context-bar">
-        <span class="chip" id="ctxWaktu">🌤️ —</span>
-        <span class="chip" id="ctxHijri">🌙 —</span>
-        <span class="chip streak" id="ctxStreak">🔥 0 hari</span>
-      </div>
     </header>
 
-    <main class="chat" id="chat" aria-live="polite"></main>
-
-    <div class="mood-selector" id="moodSelector" aria-label="Pilih mood">
-      <!-- mood pills diisi oleh app.js -->
-    </div>
-
-    <footer class="composer">
-      <div class="input-row">
-        <button class="voice-btn" id="voiceBtn" title="Input suara" aria-label="Input suara">🎤</button>
-        <textarea id="input" rows="1" placeholder="Ceritakan apa yang kamu rasakan…" data-i18n-ph="composer_ph" aria-label="Pesan"></textarea>
-        <button class="send-btn" id="sendBtn" title="Kirim" aria-label="Kirim">➤</button>
+    <div class="journal-page">
+      <div class="ib-seg" id="ibSeg" role="tablist">
+        <button class="ib-seg-btn active" data-sec="dzikir" role="tab" data-i18n="ib_tab_dzikir">🌅 Dzikir</button>
+        <button class="ib-seg-btn" data-sec="tasbih" role="tab" data-i18n="ib_tab_tasbih">📿 Tasbih</button>
+        <button class="ib-seg-btn" data-sec="asma" role="tab" data-i18n="ib_tab_asma">🕌 Asmaul Husna</button>
+        <button class="ib-seg-btn" data-sec="doa" role="tab" data-i18n="ib_tab_doa">🤲 Doa Harian</button>
       </div>
-      <div class="powered">Powered by Max Computer - Arta Ecosystem</div>
-    </footer>
+      <div id="ibadahBody"></div>
+    </div>
   </div>
 
   <div class="toast" id="toast" role="status"></div>
 
-  <!-- Kontainer share card (di-render off-screen, ditangkap html2canvas) -->
-  <div id="shareCardMount"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script type="module" src="js/errlog.js"></script>
   <script type="module" src="js/install.js"></script>
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/ibadah.js"></script>
 </body>
 </html>
