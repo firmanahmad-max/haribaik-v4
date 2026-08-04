@@ -10,6 +10,16 @@
 --
 -- Pola tetap sama: klien langsung ke Supabase (anon key), diamankan RLS;
 -- operasi sensitif lewat RPC security definer.
+--
+-- STATUS: Diterapkan & diverifikasi LIVE pada 2026-08-05 (Supabase produksi).
+-- Uji end-to-end (browser, sesi anon) LULUS semua:
+--   • Kebaikan Bersama: get_kebaikan ✓, bump_kebaikan('dzikir') 0→1 ✓
+--   • Papan Syukur: post/list ✓, add_hug 0→1 ✓, my_hugs ✓, auto-bump 'syukur' ✓
+--   • Balas doa: post reply → muncul di thread ✓
+--   • Notif (2 pengguna): B aamiin/balas doa milik A → antrean A terisi
+--     {aamiin:count1, reply:count1, pushed:false} ✓; RLS select-own ✓
+--   • add_aamiin (redefinisi) + enqueue_notif jalur owner≠pelaku ✓;
+--     trigger notify_doa_reply ✓. Baris uji dibersihkan (cascade).
 
 -- =====================================================================
 -- 1) PAPAN SYUKUR
