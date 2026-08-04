@@ -199,6 +199,22 @@ nav.tabs a.active, nav.tabs a:hover { color: var(--text-primary); background: va
 /* Tawaran lembut di mode percakapan */
 .offer { font-size: 13px; color: var(--text-muted); font-style: italic; line-height: 1.55; margin: 2px 2px 2px; }
 
+/* Kartu insight proaktif (personal, berbasis tren mood) */
+.proactive-card { border: 1px solid var(--accent-teal); background: linear-gradient(160deg, rgba(45,155,110,0.08), transparent); }
+.proactive-card .label { color: var(--accent-teal); }
+.proactive-card .proactive-msg { font-size: 14px; line-height: 1.6; color: var(--text-primary); margin: 8px 0 12px; }
+.proactive-card .quick-replies { margin-top: 0; }
+
+/* Memori AI di Pengaturan */
+.mem-box { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+.mem-box > b { font-size: 13px; }
+.mem-box .field-hint { display: block; margin: 4px 0 8px; }
+.mem-list { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
+.mem-item { display: flex; align-items: flex-start; gap: 8px; background: var(--bg-secondary); border-radius: 9px; padding: 7px 10px; }
+.mem-item span { flex: 1; font-size: 12.5px; line-height: 1.5; color: var(--text-primary); }
+.mem-x { flex-shrink: 0; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1.4; }
+.mem-x:hover { color: #c0563f; }
+
 /* Quick replies */
 .quick-replies { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .chip-btn {

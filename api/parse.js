@@ -82,6 +82,7 @@ export function validateResponse(obj, mode = 'structured') {
   if (data.source_type !== 'quran' && data.source_type !== 'hadits') {
     return { ok: false, missing: ['source_type (nilai tidak valid)'] };
   }
+  data.remember = isFilled(obj.remember) ? String(obj.remember).trim().slice(0, 200) : null;
   return { ok: true, data };
 }
 
@@ -111,5 +112,6 @@ function validateConversational(obj) {
     data.doa_arabic = null;
     data.doa_translation = null;
   }
+  data.remember = isFilled(obj.remember) ? String(obj.remember).trim().slice(0, 200) : null;
   return { ok: true, data };
 }

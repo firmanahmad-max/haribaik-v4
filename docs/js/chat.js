@@ -324,6 +324,36 @@ export function renderOutOfScope(onQuickReply, ts = Date.now()) {
   scrollDown();
 }
 
+/**
+ * Kartu insight proaktif personal (berbasis tren mood lokal — nol token AI).
+ * @param {string} text pesan personal
+ * @param {{label:string, onClick:()=>void}[]} chips aksi cepat
+ */
+export function renderProactiveCard(text, chips = [], ts = Date.now()) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ai';
+  wrap.innerHTML = `
+    <div class="avatar">H</div>
+    <div class="stack">
+      <div class="card proactive-card">
+        <div class="label">✨ ${t('pro_title')}</div>
+        <p class="proactive-msg">${escapeHtml(text)}</p>
+        <div class="quick-replies"></div>
+      </div>
+      <time class="msg-time">${fmtTime(ts)}</time>
+    </div>`;
+  const qr = wrap.querySelector('.quick-replies');
+  chips.forEach((c) => {
+    const b = document.createElement('button');
+    b.className = 'chip-btn';
+    b.textContent = c.label;
+    b.addEventListener('click', c.onClick);
+    qr.appendChild(b);
+  });
+  chatEl().appendChild(wrap);
+  scrollDown();
+}
+
 export function renderError(msg, onRetry) {
   const wrap = document.createElement('div');
   wrap.className = 'msg ai';

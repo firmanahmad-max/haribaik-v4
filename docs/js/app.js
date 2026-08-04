@@ -8,10 +8,11 @@ import { initTheme } from './theme.js';
 import { initVoice } from './voice.js';
 import { initNotify } from './notify.js';
 import { initSettings, openSettings, maybeOnboard } from './settings.js';
-import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar, renderSupportCard, renderOutOfScope } from './chat.js';
+import { renderUser, renderAI, renderError, showTyping, hideTyping, setUserAvatar, renderSupportCard, renderOutOfScope, renderProactiveCard } from './chat.js';
 import { isOffScope } from './scope.js';
 import { t as tr, getLang, applyI18n, composerPlaceholders } from './i18n.js';
 import { initCloudSync } from './cloud.js';
+import { memoryStrings, addMemory } from './memory.js';
 
 // Avatar pengguna berdasarkan jenis kelamin.
 function avatarFor(gender) {
@@ -155,10 +156,14 @@ async function requestAi(message, mood) {
       requestCount,
       recentMoods: await recentMoods(),
       lang: getLang(),
+      memory: await memoryStrings(),
     });
 
     hideTyping();
     renderAI(r, (reply) => send(reply), toast);
+
+    // Memori jangka panjang: simpan fakta durable yang dititipkan AI (tanpa API tambahan).
+    if (r.remember) await addMemory(r.remember);
 
     // Ringkasan untuk konteks AI berikutnya (mode-aware).
     const base = r.mode === 'conversational' ? (r.reply || '') : (r.empati || '');
@@ -192,6 +197,45 @@ async function maybeShowSupport() {
       () => { location.href = 'tentang.html#dukungan'; }
     );
   }, 900);
+}
+
+// Insight proaktif personal berbasis tren mood 7 hari (dihitung di KLIEN → nol token AI).
+// Muncul maksimal 1×/hari, hanya bila ada tren yang jelas.
+const NEG_MOODS = ['Sedih', 'Cemas', 'Kesal', 'Lelah'];
+const POS_MOODS = ['Senang', 'Bersyukur'];
+async function maybeProactiveInsight() {
+  const today = new Date().toDateString();
+  if ((await Meta.get('proactiveShownDay', null)) === today) return;
+  const moods = await recentMoods();
+  if (moods.length < 3) return; // butuh data cukup
+
+  const counts = {};
+  moods.forEach((m) => { counts[m] = (counts[m] || 0) + 1; });
+  const neg = moods.filter((m) => NEG_MOODS.includes(m)).length;
+  const pos = moods.filter((m) => POS_MOODS.includes(m)).length;
+
+  const dzikirChip = { label: tr('pro_chip_dzikir'), onClick: () => { location.href = 'ibadah.html'; } };
+  const doaChip = { label: tr('pro_chip_doa'), onClick: () => send(tr('offer_doa')) };
+  const ayatChip = { label: tr('pro_chip_ayat'), onClick: () => send(tr('pro_send_ayat')) };
+  const ceritaChip = { label: tr('pro_chip_cerita'), onClick: () => $('input').focus() };
+
+  let text = null; let chips = [];
+  if (neg >= 3 && neg >= pos) {
+    const negCounts = NEG_MOODS.map((m) => [m, counts[m] || 0]).sort((a, b) => b[1] - a[1]);
+    const dom = negCounts[0][0];
+    if (dom === 'Cemas') { text = tr('pro_cemas'); chips = [dzikirChip, doaChip]; }
+    else if (dom === 'Lelah') { text = tr('pro_lelah'); chips = [dzikirChip, ceritaChip]; }
+    else if (dom === 'Sedih') { text = tr('pro_sedih'); chips = [ayatChip, doaChip]; }
+    else if (dom === 'Kesal') { text = tr('pro_kesal'); chips = [doaChip, ceritaChip]; }
+    else { text = tr('pro_neg'); chips = [dzikirChip, doaChip]; }
+  } else if (pos >= 4) {
+    text = tr('pro_pos');
+    chips = [{ label: tr('pro_chip_syukur'), onClick: () => send(tr('pro_send_syukur')) }];
+  } else {
+    return; // tidak ada tren kuat → jangan tampilkan & jangan pakai jatah hari ini
+  }
+  await Meta.set('proactiveShownDay', today);
+  setTimeout(() => renderProactiveCard(text, chips), 700);
 }
 
 // Pesan error yang ramah & spesifik berdasarkan jenis kegagalan.
@@ -322,6 +366,7 @@ async function init() {
   const restored = await restoreConversation();
   if (!restored) greeting();
   await maybeShowDisclaimer();
+  await maybeProactiveInsight();
 
   window.addEventListener('offline', () => toast('Kamu sedang offline 📴'));
   window.addEventListener('online', () => toast('Kembali online ✅'));

@@ -210,6 +210,20 @@ function mergeHistory(localVal, cloudVal) {
   return out.slice(-20);
 }
 
+// Gabung memori AI (item {text,ts}) dari 2 perangkat: union by teks, urut waktu, cap 20.
+function mergeMemory(localVal, cloudVal) {
+  const all = [...(Array.isArray(cloudVal) ? cloudVal : []), ...(Array.isArray(localVal) ? localVal : [])]
+    .filter((m) => m && m.text);
+  all.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+  const seen = new Set(); const out = [];
+  for (const m of all) {
+    const low = String(m.text).toLowerCase().trim();
+    if (seen.has(low)) continue;
+    seen.add(low); out.push({ text: m.text, ts: m.ts || Date.now() });
+  }
+  return out.slice(-20);
+}
+
 export async function syncNow(user) {
   const c = await getClient();
   if (!c || !user) return { ok: false, changed: false };
@@ -241,8 +255,13 @@ export async function syncNow(user) {
   if (JSON.stringify(localChallenges || []) !== JSON.stringify(mergedChallenges)) { await Meta.set('challenges', mergedChallenges); changed = true; }
   if (JSON.stringify(localHistory || []) !== JSON.stringify(mergedHistory)) { await Meta.set('challengeHistory', mergedHistory); changed = true; }
 
+  // ---- MEMORI AI (gabung berdasarkan teks, batasi 20 terbaru) ----
+  const localMem = (await Meta.get('aiMemory', null)) || [];
+  const mergedMem = mergeMemory(localMem, cs.aiMemory);
+  if (JSON.stringify(localMem) !== JSON.stringify(mergedMem)) { await Meta.set('aiMemory', mergedMem); changed = true; }
+
   // Susun setelan untuk DIDORONG: utamakan lokal, jangan timpa nilai cloud dengan null.
-  const settings = { challenges: mergedChallenges, challengeHistory: mergedHistory };
+  const settings = { challenges: mergedChallenges, challengeHistory: mergedHistory, aiMemory: mergedMem };
   for (const k of SCALAR_SETTINGS) {
     const local = await Meta.get(k, null);
     settings[k] = (local != null && local !== '') ? local : (cs[k] ?? null);

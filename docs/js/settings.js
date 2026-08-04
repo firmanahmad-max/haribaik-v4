@@ -7,6 +7,7 @@ import { t, getLang, setLang } from './i18n.js';
 import { cloudEnabled, getUser, signInEmail, signInAnon, signOut, syncNow, linkEmail } from './cloud.js';
 import { canInstall, promptInstall } from './install.js';
 import { pushSupported, pushConfigured, enablePush, disablePush, sendTestPush, isPushSubscribed, syncPushPrefs } from './push.js';
+import { getMemory, removeMemory, clearMemory } from './memory.js';
 
 let onSaveCb = null;
 
@@ -109,6 +110,12 @@ export async function openSettings({ welcome = false } = {}) {
         </div>
         <small class="field-hint">${t('push_hint')}</small>
       </div>` : ''}
+
+      <div class="mem-box">
+        <div class="row-between"><b>${t('mem_title')}</b><button class="mini-btn danger" id="memClear" type="button" hidden>${t('mem_clear')}</button></div>
+        <small class="field-hint">${t('mem_hint')}</small>
+        <div id="memList" class="mem-list"></div>
+      </div>
 
       <button class="primary-btn" id="setInstall" type="button" ${canInstall() ? '' : 'hidden'} style="width:100%;margin-bottom:10px">${t('inst_btn')}</button>
 
@@ -259,6 +266,28 @@ export async function openSettings({ welcome = false } = {}) {
   const onInstallChange = () => { if (installBtn) installBtn.hidden = !canInstall(); };
   document.addEventListener('haribaik:installchange', onInstallChange);
   overlay.addEventListener('hb:closed', () => document.removeEventListener('haribaik:installchange', onInstallChange));
+
+  // Memori AI — tampilkan daftar fakta yang diingat, dengan hapus per-item & semua.
+  const memList = overlay.querySelector('#memList');
+  const memClearBtn = overlay.querySelector('#memClear');
+  const escMem = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  async function renderMem() {
+    const list = await getMemory();
+    memClearBtn.hidden = list.length === 0;
+    memList.innerHTML = list.length
+      ? list.slice().reverse().map((m) => `<div class="mem-item"><span>${escMem(m.text)}</span><button class="mem-x" data-ts="${m.ts}" aria-label="${t('mem_forget')}" title="${t('mem_forget')}">✕</button></div>`).join('')
+      : `<p class="jempty" style="text-align:left;font-size:12.5px">${t('mem_empty')}</p>`;
+    memList.querySelectorAll('.mem-x').forEach((b) => b.addEventListener('click', async () => {
+      await removeMemory(Number(b.dataset.ts));
+      renderMem();
+    }));
+  }
+  memClearBtn.addEventListener('click', async () => {
+    if (!confirm(t('cf_mem_clear'))) return;
+    await clearMemory();
+    renderMem();
+  });
+  renderMem();
 
   overlay.querySelector('#setNewChat').addEventListener('click', async () => {
     if (!confirm(t('cf_newchat'))) return;

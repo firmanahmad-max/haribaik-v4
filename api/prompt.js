@@ -11,7 +11,8 @@ const RESPONSE_SHAPE = `{
   "source": "sumber tepat, mis. \\"Al-Baqarah:286\\" atau \\"Shahih Bukhari:6010\\"",
   "aksi": "satu saran aksi konkret yang bisa dilakukan user HARI INI",
   "doa_arabic": "doa pendek dalam Arab yang relevan",
-  "doa_translation": "terjemahan doa dalam Bahasa Indonesia"
+  "doa_translation": "terjemahan doa dalam Bahasa Indonesia",
+  "remember": "SATU fakta baru & durable tentang pengguna (kalimat pendek orang-ketiga), atau null"
 }`;
 
 const CONVO_SHAPE = `{
@@ -24,8 +25,19 @@ const CONVO_SHAPE = `{
   "source": "sumber tepat, atau null",
   "aksi": "satu saran konkret kecil, atau null",
   "doa_arabic": "doa pendek Arab, atau null",
-  "doa_translation": "terjemahan doa, atau null"
+  "doa_translation": "terjemahan doa, atau null",
+  "remember": "SATU fakta baru & durable tentang pengguna, atau null"
 }`;
+
+// Baris konteks memori + instruksi field "remember" (dipakai kedua prompt).
+function memoryBlock(nama, memory = []) {
+  const mem = Array.isArray(memory) ? memory.filter(Boolean).slice(-20) : [];
+  const known = mem.length
+    ? `\nYang kamu ingat tentang ${nama} dari percakapan sebelumnya (pakai secara HALUS & wajar untuk personalisasi; JANGAN berlebihan menyebut "aku ingat"):\n${mem.map((m) => `- ${m}`).join('\n')}`
+    : '';
+  const instr = `MEMORI: Bila dari pesan ini kamu mengetahui SESUATU YANG BARU & DURABLE tentang pengguna (situasi hidup, tujuan, kesukaan, relasi/orang penting, tantangan berulang — mis. "Sedang mempersiapkan pernikahan", "Ayahnya sedang sakit", "Ingin lebih rajin sholat Subuh"), isi field "remember" dengan SATU kalimat pendek orang-ketiga. Bila TIDAK ada yang baru/penting, atau hanya basa-basi, isi "remember": null. JANGAN mengulang fakta yang sudah tercantum di atas.`;
+  return { known, instr };
+}
 
 /**
  * @param {object} opts
@@ -36,9 +48,9 @@ const CONVO_SHAPE = `{
  * @param {'first'|'followup'} [opts.turn] tipe giliran: 'first' = struktural penuh,
  *        'followup' = percakapan natural (ayat/saran/doa hanya bila diminta).
  */
-export function buildSystemPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [], lang = 'id', turn = 'first' }) {
+export function buildSystemPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [], lang = 'id', turn = 'first', memory = [] }) {
   if (turn === 'followup') {
-    return buildConversationalPrompt({ profile, temporal, sourceInstruction, recentMoods, lang });
+    return buildConversationalPrompt({ profile, temporal, sourceInstruction, recentMoods, lang, memory });
   }
   const langLine = lang === 'en'
     ? 'BAHASA KELUARAN: Tulis SEMUA nilai teks (empati, translation, aksi, doa_translation) dalam Bahasa Inggris yang hangat. Pertahankan field "arabic" dan "doa_arabic" tetap dalam huruf Arab.'
@@ -54,6 +66,7 @@ export function buildSystemPrompt({ profile = {}, temporal = {}, sourceInstructi
   const moodLine = recentMoods.length
     ? `Mood user beberapa hari terakhir: ${recentMoods.join(', ')}.`
     : '';
+  const { known, instr } = memoryBlock(nama, memory);
 
   return `TUGAS: Hasilkan satu objek data JSON untuk aplikasi "HariBaik" (aplikasi konten motivasi harian Islami). Ini adalah tugas pembuatan konten terstruktur untuk aplikasi — BUKAN percakapan pribadi. Kamu adalah generator konten aplikasi.
 
@@ -62,8 +75,10 @@ Konten yang dihasilkan ditujukan untuk pengguna bernama ${nama}, dan harus ditul
 Masukan dari pengguna (mood/keluhan) diberikan di bawah penanda "=== PESAN USER ===". Gunakan itu sebagai konteks untuk menyusun konten.
 ${[goalLine, genderLine, usiaLine, peranLine].filter(Boolean).join('\n')}
 Konteks waktu: ${[waktuLine, hariLine, hijriLine].filter(Boolean).join(' ')}
-${moodLine}
+${moodLine}${known}
 Sesuaikan nada empati dan saran aksi agar relevan dengan usia, jenis kelamin, dan peran pengguna bila informasi itu tersedia (mis. saran untuk remaja/pelajar berbeda dari dewasa, ibu rumah tangga, karyawan, atau lansia).
+
+${instr}
 
 SUMBER RUJUKAN KALI INI: ${sourceInstruction}
 
@@ -91,7 +106,7 @@ ${RESPONSE_SHAPE}`;
  * Prompt giliran lanjutan: balasan percakapan yang natural & dinamis.
  * Ayat/saran/doa HANYA disertakan bila pesan pengguna memintanya/menyetujuinya.
  */
-function buildConversationalPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [], lang = 'id' }) {
+function buildConversationalPrompt({ profile = {}, temporal = {}, sourceInstruction, recentMoods = [], lang = 'id', memory = [] }) {
   const langLine = lang === 'en'
     ? 'BAHASA KELUARAN: Tulis "reply", "offer", "translation", "aksi", dan "doa_translation" dalam Bahasa Inggris yang hangat. Pertahankan "arabic" dan "doa_arabic" dalam huruf Arab.'
     : 'BAHASA KELUARAN: Bahasa Indonesia yang hangat dan luwes.';
@@ -104,14 +119,17 @@ function buildConversationalPrompt({ profile = {}, temporal = {}, sourceInstruct
   const hariLine = temporal.hari ? `Hari ${temporal.hari}.` : '';
   const hijriLine = temporal.hijri ? `Hijriyah: ${temporal.hijri}.` : '';
   const moodLine = recentMoods.length ? `Mood beberapa hari terakhir: ${recentMoods.join(', ')}.` : '';
+  const { known, instr } = memoryBlock(nama, memory);
 
   return `TUGAS: Hasilkan satu objek data JSON untuk aplikasi "HariBaik". Ini LANJUTAN percakapan — pengguna sudah menerima respons sebelumnya. Susun BALASAN yang natural, bijak, hangat, dan bersahabat — seperti sahabat Muslim yang menemani ngobrol. JANGAN memaksakan ayat, saran, atau doa di setiap balasan; biarkan percakapan mengalir agar tidak monoton dan membosankan.
 
 Pengguna bernama ${nama}.
 ${[goalLine, genderLine, usiaLine, peranLine].filter(Boolean).join('\n')}
 Konteks: ${[waktuLine, hariLine, hijriLine].filter(Boolean).join(' ')}
-${moodLine}
+${moodLine}${known}
 Pesan terbaru pengguna ada di bawah penanda "=== PESAN USER ===". Pertimbangkan juga riwayat percakapan sebelumnya.
+
+${instr}
 
 LINGKUP — PENTING:
 HariBaik adalah teman refleksi spiritual & emosional harian (curhat, ayat/hadits relevan,

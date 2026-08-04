@@ -81,6 +81,13 @@ function parseAiText(text) {
  * Respons tiruan deterministik untuk mode mock — menghormati family sumber yang
  * diminta agar logika rotasi & validasi tetap bisa diuji offline.
  */
+// Ekstraksi fakta durable tiruan (mock) — deteksi kalimat "aku sedang/ingin/…".
+function mockRemember(msg) {
+  const m = /\b(aku|saya)\s+(sedang|lagi|ingin|mau|akan|baru saja|habis)\s+([^.,!?\n]{4,80})/i.exec(msg);
+  if (m) return `${m[2].charAt(0).toUpperCase()}${m[2].slice(1)} ${m[3].trim()}`.slice(0, 120);
+  return null;
+}
+
 function mockResponse({ message, family, turn = 'first' }) {
   if (turn === 'followup') {
     const msg = String(message).toLowerCase();
@@ -113,6 +120,7 @@ function mockResponse({ message, family, turn = 'first' }) {
     if (!wantAyat && !wantAksi && !wantDoa) {
       r.offer = 'Kalau kamu mau, aku bisa temani dengan ayat, satu saran kecil, atau doa yang pas — sebut saja ya.';
     }
+    r.remember = mockRemember(message);
     return r;
   }
   if (family === 'hadits') {
@@ -125,6 +133,7 @@ function mockResponse({ message, family, turn = 'first' }) {
       aksi: 'Tuliskan satu niat baik kecil untuk hari ini sebelum memulai aktivitas.',
       doa_arabic: 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
       doa_translation: 'Ya Allah, tolonglah aku untuk mengingat-Mu, bersyukur kepada-Mu, dan beribadah dengan baik kepada-Mu.',
+      remember: mockRemember(message),
     };
   }
   return {
@@ -136,6 +145,7 @@ function mockResponse({ message, family, turn = 'first' }) {
     aksi: 'Pilih satu hal terkecil dari bebanmu hari ini, dan selesaikan hanya itu.',
     doa_arabic: 'رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا',
     doa_translation: 'Ya Tuhan kami, janganlah Engkau hukum kami jika kami lupa atau bersalah.',
+    remember: mockRemember(message),
   };
 }
 
@@ -153,6 +163,7 @@ export async function handleChat(body = {}) {
     requestCount = 0,
     recentMoods = [],
     lang = 'id',
+    memory = [],
   } = body;
   const safeLang = lang === 'en' ? 'en' : 'id';
 
@@ -168,6 +179,7 @@ export async function handleChat(body = {}) {
     peran: clip(profile.peran, 60),
   };
   const safeMoods = Array.isArray(recentMoods) ? recentMoods.slice(-7).map((m) => clip(m, 20)) : [];
+  const safeMemory = Array.isArray(memory) ? memory.map((m) => clip(String(m), 200)).filter(Boolean).slice(-20) : [];
 
   const userText = buildUserText(safeMessage, safeMood);
   if (!userText) {
@@ -196,6 +208,7 @@ export async function handleChat(body = {}) {
     sourceInstruction: source.instruction,
     lang: safeLang,
     turn,
+    memory: safeMemory,
   });
 
   let parsed;
@@ -213,7 +226,7 @@ export async function handleChat(body = {}) {
     if (!valid.ok || familyMismatch) {
       system = buildSystemPrompt({
         profile: safeProfile, temporal, recentMoods: safeMoods,
-        sourceInstruction: getRetryInstruction(source), lang: safeLang, turn,
+        sourceInstruction: getRetryInstruction(source), lang: safeLang, turn, memory: safeMemory,
       });
       try {
         parsed = await callSumopod({ system, window, message: userText, mockFamily: source.family, turn });
