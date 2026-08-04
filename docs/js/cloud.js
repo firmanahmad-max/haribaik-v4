@@ -343,6 +343,7 @@ export async function postDoa(content, displayName) {
     .insert({ user_id: u.id, content: content.slice(0, 300), display_name: (displayName || 'Anonim').slice(0, 40) })
     .select().single();
   if (error) throw error;
+  bumpKebaikan('doa').catch(() => {}); // amal kolektif (fire-and-forget)
   return data;
 }
 export async function aamiin(doaId) {
@@ -361,6 +362,110 @@ export async function subscribeDoa(onInsert, onUpdate) {
   const ch = c.channel('doa-wall')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'doa_requests' }, (p) => onInsert(p.new))
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'doa_requests' }, (p) => onUpdate?.(p.new))
+    .subscribe();
+  return () => c.removeChannel(ch);
+}
+
+// ---------- Balasan doa (dukungan/penyemangat) ----------
+export async function listReplies(doaId) {
+  const c = await getClient();
+  let { data, error } = await c.from('doa_replies').select('*').eq('doa_id', doaId).eq('hidden', false).order('created_at', { ascending: true });
+  if (error && /hidden/.test(error.message || '')) {
+    ({ data, error } = await c.from('doa_replies').select('*').eq('doa_id', doaId).order('created_at', { ascending: true }));
+  }
+  if (error) throw error;
+  return data || [];
+}
+export async function postReply(doaId, content, displayName) {
+  const u = await getUser();
+  const c = await getClient();
+  const { data, error } = await c.from('doa_replies')
+    .insert({ doa_id: doaId, user_id: u.id, content: content.slice(0, 200), display_name: (displayName || 'Anonim').slice(0, 40) })
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+export async function deleteReply(id) {
+  const c = await getClient();
+  const { error } = await c.from('doa_replies').delete().eq('id', id);
+  if (error) throw error;
+}
+export async function reportReply(id, reason) {
+  const c = await getClient();
+  const { error } = await c.rpc('report_reply', { p_reply: id, p_reason: (reason || '').slice(0, 200) });
+  if (error) throw error;
+}
+
+// ---------- Papan Syukur ----------
+export async function listSyukur(limit = 50) {
+  const c = await getClient();
+  let { data, error } = await c.from('syukur_posts').select('*').eq('hidden', false).order('created_at', { ascending: false }).limit(limit);
+  if (error && /hidden/.test(error.message || '')) {
+    ({ data, error } = await c.from('syukur_posts').select('*').order('created_at', { ascending: false }).limit(limit));
+  }
+  if (error) throw error;
+  return data || [];
+}
+export async function myHugs() {
+  const u = await getUser();
+  if (!u) return new Set();
+  const c = await getClient();
+  const { data } = await c.from('syukur_hugs').select('post_id').eq('user_id', u.id);
+  return new Set((data || []).map((h) => h.post_id));
+}
+export async function postSyukur(content, displayName) {
+  const u = await getUser();
+  const c = await getClient();
+  const { data, error } = await c.from('syukur_posts')
+    .insert({ user_id: u.id, content: content.slice(0, 300), display_name: (displayName || 'Anonim').slice(0, 40) })
+    .select().single();
+  if (error) throw error;
+  bumpKebaikan('syukur').catch(() => {});
+  return data;
+}
+export async function hugSyukur(postId) {
+  const c = await getClient();
+  const { data, error } = await c.rpc('add_hug', { p_post: postId });
+  if (error) throw error;
+  return data;
+}
+export async function deleteSyukur(id) {
+  const c = await getClient();
+  const { error } = await c.from('syukur_posts').delete().eq('id', id);
+  if (error) throw error;
+}
+export async function reportSyukur(id, reason) {
+  const c = await getClient();
+  const { error } = await c.rpc('report_syukur', { p_post: id, p_reason: (reason || '').slice(0, 200) });
+  if (error) throw error;
+}
+export async function subscribeSyukur(onInsert, onUpdate) {
+  const c = await getClient();
+  const ch = c.channel('syukur-wall')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'syukur_posts' }, (p) => onInsert(p.new))
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'syukur_posts' }, (p) => onUpdate?.(p.new))
+    .subscribe();
+  return () => c.removeChannel(ch);
+}
+
+// ---------- Kebaikan Bersama (amal kolektif pekanan) ----------
+export async function getKebaikan() {
+  const c = await getClient();
+  const { data, error } = await c.rpc('get_kebaikan');
+  if (error) throw error;
+  return data || {};
+}
+export async function bumpKebaikan(kind) {
+  const c = await getClient();
+  if (!c) return null;
+  const { data, error } = await c.rpc('bump_kebaikan', { p_kind: kind });
+  if (error) throw error;
+  return data;
+}
+export async function subscribeKebaikan(onChange) {
+  const c = await getClient();
+  const ch = c.channel('kebaikan-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'kebaikan_counters' }, () => onChange())
     .subscribe();
   return () => c.removeChannel(ch);
 }

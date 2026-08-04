@@ -51,6 +51,79 @@ async function deleteSub(endpoint) {
   });
 }
 
+// ---------- Notifikasi sosial (aamiin / balasan) ----------
+async function fetchNotifs() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/notifications?pushed=eq.false&select=*&limit=200`, {
+    headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
+  });
+  if (!res.ok) throw new Error(`fetch notifs ${res.status}`);
+  return res.json();
+}
+
+async function fetchSubsForUser(userId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions?user_id=eq.${userId}&select=*`, {
+    headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+async function markNotifPushed(n) {
+  const q = `user_id=eq.${n.user_id}&kind=eq.${encodeURIComponent(n.kind)}&ref_id=eq.${n.ref_id}`;
+  await fetch(`${SUPABASE_URL}/rest/v1/notifications?${q}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`,
+      'Content-Type': 'application/json', Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({ pushed: true, updated_at: new Date().toISOString() }),
+  });
+}
+
+function notifPayload(kind, count, lang) {
+  const en = lang === 'en';
+  if (kind === 'reply') {
+    return JSON.stringify({
+      title: en ? '💬 Support for your prayer' : '💬 Ada dukungan untuk doamu',
+      body: count > 1
+        ? (en ? `${count} new replies to your prayer.` : `${count} balasan baru untuk doamu.`)
+        : (en ? 'Your prayer received support.' : 'Doamu mendapat dukungan.'),
+      tag: 'hb-reply', url: 'doa.html',
+    });
+  }
+  return JSON.stringify({
+    title: en ? '🤍 Your prayer was said Amin' : '🤍 Doamu diaminkan',
+    body: count > 1
+      ? (en ? `${count} people said Amin to your prayer.` : `${count} orang mengaminkan doamu.`)
+      : (en ? 'Someone said Amin to your prayer.' : 'Seseorang mengaminkan doamu.'),
+    tag: 'hb-aamiin', url: 'doa.html',
+  });
+}
+
+// Kuras antrean notifikasi: kirim ke semua langganan penerima, lalu tandai terkirim.
+async function drainNotifications(vapid) {
+  let notifs;
+  try { notifs = await fetchNotifs(); } catch { return; }
+  if (!notifs.length) return;
+  const subsCache = new Map(); // user_id → subs[]
+  for (const n of notifs) {
+    let subs = subsCache.get(n.user_id);
+    if (!subs) { subs = await fetchSubsForUser(n.user_id); subsCache.set(n.user_id, subs); }
+    let anySent = false;
+    for (const sub of subs) {
+      const subscription = { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } };
+      try {
+        const r = await sendPush(subscription, notifPayload(n.kind, n.count, sub.lang), vapid);
+        if (r.gone) { try { await deleteSub(sub.endpoint); } catch { /* */ } continue; }
+        if (r.ok) anySent = true;
+      } catch { /* abaikan sub ini */ }
+    }
+    // Tandai terkirim bila ada yang berhasil, ATAU bila penerima tak punya langganan
+    // (agar antrean tidak menumpuk untuk pengguna tanpa push).
+    if (anySent || subs.length === 0) { try { await markNotifPushed(n); } catch { /* */ } }
+  }
+}
+
 async function prayerTimes(lat, lng, dateStr, method) {
   const key = `${dateStr}|${lat.toFixed(2)},${lng.toFixed(2)}|${method}`;
   const hit = prayerCache.get(key);
@@ -136,7 +209,10 @@ export function startScheduler() {
     return;
   }
   if (timer) return;
-  console.log('[scheduler] aktif — cek tiap 30 detik untuk adzan & pengingat');
-  timer = setInterval(() => { tick(vapid).catch(() => {}); }, TICK_MS);
+  console.log('[scheduler] aktif — cek tiap 30 detik untuk adzan, pengingat & notifikasi sosial');
+  timer = setInterval(() => {
+    tick(vapid).catch(() => {});
+    drainNotifications(vapid).catch(() => {});
+  }, TICK_MS);
   timer.unref?.();
 }
