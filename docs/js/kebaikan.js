@@ -5,7 +5,7 @@
 
 import { t, locale } from './i18n.js';
 import { getKebaikan, bumpKebaikan, subscribeKebaikan } from './cloud.js';
-import { Meta } from './db.js';
+import { Meta, dayKey } from './db.js';
 import { toast } from './social-util.js';
 
 const KINDS = [
@@ -17,8 +17,9 @@ const KINDS = [
 
 let unsub = null;
 let counts = {};
+let live = false; // true setelah muat awal → pulse hanya saat angka naik dari realtime
 
-function today() { return new Date().toISOString().slice(0, 10); }
+function today() { return dayKey(); } // tanggal LOKAL (selaras seluruh app), bukan UTC
 async function markedToday() {
   const m = await Meta.get('kebaikanMark', {});
   return (m && m.day === today()) ? new Set(m.kinds || []) : new Set();
@@ -84,17 +85,25 @@ function paint(root) {
   });
 }
 
+function bump(el, val) {
+  if (el.textContent === val) return;
+  el.textContent = val;
+  if (!live) return;
+  el.classList.remove('keb-pulse'); void el.offsetWidth; el.classList.add('keb-pulse');
+}
 function updateNumbers(root) {
-  root.querySelectorAll('.keb-n').forEach((el) => { el.textContent = fmtNum(counts[el.dataset.k]); });
+  root.querySelectorAll('.keb-n').forEach((el) => bump(el, fmtNum(counts[el.dataset.k])));
   const tot = root.querySelector('#kebTotal');
-  if (tot) tot.textContent = fmtNum(total());
+  if (tot) bump(tot, fmtNum(total()));
 }
 
 export async function mountKebaikan(root, _user) {
+  live = false; // muat awal: set angka tanpa pulse
   root._done = await markedToday();
   paint(root); // render kerangka dulu (angka 0/cache) agar tampil instan
   try { counts = await getKebaikan(); updateNumbers(root); }
   catch { /* biarkan angka default; jaringan mungkin belum siap */ }
+  live = true; // mulai sekarang, perubahan (realtime/kontribusi) memicu pulse
   if (unsub) unsub();
   unsub = await subscribeKebaikan(async () => {
     try { counts = await getKebaikan(); updateNumbers(root); } catch { /* abaikan */ }

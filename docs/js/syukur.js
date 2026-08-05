@@ -62,6 +62,7 @@ function prepend(row) {
   const wrap = document.createElement('div');
   wrap.innerHTML = card(row);
   const node = wrap.firstElementChild;
+  node.classList.add('ib-enter'); // animasi masuk halus (realtime & kiriman sendiri)
   feed.prepend(node);
   wire(node);
 }

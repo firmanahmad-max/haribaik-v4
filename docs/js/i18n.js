@@ -185,6 +185,7 @@ const DICT = {
     com_doa: 'Doa', com_syukur: 'Syukur', com_bersama: 'Bersama',
     reply: 'Balas', reply_ph: 'Tulis dukungan atau doa singkat…', reply_send: 'Kirim',
     reply_report_confirm: 'Laporkan balasan ini sebagai tidak pantas?',
+    reply_empty: 'Belum ada balasan. Jadilah yang pertama menyemangati 💬',
     // Papan Syukur
     syukur_hug: 'Ikut bersyukur', syukur_ph: 'Apa yang kamu syukuri hari ini? Alhamdulillah…',
     syukur_send: 'Bagikan syukur', syukur_sent: 'Syukur dibagikan 🌾', syukur_min: 'Tulis syukurmu dulu ya',
@@ -375,6 +376,7 @@ const DICT = {
     com_doa: 'Prayers', com_syukur: 'Gratitude', com_bersama: 'Together',
     reply: 'Reply', reply_ph: 'Write a short word of support or prayer…', reply_send: 'Send',
     reply_report_confirm: 'Report this reply as inappropriate?',
+    reply_empty: 'No replies yet. Be the first to encourage 💬',
     syukur_hug: 'Grateful too', syukur_ph: 'What are you grateful for today? Alhamdulillah…',
     syukur_send: 'Share gratitude', syukur_sent: 'Gratitude shared 🌾', syukur_min: 'Write your gratitude first',
     syukur_empty: 'No gratitude yet. Be the first to share 🌾', syukur_deleted: 'Gratitude deleted',

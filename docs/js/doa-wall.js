@@ -44,14 +44,24 @@ function replyItem(r) {
   </div>`;
 }
 
+// Segarkan label hitungan pada tombol "💬 Balas · N" sesuai jumlah item saat ini.
+function refreshReplyCount(box) {
+  const card = box.closest('.doa-item');
+  const list = box.querySelector('.reply-list');
+  const cnt = list ? list.querySelectorAll('.reply-item').length : 0;
+  const toggle = card?.querySelector('.js-reply-toggle');
+  if (toggle) toggle.innerHTML = `💬 ${t('reply')}${cnt ? ' · ' + cnt : ''}`;
+  if (list && !cnt && !list.querySelector('.reply-empty')) list.innerHTML = `<p class="reply-empty">${t('reply_empty')}</p>`;
+}
+
 function wireReply(box, node) {
   const id = node.dataset.rid;
   node.querySelector('.js-rdel')?.addEventListener('click', async () => {
-    try { await deleteReply(id); node.remove(); } catch { toast(t('cloud_err')); }
+    try { await deleteReply(id); node.remove(); refreshReplyCount(box); } catch { toast(t('cloud_err')); }
   });
   node.querySelector('.js-rreport')?.addEventListener('click', async () => {
     if (!confirm(t('reply_report_confirm'))) return;
-    try { await reportReply(id); node.remove(); toast(t('doa_reported')); } catch { toast(t('cloud_err')); }
+    try { await reportReply(id); node.remove(); refreshReplyCount(box); toast(t('doa_reported')); } catch { toast(t('cloud_err')); }
   });
 }
 
@@ -75,6 +85,7 @@ async function openReplies(card) {
   try {
     const rows = await listReplies(card.dataset.id);
     for (const r of rows) { const w = document.createElement('div'); w.innerHTML = replyItem(r); const n = w.firstElementChild; list.appendChild(n); wireReply(box, n); }
+    if (!rows.length) list.innerHTML = `<p class="reply-empty">${t('reply_empty')}</p>`;
     toggle.innerHTML = `💬 ${t('reply')}${rows.length ? ' · ' + rows.length : ''}`;
   } catch { list.innerHTML = `<p class="reply-empty">${t('cloud_err')}</p>`; }
 
@@ -85,6 +96,7 @@ async function openReplies(card) {
     send.disabled = true;
     try {
       const row = await postReply(card.dataset.id, text);
+      list.querySelector('.reply-empty')?.remove(); // buang hint kosong bila ada
       const w = document.createElement('div'); w.innerHTML = replyItem(row); const n = w.firstElementChild;
       list.appendChild(n); wireReply(box, n);
       input.value = '';
@@ -134,6 +146,7 @@ function prependDoa(row) {
   const wrap = document.createElement('div');
   wrap.innerHTML = doaCard(row);
   const node = wrap.firstElementChild;
+  node.classList.add('ib-enter'); // animasi masuk halus (realtime & kiriman sendiri)
   feed.prepend(node);
   wireCard(node);
 }

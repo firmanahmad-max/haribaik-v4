@@ -20,8 +20,10 @@ const SECTIONS = [
 let me = null;
 let cleanup = null;
 let active = 'doa';
+let switchGen = 0; // penjaga: cegah mount lama (async) menimpa cleanup mount baru
 
 async function switchTo(key) {
+  const myGen = ++switchGen;
   active = key;
   const seg = $('comSeg');
   seg?.querySelectorAll('.ib-seg-btn').forEach((b) => {
@@ -35,7 +37,10 @@ async function switchTo(key) {
   body.innerHTML = '';
   const sec = SECTIONS.find((s) => s.key === key) || SECTIONS[0];
   try { localStorage.setItem('communityTab', key); } catch { /* abaikan */ }
-  cleanup = await sec.mount(body, me);
+  const c = await sec.mount(body, me);
+  // Bila sudah di-supersede oleh switch lain saat mount berjalan → bersihkan sub ini.
+  if (myGen !== switchGen) { try { c && c(); } catch { /* abaikan */ } return; }
+  cleanup = c;
 }
 
 async function render() {
