@@ -26,12 +26,15 @@ Catatan arsitektur untuk sesi pengembangan berikutnya.
 ## Penyimpanan klien (`docs/js/db.js`)
 IndexedDB `haribaik` v1, store: `messages`, `favorites` (index `source_type`), `meta` (key/value: `requestCount`, `streak`, `lastActiveDay`, `reminderTime`, `moodLog`, `profile`).
 
-## Yang perlu diingat saat deploy (VPS + Caddy)
-- Produksi = VPS: **frontend `docs/` disajikan Caddy**, **backend Docker** (Node) same-origin. `docs/js/config.js#BACKEND_URL` = `''` di produksi (same-origin, tanpa CORS); `http://localhost:3000` saat lokal.
-- **Alur redeploy (manual di VPS, tidak ada CI):**
-  - Frontend: `git pull origin main` di root repo VPS (site root Caddy = `docs/`). SW cache-versioned, jadi klien dapat versi baru setelah `sw.js` terbaru tersaji.
-  - Backend: `docker build -t haribaik-api . && docker restart haribaik-api` (perlu bila `server.js`/`api/*` berubah — mis. scheduler, endpoint baru).
-- Tiap rilis: naikkan `CACHE` di `docs/sw.js` + `APP_VERSION` di `docs/js/config.js` (sudah jadi kebiasaan tiap fitur).
+## Yang perlu diingat saat deploy (VPS + Caddy) — infra NYATA
+- **VPS**: `ubuntu@43.157.235.251` (Ubuntu). Multi-app "Arta Ecosystem" via SATU Docker Compose bersama (haribaik, goodday, artalib, postgres, caddy).
+  - Repo HariBaik di VPS: **`/home/ubuntu/haribaik`** = **git clone `origin/main`** (repo publik `github.com/firmanahmad-max/haribaik-v4`). `docs/` di-*bind-mount* read-only ke Caddy (`/srv/haribaik`) → frontend = file `docs/` langsung, tanpa restart.
+  - Compose bersama: **`/home/ubuntu/artalib/deploy/vps/docker-compose.yml`**. Service backend HariBaik = **`haribaik-backend`** (container `arta-haribaik-backend-1`, port 3000, build context `../../../haribaik`). Env dari `.env` compose (`HARIBAIK_*`: SUMOPOD_API_KEY, VAPID public/private/subject, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY). Reverse-proxy + TLS: `arta-caddy-1` (shared). `arta-postgres-1` dipakai app LAIN — HariBaik pakai Supabase, bukan Postgres ini.
+- `docs/js/config.js#BACKEND_URL` = `''` di produksi (same-origin via Caddy, tanpa CORS); `http://localhost:3000` saat lokal (auto by hostname).
+- **Alur redeploy (manual, tanpa CI):**
+  - Frontend: `cd /home/ubuntu/haribaik && git pull` → Caddy langsung menyajikan `docs/` baru (SW cache-versioned; klien dapat versi baru saat `sw.js` terbaru tersaji).
+  - Backend (hanya bila `server.js`/`api/*` berubah — mis. scheduler/endpoint): `cd /home/ubuntu/artalib/deploy/vps && docker compose up -d --build --no-deps haribaik-backend` (scoped ke 1 service; app lain tak tersentuh). Cek: `docker logs --tail 20 arta-haribaik-backend-1` → cari `[scheduler] aktif`.
+- Tiap rilis: naikkan `CACHE` di `docs/sw.js` + `APP_VERSION` di `docs/js/config.js` (kebiasaan tiap fitur).
 - Migrasi Supabase (`supabase/*.sql`) dijalankan manual di Supabase Studio — bukan bagian deploy VPS.
 - Ikon PNG 192/512 di `manifest.json` untuk installability penuh.
 
@@ -42,7 +45,7 @@ IndexedDB `haribaik` v1, store: `messages`, `favorites` (index `source_type`), `
 - **Endpoint** `POST /api/push/test` (`api/push.js`): kirim notifikasi uji ke langganan pemanggil (verifikasi end-to-end di perangkat).
 - **Klien** (`docs/js/push.js`): `enablePush/syncPushPrefs/disablePush/sendTestPush`. Langganan butuh sesi Supabase (anon boleh; auto sign-in anon saat enable). Preferensi (tz, lang, reminder, adzan, lat/lng) disimpan di baris `push_subscriptions` (RLS own-row). Dipicu dari Settings (toggle pengingat + tombol Tes) & Amalan (toggle adzan + ganti lokasi).
 - **SW** (`docs/sw.js`): handler `push` (tampilkan notif), `notificationclick` (buka `data.url`), `pushsubscriptionchange` (langganan ulang). Cache → `haribaik-v4-30`.
-- **SQL**: `supabase/migration_push.sql` (tabel `push_subscriptions` + RLS). Catatan deploy: set 4 env di Railway (VAPID public/private/subject + service_role + SUPABASE_URL), commit config public key, jalankan migrasi.
+- **SQL**: `supabase/migration_push.sql` (tabel `push_subscriptions` + RLS). Catatan deploy: set env `HARIBAIK_VAPID_PUBLIC_KEY`/`HARIBAIK_VAPID_PRIVATE_KEY`/`HARIBAIK_VAPID_SUBJECT` + `HARIBAIK_SUPABASE_SERVICE_ROLE_KEY` + `HARIBAIK_SUPABASE_URL` di `.env` compose VPS (`/home/ubuntu/artalib/deploy/vps/.env`), commit public key ke `config.js`, jalankan migrasi.
 
 ## Komunitas & Sosial (Fase 5)
 - **Hub**: halaman `doa.html` kini jadi hub "Komunitas" dengan segmented control 3 bagian (pakai kelas `.ib-seg`). Entry `docs/js/community.js` (menggantikan `doa.js` lama) → me-mount bagian secara lazy & memanggil cleanup (unsub realtime) saat pindah tab. Tab aktif disimpan di `localStorage.communityTab`. Nav label `nav_doa` → "Komunitas"/"Community".
