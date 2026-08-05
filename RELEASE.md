@@ -85,9 +85,9 @@ bubblewrap build
       tanpa CORS). *(sudah live.)*
 - [ ] DNS + TLS: A record `haribaik` → `43.157.235.251`; Caddy meng-*issue* sertifikat
       otomatis (Let's Encrypt). Cek: `curl -sI https://haribaik.firmanahmad.id` → `Server: Caddy`.
-- [ ] **Kebijakan privasi** (halaman publik) — wajib untuk Play Store & etis: jelaskan
-      data yang disimpan (mood, jurnal, lokasi untuk sholat, langganan push) & bahwa
-      tidak dijual. Bisa halaman statis sederhana.
+- [x] **Kebijakan privasi** (halaman publik) — ✅ selesai: bilingual di
+      **`https://haribaik.firmanahmad.id/privasi.html`** (`docs/privasi.html`), ditautkan dari
+      Tentang. Pakai URL ini untuk kolom *Privacy policy* di Play Console.
 - [ ] Uji nyata: install di Android + iPhone, tes notifikasi, sync 2 perangkat.
 - [ ] Siapkan kanal **feedback** (form/email) untuk pengguna awal.
 
