@@ -3,8 +3,9 @@
 Catatan arsitektur untuk sesi pengembangan berikutnya.
 
 ## Stack
-- Backend: Node HTTP murni (`server.js` + `/api/*.js`), **tanpa dependency npm** (pakai global `fetch`, Node ≥18). Deploy: Railway.
-- Frontend: Vanilla JS PWA di `/docs`, ES modules, **tanpa build step**. Library (html2canvas) via CDN. Deploy: GitHub Pages (folder `/docs`).
+- Backend: Node HTTP murni (`server.js` + `/api/*.js`), **tanpa dependency npm** (pakai global `fetch`, Node ≥18). Deploy: **Docker di VPS** (`Dockerfile` → Node, port 3000), di belakang Caddy.
+- Frontend: Vanilla JS PWA di `/docs`, ES modules, **tanpa build step**. Library (html2canvas) via CDN. Deploy: **disajikan statis oleh Caddy di VPS yang sama** (same-origin: Caddy → backend). Domain produksi: `haribaik.firmanahmad.id` (`Server: Caddy`).
+- **PENTING — deploy TIDAK otomatis dari GitHub.** Push ke `main` hanya update repo; produksi (VPS) harus di-*update manual*: `git pull` (frontend `docs/` untuk Caddy) + rebuild & restart image Docker (backend). Live `sw.js` (`APP_VERSION`/cache `haribaik-v4-N`) = versi terakhir yang di-deploy ke VPS, bukan HEAD `main`. Jangan pernah poll GitHub Pages — bukan host produksi.
 - AI: Sumopod = endpoint Anthropic-compatible. `POST https://ai.sumopod.com/v1/messages`, header `x-api-key: $SUMOPOD_API_KEY` + `anthropic-version: 2023-06-01`, model `claude-haiku-4-5`. Keluaran JSON dipaksa via **assistant-prefill `{`**.
 
 ## Alur /api/chat
@@ -25,10 +26,14 @@ Catatan arsitektur untuk sesi pengembangan berikutnya.
 ## Penyimpanan klien (`docs/js/db.js`)
 IndexedDB `haribaik` v1, store: `messages`, `favorites` (index `source_type`), `meta` (key/value: `requestCount`, `streak`, `lastActiveDay`, `reminderTime`, `moodLog`, `profile`).
 
-## Yang perlu diingat saat deploy
-- Ganti `BACKEND_URL` non-lokal di `docs/js/config.js` (masih placeholder V3).
-- Tambah origin GitHub Pages HariBaik ke `ALLOWED_ORIGINS` di `server.js`.
-- Tambah ikon PNG 192/512 ke `manifest.json` untuk installability penuh.
+## Yang perlu diingat saat deploy (VPS + Caddy)
+- Produksi = VPS: **frontend `docs/` disajikan Caddy**, **backend Docker** (Node) same-origin. `docs/js/config.js#BACKEND_URL` = `''` di produksi (same-origin, tanpa CORS); `http://localhost:3000` saat lokal.
+- **Alur redeploy (manual di VPS, tidak ada CI):**
+  - Frontend: `git pull origin main` di root repo VPS (site root Caddy = `docs/`). SW cache-versioned, jadi klien dapat versi baru setelah `sw.js` terbaru tersaji.
+  - Backend: `docker build -t haribaik-api . && docker restart haribaik-api` (perlu bila `server.js`/`api/*` berubah — mis. scheduler, endpoint baru).
+- Tiap rilis: naikkan `CACHE` di `docs/sw.js` + `APP_VERSION` di `docs/js/config.js` (sudah jadi kebiasaan tiap fitur).
+- Migrasi Supabase (`supabase/*.sql`) dijalankan manual di Supabase Studio — bukan bagian deploy VPS.
+- Ikon PNG 192/512 di `manifest.json` untuk installability penuh.
 
 ## Notifikasi latar / Web Push (Fase 4 #3)
 - **Murni Node, tanpa npm**: `api/webpush.js` = VAPID (ES256 JWT) + enkripsi payload aes128gcm (RFC 8291/8188) via `node:crypto`. Verifikasi offline: `node scripts/test-webpush.mjs` (round-trip dekripsi + verify JWT).
