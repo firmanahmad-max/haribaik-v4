@@ -8,6 +8,7 @@ import { cloudEnabled, getUser, signInEmail, signInAnon, signOut, syncNow, linkE
 import { canInstall, promptInstall } from './install.js';
 import { pushSupported, pushConfigured, enablePush, disablePush, sendTestPush, isPushSubscribed, syncPushPrefs } from './push.js';
 import { getMemory, removeMemory, clearMemory } from './memory.js';
+import { APP_VERSION } from './config.js';
 
 let onSaveCb = null;
 
@@ -120,6 +121,14 @@ export async function openSettings({ welcome = false } = {}) {
       <button class="primary-btn" id="setInstall" type="button" ${canInstall() ? '' : 'hidden'} style="width:100%;margin-bottom:10px">${t('inst_btn')}</button>
 
       <a class="ghost-btn" id="setAbout" href="tentang.html" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px">${t('about_link')}</a>
+
+      <div class="fb-box" style="margin-bottom:10px">
+        <small class="field-hint">💬 ${t('fb_hint')}</small>
+        <div class="fav-toolbar" style="margin-top:6px">
+          <a class="mini-btn" id="setFbEmail">📧 ${t('fb_email')}</a>
+          <a class="mini-btn" id="setFbWa" target="_blank" rel="noopener">💬 ${t('fb_wa')}</a>
+        </div>
+      </div>
 
       <button class="ghost-btn" id="setNewChat" type="button">${t('new_chat')}</button>
 
@@ -259,6 +268,15 @@ export async function openSettings({ welcome = false } = {}) {
     close();
     onSaveCb?.(profileOut);
   });
+
+  // Kirim masukan — buka Email / WhatsApp ter-prefill (sertakan versi & perangkat
+  // untuk mempermudah diagnosa bug). Tanpa backend/tabel.
+  const fbSubject = `${t('fb_subject')} ${APP_VERSION}`;
+  const fbBody = `${t('fb_body')}\n\n\n—\n${t('fb_meta')}: ${APP_VERSION} · ${getLang()} · ${navigator.userAgent}`;
+  const fbEmail = overlay.querySelector('#setFbEmail');
+  if (fbEmail) fbEmail.href = `mailto:firman20@yahoo.com?subject=${encodeURIComponent(fbSubject)}&body=${encodeURIComponent(fbBody)}`;
+  const fbWa = overlay.querySelector('#setFbWa');
+  if (fbWa) fbWa.href = `https://wa.me/6285257001416?text=${encodeURIComponent(`${fbSubject}\n\n${fbBody}`)}`;
 
   // Pasang aplikasi (PWA install) — tampil hanya saat installable.
   const installBtn = overlay.querySelector('#setInstall');

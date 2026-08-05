@@ -203,6 +203,8 @@ const DICT = {
     inst_ios: 'Ketuk tombol Bagikan ⬆️ di Safari, lalu pilih "Tambahkan ke Layar Utama".',
     inst_yes: 'Pasang', inst_later: 'Nanti', inst_ok: 'Mengerti', inst_btn: '📲 Pasang aplikasi',
     about_title: 'Tentang', about_sub: 'Cerita & komitmen di balik HariBaik', about_link: 'ℹ️ Tentang & Disclaimer',
+    fb_hint: 'Punya saran atau menemukan bug? Sampaikan ke kami.', fb_email: 'Email', fb_wa: 'WhatsApp',
+    fb_subject: 'Masukan HariBaik', fb_body: 'Halo, saya ingin menyampaikan masukan:', fb_meta: 'Info teknis',
     online: 'online',
     // Reminder (notify)
     rem_title: 'HariBaik 🌿', rem_body: 'Mulai harimu dengan kebaikan. Yuk, sapa hatimu hari ini.',
@@ -391,6 +393,8 @@ const DICT = {
     inst_ios: 'Tap the Share button ⬆️ in Safari, then choose "Add to Home Screen".',
     inst_yes: 'Install', inst_later: 'Later', inst_ok: 'Got it', inst_btn: '📲 Install app',
     about_title: 'About', about_sub: 'The story & commitment behind HariBaik', about_link: 'ℹ️ About & Disclaimer',
+    fb_hint: 'Have a suggestion or found a bug? Let us know.', fb_email: 'Email', fb_wa: 'WhatsApp',
+    fb_subject: 'HariBaik feedback', fb_body: 'Hi, I would like to share some feedback:', fb_meta: 'Technical info',
     online: 'online',
     rem_title: 'HariBaik 🌿', rem_body: 'Start your day with kindness. Take a moment for your heart today.',
   },
