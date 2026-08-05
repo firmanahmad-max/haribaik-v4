@@ -1,6 +1,6 @@
 // sw.js — service worker: offline cache app shell + jalur notifikasi.
 
-const CACHE = 'haribaik-v4-56';
+const CACHE = 'haribaik-v4-57';
 const SHELL = [
   'index.html',
   'favorites.html',
@@ -9,11 +9,13 @@ const SHELL = [
   'doa.html',
   'ibadah.html',
   'tentang.html',
+  'privasi.html',
   'css/styles.css',
   'js/config.js',
   'js/ibadah.js',
   'js/ibadah-data.js',
   'js/tentang.js',
+  'js/privasi.js',
   'js/errlog.js',
   'js/install.js',
   'js/i18n.js',

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' http://localhost:3000 https://syiqxvnsvvzmhcumyzed.supabase.co wss://syiqxvnsvvzmhcumyzed.supabase.co https://haribaik-v4-production.up.railway.app https://api.aladhan.com https://api.bigdatacloud.net; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <title>Kebijakan Privasi — HariBaik</title>
+  <meta name="description" content="Kebijakan Privasi HariBaik — data apa yang disimpan, di mana, layanan pihak ketiga, dan kontrol pengguna. Kami tidak menjual datamu." />
+  <meta name="theme-color" content="#0c1a13" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="HariBaik" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="header-row">
+        <div class="brand">
+          <div class="logo">H</div>
+          <div>
+            <h1>Kebijakan Privasi</h1>
+            <div class="tagline">Privacy Policy · HariBaik</div>
+          </div>
+        </div>
+        <nav class="tabs">
+          <a href="index.html" data-i18n="nav_chat">Chat</a>
+          <a href="journal.html" data-i18n="nav_journal">Jurnal</a>
+          <a href="amalan.html" data-i18n="nav_deeds">Amalan</a>
+          <a href="ibadah.html" data-i18n="nav_ibadah">Ibadah</a>
+          <a href="doa.html" data-i18n="nav_doa">Doa</a>
+          <a href="favorites.html" data-i18n="nav_favorites">Favorit</a>
+        </nav>
+        <div class="header-actions">
+          <button class="mini-btn" id="ppLang">English</button>
+          <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="journal-page">
+      <article class="about">
+
+        <!-- ============ BAHASA INDONESIA ============ -->
+        <div id="pp-id">
+          <p class="about-lead">
+            Privasimu penting bagi kami. Ringkasnya: <b>kami tidak menjual datamu</b>, sebagian besar
+            datamu tersimpan di perangkatmu sendiri, dan fitur cloud serta komunitas bersifat
+            <b>opsional</b> (hanya aktif bila kamu masuk).
+          </p>
+          <p class="about-note">Terakhir diperbarui: <b>5 Agustus 2026</b>.</p>
+
+          <section class="card about-card">
+            <h2>1. Data yang kami kumpulkan</h2>
+            <h3>a. Data yang kamu masukkan</h3>
+            <ul>
+              <li><b>Profil</b> (opsional): nama panggilan, tujuan ibadah, jenis kelamin, usia, peran.</li>
+              <li><b>Suasana hati &amp; jurnal</b>: mood dan catatan harian yang kamu tulis.</li>
+              <li><b>Amalan &amp; ibadah</b>: penanda sholat, tilawah, puasa, dzikir, tantangan.</li>
+              <li><b>Favorit</b> dan <b>riwayat percakapan</b> dengan AI.</li>
+              <li><b>Konten komunitas</b>: doa, syukur, dan balasan yang kamu kirim (nama tampil opsional).</li>
+            </ul>
+            <h3>b. Data teknis</h3>
+            <ul>
+              <li><b>Preferensi</b>: bahasa, tema, waktu pengingat, zona waktu.</li>
+              <li><b>Lokasi perkiraan</b> (koordinat) — <b>hanya jika</b> kamu mengaktifkan jadwal sholat, arah kiblat, atau adzan.</li>
+              <li><b>Langganan notifikasi</b> push (bila kamu mengaktifkan pengingat/adzan).</li>
+              <li><b>Log kesalahan teknis anonim</b> untuk perbaikan bug — tanpa isi pesan pribadimu.</li>
+            </ul>
+            <h3>c. Akun</h3>
+            <p>Bila kamu memilih masuk, kami menyimpan <b>alamat email</b> (untuk tautan masuk/magic link)
+            atau membuat <b>akun anonim</b>. Tanpa masuk, aplikasi tetap bisa dipakai dan datamu hanya di perangkat.</p>
+          </section>
+
+          <section class="card about-card">
+            <h2>2. Di mana data disimpan</h2>
+            <ul>
+              <li><b>Di perangkatmu</b> (penyimpanan lokal peramban): sebagian besar data — chat, jurnal,
+              amalan, favorit, dan <b>memori AI</b> — tersimpan lokal dan tidak meninggalkan perangkat kecuali kamu masuk.</li>
+              <li><b>Di cloud (Supabase)</b> — <b>hanya jika kamu masuk</b>: profil, jurnal, amalan, favorit,
+              dan preferensi disinkronkan agar bisa diakses lintas perangkat. Akses dibatasi ke akunmu sendiri
+              melalui <i>Row Level Security</i>.</li>
+              <li><b>Konten komunitas bersifat publik</b> bagi pengguna lain yang masuk (Dinding Doa, Papan
+              Syukur). <b>Jangan menuliskan data pribadi/sensitif</b> di sana. Nama tampil opsional (default “Anonim”).</li>
+            </ul>
+          </section>
+
+          <section class="card about-card">
+            <h2>3. Layanan pihak ketiga (sub-processor)</h2>
+            <p>Untuk menjalankan fitur tertentu, sebagian data dikirim ke layanan berikut — sebatas yang diperlukan:</p>
+            <ul>
+              <li><b>Sumopod</b> (penyedia AI, kompatibel Anthropic): isi pesan chat &amp; konteks singkat
+              (mis. mood, profil ringkas) diproses server kami lalu diteruskan untuk menghasilkan respons AI —
+              <b>tanpa email/identitas loginmu</b>.</li>
+              <li><b>Supabase</b>: hosting basis data &amp; autentikasi (menyimpan email untuk magic link).</li>
+              <li><b>Aladhan API</b>: koordinat lokasi dikirim untuk menghitung jadwal sholat.</li>
+              <li><b>BigDataCloud</b>: koordinat dikirim untuk mengubah lokasi menjadi nama kota.</li>
+              <li><b>Layanan push peramban</b> (mis. Google/Apple/Mozilla): meneruskan notifikasi ke perangkatmu.</li>
+              <li><b>Google Fonts</b> &amp; <b>jsDelivr</b> (CDN): memuat font &amp; pustaka tampilan; alamat IP-mu
+              terlihat oleh mereka sebagaimana lazimnya permintaan web.</li>
+            </ul>
+          </section>
+
+          <section class="card about-card">
+            <h2>4. Lokasi &amp; notifikasi</h2>
+            <p><b>Lokasi</b> dipakai semata untuk jadwal sholat, arah kiblat, dan adzan. Koordinat
+            <b>tidak</b> digunakan untuk iklan atau pelacakan, dan bisa kamu nonaktifkan kapan saja.</p>
+            <p><b>Notifikasi</b> (pengingat harian &amp; adzan) sepenuhnya opsional dan dapat dimatikan kapan
+            saja lewat Pengaturan atau halaman Amalan.</p>
+          </section>
+
+          <section class="card about-card">
+            <h2>5. Yang TIDAK kami lakukan</h2>
+            <ul>
+              <li>Tidak <b>menjual</b> atau menyewakan data pribadimu.</li>
+              <li>Tidak menampilkan <b>iklan pihak ketiga</b>.</li>
+              <li>Tidak <b>melacak</b> aktivitasmu lintas situs lain.</li>
+              <li>Tidak membuat <b>profil</b> untuk kepentingan pihak lain.</li>
+            </ul>
+          </section>
+
+          <section class="card about-card">
+            <h2>6. Hak &amp; kontrolmu</h2>
+            <ul>
+              <li><b>Hapus data lokal</b>: hapus data situs di peramban atau uninstall aplikasi.</li>
+              <li><b>Memori AI</b>: lihat &amp; hapus kapan saja di <b>Pengaturan → Memori AI</b>.</li>
+              <li><b>Konten komunitas</b>: hapus doa/syukur milikmu; laporkan konten tak pantas.</li>
+              <li><b>Keluar (sign out)</b> menghentikan sinkronisasi ke cloud.</li>
+              <li><b>Hapus akun &amp; data cloud</b>: hubungi kami (lihat Kontak) untuk penghapusan menyeluruh.</li>
+            </ul>
+          </section>
+
+          <section class="card about-card">
+            <h2>7. Keamanan</h2>
+            <p>Kami menggunakan <b>HTTPS/TLS</b>, pembatasan akses tingkat baris (RLS) di Supabase, dan
+            menyimpan kunci sensitif hanya di server. Meski begitu, tidak ada sistem yang 100% aman —
+            gunakan aplikasi secara bijak dan jangan membagikan data sensitif di area publik.</p>
+          </section>
+
+          <section class="card about-card">
+            <h2>8. Anak-anak</h2>
+            <p>Aplikasi ini ditujukan untuk pengguna <b>berusia 13 tahun ke atas</b>. Untuk pengguna di
+            bawah umur, disarankan pendampingan orang tua atau wali.</p>
+          </section>
+
+          <section class="card about-card">
+            <h2>9. Perubahan kebijakan</h2>
+            <p>Kebijakan ini dapat diperbarui sewaktu-waktu. Perubahan penting akan ditandai dengan
+            memperbarui tanggal “Terakhir diperbarui” di atas.</p>
+          </section>
+
+          <section class="card about-card about-dev">
+            <h2>10. Kontak</h2>
+            <p>Pertanyaan atau permintaan penghapusan data:</p>
+            <p><b>Email:</b> <a href="mailto:firman20@yahoo.com">firman20@yahoo.com</a></p>
+            <p><b>WhatsApp:</b> <a href="https://wa.me/6285257001416">0852-5700-1416</a></p>
+            <p><b>Pengembang:</b> Firman Ahmad · Bagian dari Arta Ecosystem</p>
+          </section>
+
+          <p class="about-foot"><a href="tentang.html">← Kembali ke Tentang</a></p>
+        </div>
+
+        <!-- ============ ENGLISH ============ -->
+        <div id="pp-en" hidden>
+          <p class="about-lead">
+            Your privacy matters to us. In short: <b>we do not sell your data</b>, most of your data
+            stays on your own device, and cloud &amp; community features are <b>optional</b> (only active
+            when you sign in).
+          </p>
+          <p class="about-note">Last updated: <b>5 August 2026</b>.</p>
+
+          <section class="card about-card">
+            <h2>1. Data we collect</h2>
+            <h3>a. Data you enter</h3>
+            <ul>
+              <li><b>Profile</b> (optional): nickname, worship goal, gender, age, role.</li>
+              <li><b>Mood &amp; journal</b>: moods and daily notes you write.</li>
+              <li><b>Deeds &amp; worship</b>: prayer, recitation, fasting, dhikr, and challenge markers.</li>
+              <li><b>Favorites</b> and your <b>AI conversation history</b>.</li>
+              <li><b>Community content</b>: prayers, gratitude, and replies you post (display name optional).</li>
+            </ul>
+            <h3>b. Technical data</h3>
+            <ul>
+              <li><b>Preferences</b>: language, theme, reminder time, time zone.</li>
+              <li><b>Approximate location</b> (coordinates) — <b>only if</b> you enable prayer times, qibla, or adhan.</li>
+              <li><b>Push notification subscription</b> (if you enable reminders/adhan).</li>
+              <li><b>Anonymous technical error logs</b> for bug fixing — without your private message content.</li>
+            </ul>
+            <h3>c. Account</h3>
+            <p>If you choose to sign in, we store your <b>email address</b> (for the magic sign-in link) or
+            create an <b>anonymous account</b>. Without signing in, the app still works and your data stays on your device.</p>
+          </section>
+
+          <section class="card about-card">
+            <h2>2. Where data is stored</h2>
+            <ul>
+              <li><b>On your device</b> (browser local storage): most data — chat, journal, deeds, favorites,
+              and <b>AI memory</b> — is stored locally and does not leave your device unless you sign in.</li>
+              <li><b>In the cloud (Supabase)</b> — <b>only if you sign in</b>: profile, journal, deeds,
+              favorites, and preferences sync across your devices. Access is restricted to your own account
+              via <i>Row Level Security</i>.</li>
+              <li><b>Community content is public</b> to other signed-in users (Prayer Wall, Gratitude Board).
+              <b>Do not post private/sensitive information</b> there. Display name is optional (defaults to “Anonymous”).</li>
+            </ul>
+          </section>
+
+          <section class="card about-card">
+            <h2>3. Third-party services (sub-processors)</h2>
+            <p>To power certain features, some data is sent to the services below — only as needed:</p>
+            <ul>
+              <li><b>Sumopod</b> (AI provider, Anthropic-compatible): your chat message &amp; brief context
+              (e.g. mood, short profile) is processed by our server and forwarded to generate the AI response —
+              <b>without your email/login identity</b>.</li>
+              <li><b>Supabase</b>: database hosting &amp; authentication (stores email for magic link).</li>
+              <li><b>Aladhan API</b>: location coordinates are sent to compute prayer times.</li>
+              <li><b>BigDataCloud</b>: coordinates are sent to turn a location into a city name.</li>
+              <li><b>Browser push services</b> (e.g. Google/Apple/Mozilla): deliver notifications to your device.</li>
+              <li><b>Google Fonts</b> &amp; <b>jsDelivr</b> (CDN): load fonts &amp; display libraries; your IP is
+              visible to them as with any normal web request.</li>
+            </ul>
+          </section>
+
+          <section class="card about-card">
+            <h2>4. Location &amp; notifications</h2>
+            <p><b>Location</b> is used solely for prayer times, qibla direction, and adhan. Coordinates are
+            <b>not</b> used for advertising or tracking, and you can turn this off anytime.</p>
+            <p><b>Notifications</b> (daily reminder &amp; adhan) are fully optional and can be turned off
+            anytime in Settings or the Deeds page.</p>
+          </section>
+
+          <section class="card about-card">
+            <h2>5. What we do NOT do</h2>
+            <ul>
+              <li>We do <b>not sell</b> or rent your personal data.</li>
+              <li>We do <b>not</b> show <b>third-party ads</b>.</li>
+              <li>We do <b>not track</b> you across other websites.</li>
+              <li>We do <b>not</b> build <b>profiles</b> for other parties.</li>
+            </ul>
+          </section>
+
+          <section class="card about-card">
+            <h2>6. Your rights &amp; controls</h2>
+            <ul>
+              <li><b>Delete local data</b>: clear site data in your browser or uninstall the app.</li>
+              <li><b>AI memory</b>: view &amp; delete anytime in <b>Settings → AI Memory</b>.</li>
+              <li><b>Community content</b>: delete your own prayers/gratitude; report inappropriate content.</li>
+              <li><b>Sign out</b> stops syncing to the cloud.</li>
+              <li><b>Delete account &amp; cloud data</b>: contact us (see Contact) for full deletion.</li>
+            </ul>
+          </section>
+
+          <section class="card about-card">
+            <h2>7. Security</h2>
+            <p>We use <b>HTTPS/TLS</b>, row-level access restrictions (RLS) in Supabase, and keep sensitive
+            keys on the server only. Still, no system is 100% secure — use the app wisely and avoid sharing
+            sensitive data in public areas.</p>
+          </section>
+
+          <section class="card about-card">
+            <h2>8. Children</h2>
+            <p>This app is intended for users <b>aged 13 and above</b>. For minors, parental or guardian
+            supervision is recommended.</p>
+          </section>
+
+          <section class="card about-card">
+            <h2>9. Changes to this policy</h2>
+            <p>This policy may be updated from time to time. Significant changes will be marked by updating
+            the “Last updated” date above.</p>
+          </section>
+
+          <section class="card about-card about-dev">
+            <h2>10. Contact</h2>
+            <p>Questions or data deletion requests:</p>
+            <p><b>Email:</b> <a href="mailto:firman20@yahoo.com">firman20@yahoo.com</a></p>
+            <p><b>WhatsApp:</b> <a href="https://wa.me/6285257001416">+62 852-5700-1416</a></p>
+            <p><b>Developer:</b> Firman Ahmad · Part of Arta Ecosystem</p>
+          </section>
+
+          <p class="about-foot"><a href="tentang.html">← Back to About</a></p>
+        </div>
+
+      </article>
+    </div>
+  </div>
+
+  <script type="module" src="js/errlog.js"></script>
+  <script type="module" src="js/install.js"></script>
+  <script type="module" src="js/privasi.js"></script>
+</body>
+</html>
