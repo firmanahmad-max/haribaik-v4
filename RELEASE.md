@@ -79,8 +79,9 @@ bubblewrap build
       `HARIBAIK_`: `HARIBAIK_SUMOPOD_API_KEY`, `HARIBAIK_VAPID_PUBLIC_KEY`,
       `HARIBAIK_VAPID_PRIVATE_KEY`, `HARIBAIK_VAPID_SUBJECT`, `HARIBAIK_SUPABASE_URL`,
       `HARIBAIK_SUPABASE_SERVICE_ROLE_KEY`. *(sudah terpasang — push & scheduler berfungsi.)*
-- [ ] Supabase Auth → URL Configuration: Site URL `https://haribaik.firmanahmad.id`
-      + Redirect URLs `https://haribaik.firmanahmad.id/**` agar magic-link email jalan.
+- [x] Supabase Auth → URL Configuration: Site URL `https://haribaik.firmanahmad.id`
+      + Redirect URLs `https://haribaik.firmanahmad.id/**` agar magic-link email jalan. ✅ diatur.
+      *(Anonymous sign-in aktif — terverifikasi. Verifikasi akhir magic-link masuk ke "Uji nyata".)*
 - [ ] Same-origin: `docs/js/config.js#BACKEND_URL` = `''` di produksi (Caddy → backend,
       tanpa CORS). *(sudah live.)*
 - [ ] DNS + TLS: A record `haribaik` → `43.157.235.251`; Caddy meng-*issue* sertifikat
