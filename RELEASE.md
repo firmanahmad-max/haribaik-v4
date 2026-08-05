@@ -24,9 +24,9 @@ dengan ikon 192/512, service worker dgn handler `fetch`). Yang ditambahkan:
 TWA (Trusted Web Activity) membungkus PWA jadi paket Android (.aab) untuk Play Store.
 Pengguna merasa seperti aplikasi native, tanpa address bar.
 
-> ✅ Custom domain sudah aktif: **`https://haribaik.firmanahmad.id/`** (file `docs/CNAME`).
-> Karena app kini di **root origin**, `assetlinks.json` cukup di `docs/.well-known/` — tidak
-> perlu repo terpisah. Jauh lebih simpel.
+> ✅ Domain aktif: **`https://haribaik.firmanahmad.id/`**, disajikan oleh **Caddy di VPS**
+> (auto-HTTPS). App di **root origin**, jadi `assetlinks.json` cukup di `docs/.well-known/`
+> (Caddy menyajikan `docs/` apa adanya) — tidak perlu repo terpisah.
 
 ### Cara termudah: **PWABuilder** (berbasis web, tanpa setup Android)
 1. Buka <https://www.pwabuilder.com> → masukkan URL:
@@ -65,16 +65,26 @@ bubblewrap build
 
 ## 3. Sebelum publik — checklist akhir
 
-- [ ] Jalankan semua migrasi Supabase: `schema.sql`, `migration_push.sql`,
-      `migration_doa_safety.sql`, `migration_errors.sql`.
-- [ ] Env Railway lengkap: `SUMOPOD_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
-      `VAPID_SUBJECT`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
+> **Infra produksi (nyata):** VPS `43.157.235.251` (Ubuntu). **Caddy** menyajikan `docs/`
+> statis + TLS otomatis; **backend Node via Docker Compose** (`/home/ubuntu/artalib/deploy/vps`,
+> service `haribaik-backend`); data di **Supabase**. Bukan Railway/GitHub Pages. Alur redeploy
+> ada di `CLAUDE.md` (frontend = `git pull` di `/home/ubuntu/haribaik`; backend = `docker compose
+> up -d --build --no-deps haribaik-backend`).
+
+- [ ] Jalankan migrasi Supabase (Studio → SQL Editor), berurutan: `schema.sql`,
+      `migration_doa_safety.sql`, `migration_push.sql`, `migration_errors.sql`,
+      `migration_donors.sql`, lalu `migration_community.sql` (butuh schema + doa_safety).
+      *(`migration_community.sql` sudah dijalankan & diverifikasi live — Agustus 2026.)*
+- [ ] Env di `.env` compose VPS (`/home/ubuntu/artalib/deploy/vps/.env`), semua prefix
+      `HARIBAIK_`: `HARIBAIK_SUMOPOD_API_KEY`, `HARIBAIK_VAPID_PUBLIC_KEY`,
+      `HARIBAIK_VAPID_PRIVATE_KEY`, `HARIBAIK_VAPID_SUBJECT`, `HARIBAIK_SUPABASE_URL`,
+      `HARIBAIK_SUPABASE_SERVICE_ROLE_KEY`. *(sudah terpasang — push & scheduler berfungsi.)*
 - [ ] Supabase Auth → URL Configuration: Site URL `https://haribaik.firmanahmad.id`
       + Redirect URLs `https://haribaik.firmanahmad.id/**` agar magic-link email jalan.
-- [ ] Backend CORS sudah memuat `https://haribaik.firmanahmad.id` (server.js) — pastikan
-      Railway sudah redeploy dengan perubahan ini.
-- [ ] GitHub Pages: custom domain `haribaik.firmanahmad.id` aktif + **Enforce HTTPS** dicentang
-      (Settings → Pages), dan DNS (CNAME `haribaik` → `firmanahmad-max.github.io`) sudah propagasi.
+- [ ] Same-origin: `docs/js/config.js#BACKEND_URL` = `''` di produksi (Caddy → backend,
+      tanpa CORS). *(sudah live.)*
+- [ ] DNS + TLS: A record `haribaik` → `43.157.235.251`; Caddy meng-*issue* sertifikat
+      otomatis (Let's Encrypt). Cek: `curl -sI https://haribaik.firmanahmad.id` → `Server: Caddy`.
 - [ ] **Kebijakan privasi** (halaman publik) — wajib untuk Play Store & etis: jelaskan
       data yang disimpan (mood, jurnal, lokasi untuk sholat, langganan push) & bahwa
       tidak dijual. Bisa halaman statis sederhana.
