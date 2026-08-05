@@ -94,7 +94,8 @@ bubblewrap build
       **`https://haribaik.firmanahmad.id/privasi.html`** (`docs/privasi.html`), ditautkan dari
       Tentang. Pakai URL ini untuk kolom *Privacy policy* di Play Console.
 - [ ] Uji nyata: install di Android + iPhone, tes notifikasi, sync 2 perangkat.
-- [ ] Siapkan kanal **feedback** (form/email) untuk pengguna awal.
+- [x] Kanal **feedback** — ✅ seksi "💬 Kirim masukan" di Pengaturan (tombol Email &
+      WhatsApp ter-prefill subjek + versi app + info perangkat). Tanpa tabel/backend.
 
 ---
 
