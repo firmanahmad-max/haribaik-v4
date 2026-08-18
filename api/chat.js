@@ -6,13 +6,15 @@ import { getSourceInstruction, getRetryInstruction } from './rotation.js';
 import { buildSystemPrompt } from './prompt.js';
 import { extractFirstJsonObject, validateResponse } from './parse.js';
 
-const SUMOPOD_URL = 'https://ai.sumopod.com/v1/messages';
+// Sumopod kini endpoint OpenAI/LiteLLM-compatible (Anthropic /v1/messages sudah 404).
+const SUMOPOD_URL = 'https://ai.sumopod.com/v1/chat/completions';
 const MODEL = 'claude-haiku-4-5';
 const MAX_TOKENS = 800;
 const HISTORY_WINDOW = 6; // sliding window pesan terakhir
 
 /**
- * Panggil Sumopod sekali dengan assistant-prefill "{" untuk memaksa keluaran JSON.
+ * Panggil Sumopod (chat/completions) sekali. Keluaran JSON dipaksa lewat instruksi
+ * prompt ("KELUARAN: HANYA JSON"); parseAiText tahan-banting terhadap variasi format.
  * Mengembalikan objek JSON ter-parse.
  */
 async function callSumopod({ system, window, message, mockFamily, turn = 'first' }) {
@@ -27,15 +29,13 @@ async function callSumopod({ system, window, message, mockFamily, turn = 'first'
   const messages = [
     ...window.map((m) => ({ role: m.role, content: m.content })),
     { role: 'user', content: userContent },
-    { role: 'assistant', content: '{' },
   ];
 
   const res = await fetch(SUMOPOD_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': process.env.SUMOPOD_API_KEY,
-      'anthropic-version': '2023-06-01',
+      Authorization: `Bearer ${process.env.SUMOPOD_API_KEY}`,
     },
     body: JSON.stringify({ model: MODEL, max_tokens: MAX_TOKENS, messages }),
   });
@@ -46,7 +46,7 @@ async function callSumopod({ system, window, message, mockFamily, turn = 'first'
   }
 
   const result = await res.json();
-  const text = (result?.content?.[0]?.text ?? '').trim();
+  const text = (result?.choices?.[0]?.message?.content ?? '').trim();
   return parseAiText(text);
 }
 

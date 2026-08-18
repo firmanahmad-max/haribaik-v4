@@ -1,9 +1,11 @@
-// sumopod.js — pemanggil Sumopod generik yang mengembalikan JSON (assistant-prefill "{").
-// Dipakai oleh endpoint yang butuh keluaran JSON (mis. /api/insight).
+// sumopod.js — pemanggil Sumopod generik yang mengembalikan JSON.
+// Dipakai oleh endpoint yang butuh keluaran JSON (mis. /api/insight, /api/report).
+// Sumopod kini OpenAI/LiteLLM-compatible (Anthropic /v1/messages sudah 404); keluaran
+// JSON dipaksa lewat instruksi prompt, bukan assistant-prefill.
 
 import { extractFirstJsonObject } from './parse.js';
 
-const SUMOPOD_URL = 'https://ai.sumopod.com/v1/messages';
+const SUMOPOD_URL = 'https://ai.sumopod.com/v1/chat/completions';
 const MODEL = 'claude-haiku-4-5';
 
 /**
@@ -16,15 +18,13 @@ export async function sumopodJson(userContent, { maxTokens = 700 } = {}) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': process.env.SUMOPOD_API_KEY,
-      'anthropic-version': '2023-06-01',
+      Authorization: `Bearer ${process.env.SUMOPOD_API_KEY}`,
     },
     body: JSON.stringify({
       model: MODEL,
       max_tokens: maxTokens,
       messages: [
         { role: 'user', content: userContent },
-        { role: 'assistant', content: '{' },
       ],
     }),
   });
@@ -35,7 +35,7 @@ export async function sumopodJson(userContent, { maxTokens = 700 } = {}) {
   }
 
   const result = await res.json();
-  const text = (result?.content?.[0]?.text ?? '').trim();
+  const text = (result?.choices?.[0]?.message?.content ?? '').trim();
   try {
     return extractFirstJsonObject(text);
   } catch {
