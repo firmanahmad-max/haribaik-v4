@@ -6,7 +6,7 @@
 import { extractFirstJsonObject } from './parse.js';
 
 const SUMOPOD_URL = 'https://ai.sumopod.com/v1/chat/completions';
-const MODEL = 'claude-haiku-4-5';
+const MODEL = process.env.AI_MODEL || 'claude-haiku-4-5'; // override via env AI_MODEL (lihat CLAUDE.md)
 
 /**
  * @param {string} userContent prompt lengkap (instruksi + data) di dalam pesan user.

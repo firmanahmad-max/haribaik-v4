@@ -8,7 +8,7 @@ import { extractFirstJsonObject, validateResponse } from './parse.js';
 
 // Sumopod kini endpoint OpenAI/LiteLLM-compatible (Anthropic /v1/messages sudah 404).
 const SUMOPOD_URL = 'https://ai.sumopod.com/v1/chat/completions';
-const MODEL = 'claude-haiku-4-5';
+const MODEL = process.env.AI_MODEL || 'claude-haiku-4-5'; // override via env AI_MODEL (lihat CLAUDE.md)
 const MAX_TOKENS = 800;
 const HISTORY_WINDOW = 6; // sliding window pesan terakhir
 
