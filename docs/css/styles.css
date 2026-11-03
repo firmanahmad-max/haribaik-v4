@@ -278,17 +278,32 @@ footer.composer {
 }
 .toast.show { opacity: 1; }
 
-/* Share card (rendered off-screen, captured by html2canvas) */
+/* Share card 9:16 (540×960, di-capture html2canvas scale 2 → 1080×1920 untuk status WA).
+   Ukuran font diatur JS lewat --ar-size / --tr-size (adaptif + fit). */
 .share-card {
-  position: fixed; left: -9999px; top: 0; width: 540px; padding: 48px 44px;
-  background: linear-gradient(160deg, #0c1a13, #16291d);
-  color: #eef3ee; border-radius: 24px; box-sizing: border-box;
+  position: fixed; left: -9999px; top: 0; width: 540px; height: 960px; padding: 30px;
+  display: flex; box-sizing: border-box; color: #eef3ee;
+  background: linear-gradient(165deg, #0c1a13 0%, #16291d 55%, #0f2118 100%);
+  --ar-size: 40px; --tr-size: 22px;
 }
-.share-card .ornament { font-size: 30px; color: var(--accent-gold); text-align: center; opacity: 0.5; }
-.share-card .s-arabic { font-family: 'Amiri', serif; direction: rtl; font-size: 40px; color: #c4af78; text-align: center; margin: 24px 0; line-height: 1.8; }
-.share-card .s-trans { font-size: 18px; text-align: center; line-height: 1.6; }
-.share-card .s-source { text-align: center; color: #9bb0a2; margin-top: 18px; font-size: 14px; }
-.share-card .s-watermark { text-align: center; color: #c4af78; margin-top: 30px; font-size: 13px; letter-spacing: 1px; font-weight: 700; }
+.share-card .s-inner {
+  flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center;
+  border: 1.5px solid rgba(196, 175, 120, 0.35); border-radius: 26px;
+  padding: 40px 30px 30px; box-sizing: border-box; overflow: hidden;
+}
+.share-card .ornament { font-size: 30px; color: #c4af78; opacity: 0.6; text-align: center; }
+.share-card .s-body { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; justify-content: center; }
+.share-card .s-content { width: 100%; }
+.share-card .s-type {
+  display: block; width: fit-content; margin: 0 auto 26px; padding: 6px 16px; border-radius: 999px;
+  border: 1px solid rgba(196, 175, 120, 0.5); color: #c4af78;
+  font-size: 15px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+}
+.share-card .s-arabic { font-family: 'Amiri', serif; direction: rtl; font-size: var(--ar-size); color: #d8c48c; text-align: center; line-height: 1.85; margin: 0 0 26px; }
+.share-card .s-divider { width: 64px; height: 2px; background: #c4af78; opacity: 0.5; margin: 0 auto 26px; }
+.share-card .s-trans { font-size: var(--tr-size); text-align: center; line-height: 1.6; }
+.share-card .s-source { text-align: center; color: #c4af78; margin-top: 24px; font-size: 19px; font-weight: 700; }
+.share-card .s-watermark { text-align: center; color: #9bb0a2; font-size: 15px; letter-spacing: 1px; font-weight: 700; margin-top: 18px; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
